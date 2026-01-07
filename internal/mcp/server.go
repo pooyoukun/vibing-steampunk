@@ -2169,7 +2169,7 @@ func (s *Server) registerTools(mode string, disabledGroups string) {
 	// RunReport
 	if shouldRegister("RunReport") {
 		s.mcpServer.AddTool(mcp.NewTool("RunReport",
-			mcp.WithDescription("Execute an ABAP selection-screen report with parameters or variant. Can capture ALV output as structured data. Requires ZADT_VSP WebSocket handler deployed."),
+			mcp.WithDescription("Execute an ABAP selection-screen report with parameters or variant. Runs as background job and returns spool output. Requires ZADT_VSP WebSocket handler deployed."),
 			mcp.WithString("report",
 				mcp.Description("Report program name (e.g., 'RFITEMGL', 'ZREPORT_TEST')"),
 				mcp.Required(),
@@ -2179,12 +2179,6 @@ func (s *Server) registerTools(mode string, disabledGroups string) {
 			),
 			mcp.WithString("params",
 				mcp.Description("JSON object with selection screen parameters (e.g., '{\"P_BUKRS\":\"1000\",\"S_KUNNR\":{\"SIGN\":\"I\",\"OPTION\":\"EQ\",\"LOW\":\"0000001000\"}}'). Keys are parameter names."),
-			),
-			mcp.WithBoolean("capture_alv",
-				mcp.Description("If true, capture ALV grid output as structured data (default: false)"),
-			),
-			mcp.WithNumber("max_rows",
-				mcp.Description("Maximum ALV rows to return when capturing (default: 1000)"),
 			),
 		), s.handleRunReport)
 	}
@@ -2202,12 +2196,6 @@ func (s *Server) registerTools(mode string, disabledGroups string) {
 			),
 			mcp.WithString("params",
 				mcp.Description("JSON object with selection screen parameters"),
-			),
-			mcp.WithBoolean("capture_alv",
-				mcp.Description("Capture ALV output (default: false)"),
-			),
-			mcp.WithNumber("max_rows",
-				mcp.Description("Maximum ALV rows (default: 1000)"),
 			),
 		), s.handleRunReportAsync)
 	}
