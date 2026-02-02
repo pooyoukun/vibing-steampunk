@@ -88,7 +88,13 @@ func (s *Server) handleGetAbapHelp(ctx context.Context, request mcp.CallToolRequ
 	}
 
 	// Try to get real documentation from SAP system via WebSocket (ZADT_VSP)
-	if s.debugWSClient != nil && s.debugWSClient.IsConnected() {
+	// Prefer amdpWSClient (commonly connected for Git/Report ops) over debugWSClient
+	if s.amdpWSClient != nil && s.amdpWSClient.IsConnected() {
+		wsHelp, err := s.amdpWSClient.GetAbapDocumentation(ctx, keyword)
+		if err == nil && wsHelp.Found && wsHelp.HTML != "" {
+			helpResult.Documentation = wsHelp.HTML
+		}
+	} else if s.debugWSClient != nil && s.debugWSClient.IsConnected() {
 		wsHelp, err := s.debugWSClient.GetAbapDocumentation(ctx, keyword)
 		if err == nil && wsHelp.Found && wsHelp.HTML != "" {
 			helpResult.Documentation = wsHelp.HTML
