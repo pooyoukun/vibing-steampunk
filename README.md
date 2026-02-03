@@ -471,6 +471,120 @@ pipeline := dsl.RAPPipeline(client, "./src/", "$ZRAY", "ZTRAVEL_SB")
 
 See [docs/DSL.md](docs/DSL.md) for complete documentation.
 
+## RAP OData Service Creation
+
+VSP supports full RAP OData E2E development since v2.6.0. Create complete OData services via AI assistant:
+
+### Step-by-Step Workflow
+
+**1. Create CDS View (DDLS)**
+```
+WriteSource(
+  object_type="DDLS",
+  name="ZTRAVEL",
+  package="$TMP",
+  description="Travel Entity",
+  source=`
+@EndUserText.label: 'Travel'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+define root view entity ZTRAVEL as select from ztravel_tab {
+  key travel_id as TravelId,
+  description as Description,
+  start_date as StartDate,
+  end_date as EndDate,
+  status as Status
+}
+`
+)
+```
+
+**2. Create Behavior Definition (BDEF)**
+```
+WriteSource(
+  object_type="BDEF",
+  name="ZTRAVEL",
+  package="$TMP",
+  description="Travel Behavior",
+  source=`
+managed implementation in class ZBP_TRAVEL unique;
+strict ( 2 );
+
+define behavior for ZTRAVEL alias Travel
+persistent table ztravel_tab
+lock master
+authorization master ( instance )
+{
+  field ( readonly ) TravelId;
+  field ( mandatory ) Description;
+
+  create;
+  update;
+  delete;
+
+  mapping for ztravel_tab {
+    TravelId = travel_id;
+    Description = description;
+    StartDate = start_date;
+    EndDate = end_date;
+    Status = status;
+  }
+}
+`
+)
+```
+
+**3. Create Service Definition (SRVD)**
+```
+WriteSource(
+  object_type="SRVD",
+  name="ZTRAVEL_SD",
+  package="$TMP",
+  description="Travel Service Definition",
+  source=`
+@EndUserText.label: 'Travel Service'
+define service ZTRAVEL_SD {
+  expose ZTRAVEL;
+}
+`
+)
+```
+
+**4. Create Service Binding (SRVB)**
+```
+WriteSource(
+  object_type="SRVB",
+  name="ZTRAVEL_SB",
+  package="$TMP",
+  description="Travel OData V4 Binding",
+  service_definition="ZTRAVEL_SD",
+  binding_version="V4"
+)
+```
+
+### Binding Options
+
+| Parameter | Values | Description |
+|-----------|--------|-------------|
+| `binding_version` | `V2`, `V4` | OData protocol version |
+| `binding_category` | `0`, `1` | `0`=Web API, `1`=UI |
+
+### For Transportable Packages
+
+Add `transport` parameter to all WriteSource calls:
+```
+WriteSource(
+  object_type="DDLS",
+  name="ZTRAVEL",
+  package="ZPROD",
+  transport="DEVK900123",
+  ...
+)
+```
+
+### Related
+- [RAP OData Lessons Report](reports/2025-12-08-003-rap-odata-service-lessons.md)
+- DSL Pipeline: `dsl.RAPPipeline(client, "./src/", "$PKG", "ZSRV_SB")`
+
 ## ExecuteABAP
 
 Run arbitrary ABAP code via unit test wrapper:
