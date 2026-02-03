@@ -547,8 +547,8 @@ func parsePackageNodeStructure(data []byte, packageName string) (*PackageContent
 func (c *Client) GetTable(ctx context.Context, tableName string) (string, error) {
 	tableName = strings.ToUpper(tableName)
 
-	// Go directly to source/main endpoint
-	sourcePath := fmt.Sprintf("/sap/bc/adt/ddic/tables/%s/source/main", tableName)
+	// URL encode to handle namespaced objects like /DMO/TRAVEL
+	sourcePath := fmt.Sprintf("/sap/bc/adt/ddic/tables/%s/source/main", url.PathEscape(tableName))
 	resp, err := c.transport.Request(ctx, sourcePath, &RequestOptions{
 		Method: http.MethodGet,
 	})
@@ -580,8 +580,8 @@ func (c *Client) GetView(ctx context.Context, viewName string) (string, error) {
 func (c *Client) GetStructure(ctx context.Context, structName string) (string, error) {
 	structName = strings.ToUpper(structName)
 
-	// Go directly to source/main endpoint
-	sourcePath := fmt.Sprintf("/sap/bc/adt/ddic/structures/%s/source/main", structName)
+	// URL encode to handle namespaced objects like /DMO/...
+	sourcePath := fmt.Sprintf("/sap/bc/adt/ddic/structures/%s/source/main", url.PathEscape(structName))
 	resp, err := c.transport.Request(ctx, sourcePath, &RequestOptions{
 		Method: http.MethodGet,
 	})

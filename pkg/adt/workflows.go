@@ -34,7 +34,7 @@ func (c *Client) WriteProgram(ctx context.Context, programName string, source st
 	}
 
 	programName = strings.ToUpper(programName)
-	objectURL := fmt.Sprintf("/sap/bc/adt/programs/programs/%s", programName)
+	objectURL := fmt.Sprintf("/sap/bc/adt/programs/programs/%s", url.PathEscape(programName))
 	sourceURL := objectURL + "/source/main"
 
 	result := &WriteProgramResult{
@@ -124,7 +124,7 @@ func (c *Client) WriteClass(ctx context.Context, className string, source string
 	}
 
 	className = strings.ToUpper(className)
-	objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", className)
+	objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", url.PathEscape(className))
 	sourceURL := objectURL + "/source/main"
 
 	result := &WriteClassResult{
@@ -221,7 +221,7 @@ func (c *Client) CreateAndActivateProgram(ctx context.Context, programName strin
 		return nil, err
 	}
 
-	objectURL := fmt.Sprintf("/sap/bc/adt/programs/programs/%s", programName)
+	objectURL := fmt.Sprintf("/sap/bc/adt/programs/programs/%s", url.PathEscape(programName))
 	sourceURL := objectURL + "/source/main"
 
 	result := &CreateProgramResult{
@@ -314,7 +314,7 @@ func (c *Client) CreateClassWithTests(ctx context.Context, className string, des
 		return nil, err
 	}
 
-	objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", className)
+	objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", url.PathEscape(className))
 	sourceURL := objectURL + "/source/main"
 
 	result := &CreateClassWithTestsResult{
@@ -2223,7 +2223,7 @@ func (c *Client) writeSourceCreate(ctx context.Context, objectType, name, source
 			return result, nil
 		} else {
 			// Create class without tests - use CreateObject + WriteClass workflow
-			objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", name)
+			objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", url.PathEscape(name))
 			result.ObjectURL = objectURL
 
 			// Create object
@@ -2254,7 +2254,7 @@ func (c *Client) writeSourceCreate(ctx context.Context, objectType, name, source
 		}
 
 	case "INTF":
-		objectURL := fmt.Sprintf("/sap/bc/adt/oo/interfaces/%s", name)
+		objectURL := fmt.Sprintf("/sap/bc/adt/oo/interfaces/%s", url.PathEscape(name))
 		result.ObjectURL = objectURL
 
 		// Create object
@@ -2508,7 +2508,7 @@ func (c *Client) writeSourceCreate(ctx context.Context, objectType, name, source
 			srvbConfig.BindingCategory = "0" // Web API
 		}
 
-		objectURL := fmt.Sprintf("/sap/bc/adt/businessservices/bindings/%s", strings.ToLower(name))
+		objectURL := fmt.Sprintf("/sap/bc/adt/businessservices/bindings/%s", url.PathEscape(strings.ToLower(name)))
 		result.ObjectURL = objectURL
 
 		// Create SRVB
@@ -2636,7 +2636,7 @@ func (c *Client) ExecuteABAP(ctx context.Context, code string, opts *ExecuteABAP
 	timestamp := fmt.Sprintf("%d", time.Now().UnixNano()/1000000) // milliseconds
 	programName := strings.ToUpper(opts.ProgramPrefix + timestamp[len(timestamp)-8:]) // Last 8 digits
 	result.ProgramName = programName
-	objectURL := fmt.Sprintf("/sap/bc/adt/programs/programs/%s", programName)
+	objectURL := fmt.Sprintf("/sap/bc/adt/programs/programs/%s", url.PathEscape(programName))
 
 	// Build the test class wrapper source
 	riskLevelABAP := "RISK LEVEL HARMLESS"
@@ -2866,7 +2866,7 @@ func (c *Client) writeSourceUpdate(ctx context.Context, objectType, name, source
 
 		// If test source provided, update test include
 		if opts.TestSource != "" {
-			objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", name)
+			objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", url.PathEscape(name))
 
 			// Lock for test update
 			lock, err := c.LockObject(ctx, objectURL, "MODIFY")
@@ -2912,7 +2912,7 @@ func (c *Client) writeSourceUpdate(ctx context.Context, objectType, name, source
 
 	case "INTF":
 		// Similar to WriteProgram workflow
-		objectURL := fmt.Sprintf("/sap/bc/adt/oo/interfaces/%s", name)
+		objectURL := fmt.Sprintf("/sap/bc/adt/oo/interfaces/%s", url.PathEscape(name))
 		sourceURL := objectURL + "/source/main"
 		result.ObjectURL = objectURL
 
@@ -3070,7 +3070,7 @@ func (c *Client) writeClassMethodUpdate(ctx context.Context, className, methodNa
 
 	className = strings.ToUpper(className)
 	methodName = strings.ToUpper(methodName)
-	objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", strings.ToLower(className))
+	objectURL := fmt.Sprintf("/sap/bc/adt/oo/classes/%s", url.PathEscape(strings.ToLower(className)))
 	result.ObjectURL = objectURL
 
 	// Get method boundaries
