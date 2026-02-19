@@ -9,6 +9,10 @@
 
 ![Vibing ABAP Developer](./media/vibing-steampunk.png)
 
+## 100 Stars!
+
+Read the milestone article: **[Agentic ABAP at 100 Stars: The Numbers, The Community, and What's Cooking](articles/2026-02-18-100-stars-celebration.md)**
+
 ## What's New
 
 **v2.25.0** - CreatePackage Software Component Support
