@@ -179,7 +179,7 @@ Read the milestone article: **[Agentic ABAP at 100 Stars: The Numbers, The Commu
 
 ---
 
-**Single binary** with **52 focused tools** (default) or **99 expert tools** for AI-assisted ABAP development.
+**Single binary** with **81 focused tools** (default) or **122 expert tools** for AI-assisted ABAP development.
 
 ## Key Features
 
@@ -304,7 +304,7 @@ Configure multiple SAP systems in `.vsp.json`:
 ```bash
 vsp --url https://host:44300 --user admin --password secret
 vsp --url https://host:44300 --cookie-file cookies.txt
-vsp --mode expert  # Enable all 99 tools
+vsp --mode expert  # Enable all 122 tools
 ```
 
 ### Environment Variables
@@ -662,7 +662,7 @@ See [AI-Powered RCA Workflows](reports/2025-12-05-013-ai-powered-rca-workflows.m
 - **Reports:** RunReport, GetVariants, GetTextElements, SetTextElements
 - **Install:** InstallZADTVSP, InstallAbapGit, ListDependencies
 
-See [README_TOOLS.md](README_TOOLS.md) for complete tool documentation (99 tools).
+See [README_TOOLS.md](README_TOOLS.md) for complete tool documentation (122 tools).
 
 <details>
 <summary><strong>Capability Matrix</strong></summary>
@@ -794,7 +794,7 @@ vibing-steampunk/
 
 | Metric | Value |
 |--------|-------|
-| **Tools** | 99 (52 focused, 99 expert) |
+| **Tools** | 122 (81 focused, 122 expert) |
 | **Unit Tests** | 270+ |
 | **Platforms** | 9 (Linux, macOS, Windows × amd64/arm64/386) |
 
