@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.28.0] - 2026-03-18
+### Features
+
+- **Context Compression** (`pkg/ctxcomp`): New package that extracts dependencies from ABAP source and produces compressed "prologue" text containing only public API contracts. Classes are reduced to PUBLIC SECTION only (7-30x compression), interfaces pass through as-is, function modules extract signature blocks.
+- **GetSource `include_context` flag**: `GetSource` now appends dependency context by default — one MCP call returns source + compressed public API of all referenced objects. Set `include_context: false` for raw source only. `max_deps` parameter controls limit (default 20).
+- **GetContext MCP tool**: Standalone tool for dependency analysis — accepts source or fetches it, resolves contracts from SAP, returns formatted prologue. Added to focused mode whitelist (code intelligence group).
+- **LSP context push**: `vsp/context` notification sent on `didOpen` with compressed dependency prologue (best-effort, non-blocking).
+- 10 regex patterns for ABAP dependency extraction: TYPE REF TO, NEW, =>, ~, INHERITING FROM, INTERFACES, CALL FUNCTION, CAST, RAISING, ZCX_* exception references.
+- 37 unit tests in `pkg/ctxcomp` including tests against embedded ABAP files and real SAP A4H sources.
+
+
 ## [2.27.0] - 2026-03-01
 ### Features
 

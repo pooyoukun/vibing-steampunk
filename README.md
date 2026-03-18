@@ -20,10 +20,10 @@ Read the milestone article: **[Agentic ABAP at 100 Stars: The Numbers, The Commu
 The full version history is in [CHANGELOG.md](CHANGELOG.md).
 
 Latest highlights:
+- **Context Compression**: `GetSource` now auto-appends compressed dependency contracts — public API signatures of all referenced classes, interfaces, and FMs. One call gives the AI both source and surrounding context. 7-30x compression on real SAP code. Use `include_context: false` to disable.
+- **GetContext tool**: Standalone dependency analysis — extract and compress the public API surface of any ABAP object's dependencies.
 - **ABAP LSP** (`vsp lsp --stdio`): Real-time syntax checking and go-to-definition for Claude Code — see [LSP setup](#abap-lsp-for-claude-code)
 - **Iterative activation** with package filtering
-- **Reviewer Guide**: 8 hands-on tasks — no SAP system needed
-- **Architecture diagrams** (Mermaid) added to `docs/`
 
 ## Key Features
 
@@ -36,6 +36,7 @@ Latest highlights:
 | **DSL & Workflows** | Fluent Go API + YAML automation for CI/CD pipelines |
 | **ExecuteABAP** | Run arbitrary ABAP code via unit test wrapper |
 | **Code Analysis** | Call graphs, object structure, find definition/references |
+| **Context Compression** | Auto-compressed dependency contracts with GetSource (7-30x compression) |
 | **System Introspection** | System info, installed components, CDS dependencies |
 | **Diagnostics** | Short dumps (RABAX), ABAP profiler (ATRA), SQL traces (ST05) |
 | **File Deployment** | Bypass token limits - deploy large files directly from filesystem |
@@ -548,7 +549,7 @@ See [AI-Powered RCA Workflows](reports/2025-12-05-013-ai-powered-rca-workflows.m
   - *Note: Breakpoints now managed via WebSocket (ZADT_VSP)*
 - **Write:** WriteSource, EditSource, ImportFromFile, ExportToFile, MoveObject
 - **Dev:** SyntaxCheck, RunUnitTests, RunATCCheck, LockObject, UnlockObject
-- **Intelligence:** FindDefinition, FindReferences
+- **Intelligence:** FindDefinition, FindReferences, GetContext
 - **System:** GetSystemInfo, GetInstalledComponents, GetCallGraph, GetObjectStructure, GetFeatures
 - **Diagnostics:** GetDumps, GetDump, ListTraces, GetTrace, GetSQLTraceState, ListSQLTraces
 - **Git:** GitTypes, GitExport (requires abapGit on SAP)

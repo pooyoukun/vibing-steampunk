@@ -13,13 +13,15 @@ import (
 	"time"
 
 	"github.com/oisee/vibing-steampunk/pkg/adt"
+	"github.com/oisee/vibing-steampunk/pkg/ctxcomp"
 )
 
 // Server implements a minimal LSP server for ABAP.
 type Server struct {
-	transport *Transport
-	client    *adt.Client // nil if no SAP connection
-	verbose   bool
+	transport  *Transport
+	client     *adt.Client // nil if no SAP connection
+	compressor *ctxcomp.Compressor
+	verbose    bool
 
 	// Document store: URI → content
 	docs   map[string]string
@@ -33,14 +35,29 @@ type Server struct {
 	shutdown bool
 }
 
+// lspSourceAdapter adapts adt.Client to ctxcomp.ADTSourceFetcher.
+type lspSourceAdapter struct {
+	client *adt.Client
+}
+
+func (a *lspSourceAdapter) GetSource(ctx context.Context, objectType, name string, opts interface{}) (string, error) {
+	return a.client.GetSource(ctx, objectType, name, nil)
+}
+
 // NewServer creates a new LSP server.
 // client may be nil (no SAP connection → no online diagnostics).
 func NewServer(client *adt.Client, verbose bool) *Server {
+	var comp *ctxcomp.Compressor
+	if client != nil {
+		provider := ctxcomp.NewMultiSourceProvider("", &lspSourceAdapter{client: client})
+		comp = ctxcomp.NewCompressor(provider, 20)
+	}
 	return &Server{
-		client:  client,
-		verbose: verbose,
-		docs:    make(map[string]string),
-		timers:  make(map[string]*time.Timer),
+		client:     client,
+		compressor: comp,
+		verbose:    verbose,
+		docs:       make(map[string]string),
+		timers:     make(map[string]*time.Timer),
 	}
 }
 
@@ -125,6 +142,7 @@ func (s *Server) handleDidOpen(msg *Message) {
 	s.docsMu.Unlock()
 
 	s.scheduleDiagnostics(uri)
+	go s.publishContext(uri)
 }
 
 func (s *Server) handleDidChange(msg *Message) {
@@ -319,6 +337,99 @@ func (s *Server) publishDiagnostics(uri string, diags []Diagnostic) {
 		Method: "textDocument/publishDiagnostics",
 		Params: data,
 	})
+}
+
+// publishContext runs context compression and sends a vsp/context notification.
+// Best-effort: failures are logged but don't affect other LSP operations.
+func (s *Server) publishContext(uri string) {
+	if s.compressor == nil {
+		return
+	}
+
+	s.docsMu.RLock()
+	content, ok := s.docs[uri]
+	s.docsMu.RUnlock()
+	if !ok || content == "" {
+		return
+	}
+
+	// Determine object type and name from URI
+	objectURL, _ := uriToObjectURL(uri)
+	if objectURL == "" {
+		return
+	}
+
+	// Infer object type/name from the URL pattern
+	objectType, objectName := urlToTypeAndName(objectURL)
+	if objectType == "" {
+		return
+	}
+
+	ctx := context.Background()
+	result, err := s.compressor.Compress(ctx, content, objectName, objectType)
+	if err != nil {
+		s.logf("context compression error for %s: %v", uri, err)
+		return
+	}
+
+	if result.Prologue == "" {
+		return
+	}
+
+	// Send custom notification
+	type contextParams struct {
+		URI      string `json:"uri"`
+		Prologue string `json:"prologue"`
+		Stats    struct {
+			DepsFound    int `json:"depsFound"`
+			DepsResolved int `json:"depsResolved"`
+			DepsFailed   int `json:"depsFailed"`
+			TotalLines   int `json:"totalLines"`
+		} `json:"stats"`
+	}
+
+	params := contextParams{URI: uri, Prologue: result.Prologue}
+	params.Stats.DepsFound = result.Stats.DepsFound
+	params.Stats.DepsResolved = result.Stats.DepsResolved
+	params.Stats.DepsFailed = result.Stats.DepsFailed
+	params.Stats.TotalLines = result.Stats.TotalLines
+
+	data, _ := json.Marshal(params)
+	s.transport.Write(&Message{
+		Method: "vsp/context",
+		Params: data,
+	})
+
+	s.logf("published context for %s: %d deps resolved, %d lines", uri, result.Stats.DepsResolved, result.Stats.TotalLines)
+}
+
+// urlToTypeAndName extracts ABAP object type and name from an ADT URL path.
+func urlToTypeAndName(objectURL string) (string, string) {
+	parts := strings.Split(objectURL, "/")
+	if len(parts) < 2 {
+		return "", ""
+	}
+
+	// /sap/bc/adt/oo/classes/ZCL_FOO → CLAS, ZCL_FOO
+	// /sap/bc/adt/oo/interfaces/ZIF_FOO → INTF, ZIF_FOO
+	// /sap/bc/adt/programs/programs/ZPROG → PROG, ZPROG
+	// /sap/bc/adt/functions/groups/ZFUGR → FUGR, ZFUGR
+	name := parts[len(parts)-1]
+
+	for i := len(parts) - 2; i >= 0; i-- {
+		switch parts[i] {
+		case "classes":
+			return "CLAS", strings.ToUpper(name)
+		case "interfaces":
+			return "INTF", strings.ToUpper(name)
+		case "programs":
+			return "PROG", strings.ToUpper(name)
+		case "groups":
+			return "FUGR", strings.ToUpper(name)
+		}
+	}
+
+	return "", ""
 }
 
 // --- Helpers ---

@@ -11,6 +11,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/oisee/vibing-steampunk/pkg/adt"
+	"github.com/oisee/vibing-steampunk/pkg/ctxcomp"
 )
 
 // --- Code Intelligence Handlers ---
@@ -374,6 +375,12 @@ func (s *Server) registerGetSource() {
 		mcp.WithString("method",
 			mcp.Description("Method name for CLAS only: returns only the METHOD...ENDMETHOD block for the specified method (optional)"),
 		),
+		mcp.WithBoolean("include_context",
+			mcp.Description("Append compressed dependency context showing public API contracts of referenced classes/interfaces/FMs (default: true). Set to false to get raw source only."),
+		),
+		mcp.WithNumber("max_deps",
+			mcp.Description("Maximum dependencies to resolve when include_context=true (default: 20)"),
+		),
 	), s.handleGetSource)
 }
 
@@ -439,6 +446,27 @@ func (s *Server) handleGetSource(ctx context.Context, request mcp.CallToolReques
 	source, err := s.adtClient.GetSource(ctx, objectType, name, opts)
 	if err != nil {
 		return newToolResultError(fmt.Sprintf("GetSource failed: %v", err)), nil
+	}
+
+	// Append dependency context (default: true, set include_context=false to disable)
+	includeContext := true
+	if ic, ok := request.Params.Arguments["include_context"].(bool); ok {
+		includeContext = ic
+	}
+	if includeContext {
+		maxDeps := 20
+		if md, ok := request.Params.Arguments["max_deps"].(float64); ok && md > 0 {
+			maxDeps = int(md)
+		}
+
+		provider := ctxcomp.NewMultiSourceProvider("", &adtSourceAdapter{server: s})
+		compressor := ctxcomp.NewCompressor(provider, maxDeps)
+		result, err := compressor.Compress(ctx, source, name, objectType)
+		if err == nil && result.Prologue != "" {
+			source = source + "\n\n" + result.Prologue +
+				fmt.Sprintf("\n* Context stats: %d deps found, %d resolved, %d failed",
+					result.Stats.DepsFound, result.Stats.DepsResolved, result.Stats.DepsFailed)
+		}
 	}
 
 	return mcp.NewToolResultText(source), nil

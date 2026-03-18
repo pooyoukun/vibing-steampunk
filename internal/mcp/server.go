@@ -304,9 +304,10 @@ func (s *Server) registerTools(mode string, disabledGroups string, toolsConfig m
 		"GetCDSDependencies":  true, // CDS dependency tree
 		"GetMessages":         true, // Message class texts (SE91)
 
-		// Code intelligence (2)
+		// Code intelligence (3)
 		"FindDefinition":  true,
 		"FindReferences":  true,
+		"GetContext":       true, // Dependency context compression
 
 		// Development tools (11)
 		"SyntaxCheck":         true,
@@ -1802,6 +1803,28 @@ func (s *Server) registerTools(mode string, disabledGroups string, toolsConfig m
 			mcp.Description("Column number for position-based reference search (1-based, optional)"),
 		),
 	), s.handleFindReferences)
+	}
+
+
+	// GetContext - dependency context compression
+	if shouldRegister("GetContext") {
+		s.mcpServer.AddTool(mcp.NewTool("GetContext",
+		mcp.WithDescription("Analyze ABAP source dependencies and return compressed public API contracts (prologue). Produces a compact summary of all referenced classes, interfaces, and function modules — showing only their public signatures. Use this to understand the surrounding codebase context before editing."),
+		mcp.WithString("object_type",
+			mcp.Required(),
+			mcp.Description("ABAP object type: PROG, CLAS, INTF, FUNC, FUGR"),
+		),
+		mcp.WithString("name",
+			mcp.Required(),
+			mcp.Description("Object name (e.g., ZCL_ORDER_PROCESSOR)"),
+		),
+		mcp.WithString("source",
+			mcp.Description("Source code to analyze (if omitted, fetched from SAP)"),
+		),
+		mcp.WithNumber("max_deps",
+			mcp.Description("Maximum dependencies to resolve (default: 20)"),
+		),
+	), s.handleGetContext)
 	}
 
 
