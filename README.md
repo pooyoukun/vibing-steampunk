@@ -20,10 +20,13 @@ Read the milestone article: **[Agentic ABAP at 100 Stars: The Numbers, The Commu
 The full version history is in [CHANGELOG.md](CHANGELOG.md).
 
 Latest highlights:
-- **Context Compression**: `GetSource` now auto-appends compressed dependency contracts — public API signatures of all referenced classes, interfaces, and FMs. One call gives the AI both source and surrounding context. 7-30x compression on real SAP code. Use `include_context: false` to disable.
+- **One-Tool Mode** (`--tool-mode universal`): Single `SAP(action, target, params)` tool replacing 122 individual tool definitions. Reduces MCP schema overhead from ~40K tokens to ~200 tokens. Use `SAP(action="help")` for built-in documentation. Default remains `granular` (122 tools) for backwards compatibility.
+- **CLI DevOps Surface**: Full ABAP DevOps from the terminal — `vsp source read/write/edit/context`, `vsp test`, `vsp atc`, `vsp deploy`, `vsp transport list/get`, `vsp install zadt-vsp/abapgit`. Pipe source code, script CI/CD pipelines, bootstrap SAP systems without MCP.
+- **Bootstrap from CLI**: `vsp install abapgit` + `vsp install zadt-vsp` — deploy dependencies to SAP systems directly from the command line. No SAP GUI needed.
+- **Context Compression**: `GetSource` auto-appends compressed dependency contracts — public API signatures of all referenced classes, interfaces, and FMs. One call gives the AI both source and surrounding context. 7-30x compression on real SAP code. Use `include_context: false` to disable.
 - **GetContext tool**: Standalone dependency analysis — extract and compress the public API surface of any ABAP object's dependencies.
 - **ABAP LSP** (`vsp lsp --stdio`): Real-time syntax checking and go-to-definition for Claude Code — see [LSP setup](#abap-lsp-for-claude-code)
-- **Iterative activation** with package filtering
+- **Codebase Decomposition**: `server.go` (2,539→256 lines), `workflows.go` (3,564→402 lines) split into domain-specific files. Easier to contribute, review, and maintain.
 
 ## Key Features
 
@@ -31,7 +34,8 @@ Latest highlights:
 |---------|-------------|
 | **AI Debugger** | Breakpoints, listener, attach, step, inspect stack & variables |
 | **RAP OData E2E** | Create CDS views, Service Definitions, Bindings → Publish OData services |
-| **Focused Mode** | 37 curated tools optimized for AI assistants (50% token reduction) |
+| **One-Tool Mode** | `--tool-mode universal`: single SAP tool, ~200 tokens vs ~40K for 122 tools |
+| **Focused Mode** | 81 curated tools optimized for AI assistants |
 | **AI-Powered RCA** | Root cause analysis with dumps, traces, profiler + code intelligence |
 | **DSL & Workflows** | Fluent Go API + YAML automation for CI/CD pipelines |
 | **ExecuteABAP** | Run arbitrary ABAP code via unit test wrapper |
@@ -81,26 +85,40 @@ vsp works in two modes:
 ### CLI Commands
 
 ```bash
-# Search for ABAP objects
+# Source operations
+vsp -s a4h source CLAS ZCL_MY_CLASS              # read source
+vsp -s a4h source read CLAS ZCL_MY_CLASS          # same, explicit
+vsp -s a4h source write CLAS ZCL_FOO < file.abap  # write from stdin
+vsp -s a4h source edit CLAS ZCL_FOO --old "X" --new "Y"  # surgical edit
+vsp -s a4h source context CLAS ZCL_FOO            # source + dependency contracts
+vsp -s a4h context CLAS ZCL_FOO                   # shortcut for above
+
+# Search
 vsp -s a4h search "ZCL_*"
 vsp -s dev search "Z*ORDER*" --type CLAS --max 50
 
-# Get source code
-vsp -s a4h source CLAS ZCL_MY_CLASS
-vsp -s dev source PROG ZTEST_PROGRAM
+# Testing & code quality
+vsp -s a4h test CLAS ZCL_MY_CLASS                 # run unit tests
+vsp -s a4h test --package '$TMP'                  # package-level tests
+vsp -s a4h atc CLAS ZCL_MY_CLASS                  # ATC code check
 
-# Export packages to ZIP (abapGit format)
-vsp -s a4h export '$ZORK' '$ZLLM' -o packages.zip
-vsp -s dev export '$TMP' --subpackages
+# Deployment
+vsp -s a4h deploy zcl_test.clas.abap '$TMP'       # deploy file to SAP
+vsp -s a4h export '$ZORK' '$ZLLM' -o packages.zip # export abapGit ZIP
 
-# List configured systems
-vsp systems
+# Bootstrap SAP system (no SAP GUI needed)
+vsp -s a4h install abapgit                        # install abapGit
+vsp -s a4h install zadt-vsp                       # install ZADT_VSP handler
+vsp -s a4h install abapgit --edition full         # full dev edition (576 objects)
+vsp -s a4h install list                           # show installable components
 
-# Configuration management
-vsp config init          # Create example configs
-vsp config show          # Show effective configuration
-vsp config mcp-to-vsp    # Import from .mcp.json to .vsp.json
-vsp config vsp-to-mcp    # Export from .vsp.json to .mcp.json
+# Transport management
+vsp -s a4h transport list                         # list transports
+vsp -s a4h transport get A4HK900094               # transport details
+
+# System management
+vsp systems                                       # list configured systems
+vsp config init                                   # create example configs
 
 # Start ABAP LSP server (for Claude Code / editors)
 vsp lsp --stdio
@@ -153,7 +171,8 @@ Configure multiple SAP systems in `.vsp.json`:
 ```bash
 vsp --url https://host:44300 --user admin --password secret
 vsp --url https://host:44300 --cookie-file cookies.txt
-vsp --mode expert  # Enable all 122 tools
+vsp --mode expert          # Enable all 122 tools
+vsp --tool-mode universal  # Single SAP tool (~200 tokens instead of ~40K)
 ```
 
 ### Environment Variables
@@ -316,16 +335,27 @@ CreatePackage(
 
 Without these flags, operations on transportable packages will be blocked by the safety system.
 
-## Focused vs Expert Mode
+## Tool Modes
+
+### Granular vs Universal
+
+| Aspect | Granular (Default) | Universal |
+|--------|-------------------|-----------|
+| **Tools registered** | 81 focused / 122 expert | 1 (`SAP`) |
+| **Token overhead** | ~14K / ~40K | ~200 |
+| **How AI calls it** | `GetSource(object_type="CLAS", name="ZCL_TEST")` | `SAP(action="read", target="CLAS ZCL_TEST")` |
+| **Documentation** | Built into each tool schema | `SAP(action="help")` or `SAP(action="help", target="edit")` |
+| **Best for** | Agents with large context windows | Token-constrained agents, fast iteration |
+
+Enable universal mode: `--tool-mode=universal` or `SAP_TOOL_MODE=universal`
+
+### Focused vs Expert (within Granular mode)
 
 | Aspect | Focused (Default) | Expert |
 |--------|-------------------|--------|
-| **Tools** | 52 essential | 99 complete |
-| **Token overhead** | ~2,800 | ~8,000 |
+| **Tools** | 81 essential | 122 complete |
 | **Use case** | Daily development | Edge cases, debugging |
 | **Unified tools** | GetSource, WriteSource | + granular Get*/Write* |
-
-**Focused mode** consolidates 11 read/write tools into 2 unified tools, reducing cognitive load and token usage by 58%.
 
 Enable expert mode: `--mode=expert` or `SAP_MODE=expert`
 
