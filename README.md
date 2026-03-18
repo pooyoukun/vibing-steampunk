@@ -15,6 +15,15 @@ Read the milestone article: **[Agentic ABAP at 100 Stars: The Numbers, The Commu
 
 ## What's New
 
+**v2.26.0** - ABAP LSP for Claude Code
+- **`vsp lsp --stdio`**: Built-in Language Server Protocol server for ABAP files
+- **Real-Time Diagnostics**: Automatic syntax checking via SAP ADT SyntaxCheck on every edit
+- **Go-to-Definition**: Navigate to symbol definitions via ADT FindDefinition
+- **300ms Debounce**: Diagnostics fire after you stop typing, not on every keystroke
+- **Graceful Degradation**: Works without SAP connection (no diagnostics), adds them when connected
+- **Zero New Dependencies**: Hand-rolled JSON-RPC 2.0 transport, reuses existing ADT client
+- See [LSP Configuration](#abap-lsp-for-claude-code) for setup instructions
+
 **v2.25.0** - CreatePackage Software Component Support
 - **`software_component` Parameter**: Create transportable packages with proper software component (e.g., `HOME`, `ZLOCAL`)
 - **Viper Env Fix**: Comma-separated env vars (`SAP_ALLOWED_PACKAGES`, `SAP_ALLOWED_TRANSPORTS`) now parse correctly
@@ -193,6 +202,7 @@ Read the milestone article: **[Agentic ABAP at 100 Stars: The Numbers, The Commu
 | **System Introspection** | System info, installed components, CDS dependencies |
 | **Diagnostics** | Short dumps (RABAX), ABAP profiler (ATRA), SQL traces (ST05) |
 | **File Deployment** | Bypass token limits - deploy large files directly from filesystem |
+| **ABAP LSP** | Built-in Language Server — automatic diagnostics and go-to-definition |
 | **Surgical Edits** | `EditSource` tool matches Claude's Edit pattern for precise changes |
 
 ## Quick Start
@@ -236,6 +246,9 @@ vsp config init          # Create example configs
 vsp config show          # Show effective configuration
 vsp config mcp-to-vsp    # Import from .mcp.json to .vsp.json
 vsp config vsp-to-mcp    # Export from .vsp.json to .mcp.json
+
+# Start ABAP LSP server (for Claude Code / editors)
+vsp lsp --stdio
 ```
 
 ### System Profiles (`.vsp.json`)
@@ -359,6 +372,51 @@ Add `.mcp.json` to your project:
   }
 }
 ```
+
+### ABAP LSP for Claude Code
+
+vsp includes a built-in LSP server that gives Claude Code **automatic** error detection when editing ABAP files — no explicit tool calls needed.
+
+**Add to Claude Code settings** (`.claude/settings.json` or global settings):
+
+```json
+{
+  "lsp": {
+    "abap": {
+      "command": "vsp",
+      "args": ["lsp", "--stdio"],
+      "extensionToLanguage": {
+        ".abap": "abap",
+        ".asddls": "abap",
+        ".asbdef": "abap"
+      }
+    }
+  }
+}
+```
+
+SAP credentials are resolved from environment variables or `.env` file — same as MCP mode.
+
+**Supported LSP features:**
+
+| Feature | Method | Source |
+|---------|--------|--------|
+| Real-time syntax errors | `textDocument/publishDiagnostics` | ADT SyntaxCheck |
+| Go-to-definition | `textDocument/definition` | ADT FindDefinition |
+
+**Supported file patterns** (abapGit naming convention):
+
+| Extension | Object Type |
+|-----------|-------------|
+| `.clas.abap` | Class (main source) |
+| `.clas.testclasses.abap` | Class test includes |
+| `.clas.locals_def.abap` | Class local definitions |
+| `.prog.abap` | Program / Report |
+| `.intf.abap` | Interface |
+| `.fugr.abap` | Function Group |
+| `.ddls.asddls` | CDS View |
+
+Namespace convention (`#dmo#cl_flight.clas.abap` → `/DMO/CL_FLIGHT`) is handled automatically.
 
 ### Transportable Packages Configuration
 
@@ -765,6 +823,7 @@ vibing-steampunk/
 │   ├── workflows.go          # High-level workflows
 │   └── http.go               # HTTP transport (CSRF, auth)
 ├── internal/mcp/server.go    # MCP tool handlers (62 tools)
+├── internal/lsp/             # ABAP LSP server (diagnostics, go-to-def)
 └── pkg/dsl/                  # DSL & workflow engine
 ```
 

@@ -2082,6 +2082,11 @@ type WriteSourceResult struct {
 //   - create: Create new object only (fails if exists)
 //   - update: Update existing object only (fails if not exists)
 func (c *Client) WriteSource(ctx context.Context, objectType, name, source string, opts *WriteSourceOptions) (*WriteSourceResult, error) {
+	// Debug logging
+	if os.Getenv("VSP_DEBUG") == "true" {
+		fmt.Fprintf(os.Stderr, "[DEBUG] WriteSource: BaseURL=%s, objectType=%s, name=%s\n", c.config.BaseURL, objectType, name)
+	}
+
 	// Safety check for workflow operations
 	if err := c.checkSafety(OpWorkflow, "WriteSource"); err != nil {
 		return nil, err

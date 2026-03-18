@@ -43,6 +43,12 @@ type systemParams struct {
 
 // resolveSystemParams resolves system parameters from --system flag or env vars.
 func resolveSystemParams(cmd *cobra.Command) (*systemParams, error) {
+	// Debug: show which system is being used
+	verbose, _ := cmd.Flags().GetBool("verbose")
+	if verbose || os.Getenv("VSP_DEBUG") == "true" {
+		fmt.Fprintf(os.Stderr, "[DEBUG] resolveSystemParams: systemName=%q\n", systemName)
+	}
+
 	// If --system is specified, load from systems config
 	if systemName != "" {
 		cfg, path, err := config.LoadSystems()
@@ -65,8 +71,9 @@ func resolveSystemParams(cmd *cobra.Command) (*systemParams, error) {
 		}
 
 		verbose, _ := cmd.Flags().GetBool("verbose")
-		if verbose || os.Getenv("VSP_VERBOSE") == "true" {
+		if verbose || os.Getenv("VSP_VERBOSE") == "true" || os.Getenv("VSP_DEBUG") == "true" {
 			fmt.Fprintf(os.Stderr, "[INFO] Using system '%s' from %s\n", systemName, path)
+			fmt.Fprintf(os.Stderr, "[DEBUG] URL: %s, User: %s\n", sys.URL, sys.User)
 		}
 
 		return &systemParams{

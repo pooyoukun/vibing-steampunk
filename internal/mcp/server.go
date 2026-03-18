@@ -254,6 +254,7 @@ func (s *Server) registerTools(mode string, disabledGroups string, toolsConfig m
 			"InstallAbapGit",
 			"ListDependencies",
 			"InstallDummyTest",
+			"DeployZip",
 		},
 		"X": { // EXPERIMENTAL - Tools requiring special setup or with known limitations
 			// ABAP Debugger - requires ZADT_VSP WebSocket handler
@@ -412,6 +413,7 @@ func (s *Server) registerTools(mode string, disabledGroups string, toolsConfig m
 		"InstallAbapGit":   true, // Deploy abapGit (standalone or dev edition) to SAP
 		"ListDependencies": true, // List available dependencies for installation
 		"InstallDummyTest": true, // Test tool for verifying Install* workflow
+		"DeployZip":        true, // Deploy objects from abapGit-format ZIP to SAP package
 	}
 
 	// Helper to check if tool should be registered
@@ -2385,6 +2387,30 @@ func (s *Server) registerTools(mode string, disabledGroups string, toolsConfig m
 				mcp.Description("Delete test objects after verification (default: false)"),
 			),
 		), s.handleInstallDummyTest)
+	}
+
+	// DeployZip - Deploy abapGit-format ZIP to SAP package
+	if shouldRegister("DeployZip") {
+		s.mcpServer.AddTool(mcp.NewTool("DeployZip",
+			mcp.WithDescription("Deploy objects from an embedded abapGit-format ZIP to a SAP package. Uses ADT native deployment (PROG, CLAS, INTF, DDLS, BDEF, SRVD). For full 158 object type support, install ZADT_VSP first."),
+			mcp.WithString("source",
+				mcp.Required(),
+				mcp.Description("Embedded dependency name: 'abapgit-standalone' (single ZABAPGIT program) or 'abapgit-full' (564 objects - full developer edition)"),
+			),
+			mcp.WithString("package",
+				mcp.Required(),
+				mcp.Description("Target SAP package name (e.g., '$ZGIT'). Package will be created if it doesn't exist."),
+			),
+			mcp.WithBoolean("dry_run",
+				mcp.Description("Show deployment plan without deploying (default: false)"),
+			),
+			mcp.WithString("type_filter",
+				mcp.Description("Deploy only objects of this type (e.g., 'PROG', 'CLAS', 'INTF')"),
+			),
+			mcp.WithString("name_filter",
+				mcp.Description("Deploy only objects matching this name pattern (e.g., 'ZCL_ABAPGIT_*')"),
+			),
+		), s.handleDeployZip)
 	}
 
 	// Register tool aliases for common operations
