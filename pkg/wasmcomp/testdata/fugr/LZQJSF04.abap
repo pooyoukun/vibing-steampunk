@@ -1,9 +1,9 @@
 FORM f320 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
-  DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
-  DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i.
-  DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i.
-  DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA lv_br TYPE i. s0 = -1. l3 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i,
+       s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i,
+       s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i,
+       s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, lv_br TYPE i.
+  s0 = -1. l3 = s0. DO 1 TIMES. " block
     s0 = p1. s0 = mem_ld_i32( s0 + 76 ). IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -61,13 +61,12 @@ FORM f320 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f321 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE int8. DATA l12 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i.
-  DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i.
-  DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i.
-  DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i.
-  DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA s72 TYPE i. DATA s73 TYPE i. DATA s74 TYPE i. DATA s75 TYPE i.
-  DATA s76 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE int8, l12 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i,
+       s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i,
+       s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i,
+       s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i,
+       s68 TYPE i, s69 TYPE i, s70 TYPE i, s71 TYPE i, s72 TYPE i, s73 TYPE i, s74 TYPE i, s75 TYPE i, s76 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
     s0 = p1. s1 = -8589934592. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 8589934592. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = p0. s1 = 1142123. s2 = 0. PERFORM f970 USING s0 s1 s2 CHANGING s0. s0 = 25769803776. p1 = s0. lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. DO 1 TIMES. " block
@@ -129,14 +128,12 @@ FORM f321 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f322 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE int8. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i.
-  DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i.
-  DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i.
-  DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i.
-  DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA s72 TYPE i. DATA s73 TYPE i. DATA s74 TYPE i. DATA s75 TYPE i.
-  DATA s76 TYPE i. DATA s77 TYPE i. DATA s78 TYPE i. DATA s79 TYPE i. DATA s80 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = p3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ).
-  p1 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE int8, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i,
+       s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i,
+       s69 TYPE i, s70 TYPE i, s71 TYPE i, s72 TYPE i, s73 TYPE i, s74 TYPE i, s75 TYPE i, s76 TYPE i, s77 TYPE i, s78 TYPE i, s79 TYPE i, s80 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = p3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). p1 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -197,12 +194,12 @@ FORM f322 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f323 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA l13 TYPE i. DATA l14 TYPE i. DATA l15 TYPE i. DATA l16 TYPE i.
-  DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i.
-  DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 256. s0 = s0 - s1. l7 = s0. gv_g0 = s0. s0 = l7. s1 = 0. mem_st_i32_8( iv_addr = s0 iv_val = s1 ). s0 = p0. s1 = 32. s0 = s0 + s1. l8 = s0. s0 = p0. s1 = 44. s0 = s0 + s1. s0 = mem_ld_i32( s0 ).
-  l10 = s0. s0 = p0. s1 = 36. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l11 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 64 ). l12 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 20 ). l13 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 16 ). l14 = s0. s0 = p0.
-  s0 = mem_ld_i32( s0 + 12 ). l15 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 4 ). l16 = s0. s0 = 1. l4 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, l13 TYPE i, l14 TYPE i, l15 TYPE i, l16 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i,
+       s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i,
+       s25 TYPE i, s26 TYPE i, s27 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 256. s0 = s0 - s1. l7 = s0. gv_g0 = s0. s0 = l7. s1 = 0. mem_st_i32_8( iv_addr = s0 iv_val = s1 ). s0 = p0. s1 = 32. s0 = s0 + s1. l8 = s0. s0 = p0. s1 = 44. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l10 = s0. s0 = p0.
+  s1 = 36. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l11 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 64 ). l12 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 20 ). l13 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 16 ). l14 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 12 ).
+  l15 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 4 ). l16 = s0. s0 = 1. l4 = s0. DO 1 TIMES. " block
     DO. " loop
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -296,8 +293,9 @@ FORM f323 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f324 USING p0 TYPE i p1 TYPE i p2 TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE int8, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     s0 = p2. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p2. s1 = 7. s0 = s0 - s1. l3 = s0. s1 = 0. s2 = p2. s3 = l3.
     IF zcl_wasm_rt=>ge_u32( iv_a = s2 iv_b = s3 ) = abap_true. s2 = 1. ELSE. s2 = 0. ENDIF. IF s2 <> 0. s0 = s0. ELSE. s0 = s1. ENDIF. l7 = s0. s0 = p1. s1 = 3. s0 = s0 + s1. s1 = -4. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = p1.
     s0 = s0 - s1. l8 = s0. s0 = 0. l3 = s0. DO. " loop
@@ -382,8 +380,8 @@ FORM f324 USING p0 TYPE i p1 TYPE i p2 TYPE i.
 ENDFORM.
 
 FORM f325 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i.
-  DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA lv_br TYPE i. s0 = -1. l7 = s0. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, lv_br TYPE i.
+  s0 = -1. l7 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s1 = 18. s0 = s0 + s1. s0 = mem_ld_i32_8u( s0 ). s1 = 4. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p0. s1 = 92. s0 = s0 + s1.
       s0 = mem_ld_i32( s0 ). l3 = s0. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = l3. s1 = p0. s2 = 84. s1 = s1 + s2. s1 = mem_ld_i32( s1 ). s0 = s0 + s1. l5 = s0. s0 = p0. s1 = 72. s0 = s0 + s1.
@@ -432,13 +430,12 @@ FORM f325 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f326 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i.
-  DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA s72 TYPE i. DATA s73 TYPE i. DATA s74 TYPE i. DATA s75 TYPE i. DATA s76 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i,
+       s70 TYPE i, s71 TYPE i, s72 TYPE i, s73 TYPE i, s74 TYPE i, s75 TYPE i, s76 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). l7 = s0. s1 = -4294967296. IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -493,12 +490,11 @@ FORM f326 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f327 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i.
-  DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i.
-  DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i.
-  DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i.
-  DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i.
-  DATA s65 TYPE i. DATA s66 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p0. s1 = p0. s2 = p1. PERFORM f151 USING s1 s2 CHANGING s1. p1 = s1. s2 = 48. s3 = p1. s4 = 0. PERFORM f192 USING s0 s1 s2 s3 s4 CHANGING s0. l7 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ).
@@ -558,13 +554,12 @@ FORM f327 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f328 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i.
-  DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA s72 TYPE i. DATA s73 TYPE i. DATA s74 TYPE i. DATA s75 TYPE i. DATA s76 TYPE i. DATA s77 TYPE i.
-  DATA s78 TYPE i. DATA s79 TYPE i. DATA s80 TYPE i. DATA s81 TYPE i. DATA s82 TYPE i. DATA s83 TYPE i. DATA s84 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 96. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i,
+       s70 TYPE i, s71 TYPE i, s72 TYPE i, s73 TYPE i, s74 TYPE i, s75 TYPE i, s76 TYPE i, s77 TYPE i, s78 TYPE i, s79 TYPE i, s80 TYPE i, s81 TYPE i, s82 TYPE i, s83 TYPE i, s84 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 96. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -622,11 +617,10 @@ FORM f328 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f329 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA l13 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i.
-  DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i.
-  DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i.
-  DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA lv_br TYPE i. s0 = p1. s1 = 16. s0 = s0 + s1. l9 = s0.
-  DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, l13 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i,
+       s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i,
+       s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, lv_br TYPE i.
+  s0 = p1. s1 = 16. s0 = s0 + s1. l9 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p1. s0 = mem_ld_i32( s0 + 16 ). l4 = s0. s0 = mem_ld_i32_8u( s0 + 16 ). IF s0 <> 0.
@@ -679,10 +673,10 @@ FORM f329 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f330 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i.
-  DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i.
-  DATA s34 TYPE i. DATA s35 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l7 = s0. gv_g0 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 64 ). DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l7 = s0. gv_g0 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 64 ). DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s0 = mem_ld_i32( s0 + 4 ). l5 = s0. DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -731,12 +725,12 @@ FORM f330 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f331 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i.
-  DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i,
+       s70 TYPE i, s71 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s1 = p0. s2 = p1. PERFORM f151 USING s1 s2 CHANGING s1. l9 = s1. s2 = 48. s3 = l9. s4 = 0. PERFORM f192 USING s0 s1 s2 s3 s4 CHANGING s0. l8 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ).
       s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -798,10 +792,10 @@ FORM f331 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f332 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 48. s0 = s0 - s1. l7 = s0. gv_g0 = s0. s0 = 4294967297. p1 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE int8, l11 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 48. s0 = s0 - s1. l7 = s0. gv_g0 = s0. s0 = 4294967297. p1 = s0. DO 1 TIMES. " block
     s0 = p3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). l11 = s0. s1 = -4294967296. IF zcl_wasm_rt=>lt_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0
     s0 = 25769803776. p1 = s0. s0 = p0. s1 = l7. s2 = 44. s1 = s1 + s2. s2 = l7. s3 = 40. s2 = s2 + s3. s3 = l11. s3 = zcl_wasm_rt=>wrap_i64( s3 ). l8 = s3. s4 = 3. PERFORM f48 USING s0 s1 s2 s3 s4 CHANGING s0.
     IF s0 <> 0. EXIT. ENDIF. " br_if 0 DO 1 TIMES. " block
@@ -858,12 +852,11 @@ FORM f332 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f333 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE int8.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE int8. DATA l12 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 80.
-  s0 = s0 - s1. p3 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE int8, l12 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i,
+       s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 80. s0 = s0 - s1. p3 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>lt_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). p2 = s0. s0 = mem_ld_i32_16u( s0 + 6 ).
@@ -913,12 +906,11 @@ FORM f333 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i C
 ENDFORM.
 
 FORM f334 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i.
-  DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i,
+       s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s1 = p0. s2 = p1. PERFORM f151 USING s1 s2 CHANGING s1. l8 = s1. s2 = 48. s3 = l8. s4 = 0. PERFORM f192 USING s0 s1 s2 s3 s4 CHANGING s0. p1 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ).
       s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -978,13 +970,12 @@ FORM f334 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f335 USING p0 TYPE i p1 TYPE i p2 TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA l12 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i.
-  DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i.
-  DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i.
-  DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i.
-  DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i.
-  DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA lv_br TYPE i. s0 = p0. s1 = p0. s1 = mem_ld_i32( s1 + 56 ).
-  s2 = p2. s1 = s1 + s2. mem_st_i32( iv_addr = s0 + 56 iv_val = s1 ). DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, l10 TYPE int8, l11 TYPE int8, l12 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i,
+       s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i,
+       s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i,
+       s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i,
+       s66 TYPE i, s67 TYPE i, s68 TYPE i, lv_br TYPE i.
+  s0 = p0. s1 = p0. s1 = mem_ld_i32( s1 + 56 ). s2 = p2. s1 = s1 + s2. mem_st_i32( iv_addr = s0 + 56 iv_val = s1 ). DO 1 TIMES. " block
     s0 = p0. s0 = mem_ld_i32( s0 + 60 ). l5 = s0. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. s0 = 4. l3 = s0. DO 1 TIMES. " block
@@ -1040,12 +1031,11 @@ FORM f335 USING p0 TYPE i p1 TYPE i p2 TYPE i.
 ENDFORM.
 
 FORM f336 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE int8 CHANGING rv TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l6 = s0. gv_g0 = s0.
-  DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p2. s1 = 142. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = p0. s0 = mem_ld_i32( s0 + 16 ). l4 = s0. lv_br = 1. EXIT. " br 1
@@ -1101,13 +1091,12 @@ FORM f336 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE int8 CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f337 USING p0 TYPE i p1 TYPE i p2 TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i.
-  DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i.
-  DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i.
-  DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i.
-  DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i.
-  DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA s72 TYPE i. DATA s73 TYPE i. DATA s74 TYPE i. DATA s75 TYPE i. DATA s76 TYPE i. DATA s77 TYPE i. DATA s78 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. s0 = p1. s0 = mem_ld_i32( s0 ). s1 = 0. IF s0 < s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i,
+       s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i,
+       s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i,
+       s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i, s70 TYPE i, s71 TYPE i, s72 TYPE i,
+       s73 TYPE i, s74 TYPE i, s75 TYPE i, s76 TYPE i, s77 TYPE i, s78 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. s0 = p1. s0 = mem_ld_i32( s0 ). s1 = 0. IF s0 < s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     DO 1 TIMES. " block
       s0 = p0. s1 = 80. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l3 = s0. s0 = mem_ld_i32( s0 + 296 ). s1 = l3. s1 = mem_ld_i32( s1 + 300 ). l4 = s1. IF s0 <= s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = l4. s1 = 1. s0 = s0 + s1. l6 = s0. s0 = -1. l4 = s0. s0 = l3. s0 = mem_ld_i32( s0 ). s1 = l3. s2 = 292. s1 = s1 + s2. s2 = 20. s3 = l3. s4 = 296. s3 = s3 + s4. s4 = l6. PERFORM f845 USING s0 s1 s2 s3 s4 CHANGING s0.
@@ -1147,13 +1136,12 @@ FORM f337 USING p0 TYPE i p1 TYPE i p2 TYPE i.
 ENDFORM.
 
 FORM f338 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i.
-  DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA s72 TYPE i. DATA s73 TYPE i. DATA s74 TYPE i. DATA lv_br TYPE i. s0 = p0.
-  s1 = p1. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i,
+       s70 TYPE i, s71 TYPE i, s72 TYPE i, s73 TYPE i, s74 TYPE i, lv_br TYPE i.
+  s0 = p0. s1 = p1. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     s0 = p0. s0 = mem_ld_i32( s0 ). l4 = s0. s0 = p1. s0 = mem_ld_i32( s0 + 12 ). IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -1208,12 +1196,12 @@ FORM f338 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f339 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i.
-  DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i,
+       s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i,
+       lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s1 = p0. s2 = p1. PERFORM f151 USING s1 s2 CHANGING s1. l9 = s1. s2 = 48. s3 = l9. s4 = 0. PERFORM f192 USING s0 s1 s2 s3 s4 CHANGING s0. p1 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ).
       s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -1266,12 +1254,12 @@ FORM f339 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f340 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE int8 p4 TYPE int8 p5 TYPE i CHANGING rv TYPE i.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i.
-  DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = -64. s0 = s0 + s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE int8, l11 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i,
+       s70 TYPE i, s71 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = -64. s0 = s0 + s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
     s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>lt_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l8 = s0. s0 = mem_ld_i32_16u( s0 + 6 ).
     s1 = 48. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = l8. s0 = mem_ld_i32( s0 + 32 ). l7 = s0.
   ENDDO. DO 1 TIMES. " block
@@ -1323,12 +1311,11 @@ FORM f340 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE int8 p4 TYPE int8 p5 TY
 ENDFORM.
 
 FORM f341 USING p0 TYPE i p1 TYPE int8 p2 TYPE i CHANGING rv TYPE int8.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i.
-  DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i.
-  DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i.
-  DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i.
-  DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 144. s0 = s0 - s1. l4 = s0. gv_g0 = s0.
-  s0 = 1149139. l3 = s0. s0 = 25769803776. l6 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i,
+       s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i,
+       s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i,
+       s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 144. s0 = s0 - s1. l4 = s0. gv_g0 = s0. s0 = 1149139. l3 = s0. s0 = 25769803776. l6 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -1398,12 +1385,11 @@ FORM f341 USING p0 TYPE i p1 TYPE int8 p2 TYPE i CHANGING rv TYPE int8.
 ENDFORM.
 
 FORM f342 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i.
-  DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i.
-  DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i.
-  DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i.
-  DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. p3 = s0. gv_g0 = s0.
-  DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i,
+       s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i,
+       s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i,
+       s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. p3 = s0. gv_g0 = s0. DO 1 TIMES. " block
     s0 = p1. s1 = -4294967297. IF zcl_wasm_rt=>le_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = p0. s1 = 1137529. s2 = 0. PERFORM f970 USING s0 s1 s2 CHANGING s0. s0 = 25769803776. p1 = s0. lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. s0 = p0. s1 = p3. s2 = p1. PERFORM f366 USING s0 s1 s2 CHANGING s0. l6 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -1455,12 +1441,11 @@ FORM f342 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f343 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE int8, l9 TYPE int8, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -1520,13 +1505,12 @@ FORM f343 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f344 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE int8. DATA l6 TYPE int8. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i.
-  DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i.
-  DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i.
-  DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i.
-  DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i.
-  DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = p3.
-  s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). l6 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE int8, l6 TYPE int8, l7 TYPE int8, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i, s70 TYPE i,
+       lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = p3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). l6 = s0. DO 1 TIMES. " block
     s0 = p0. s1 = p1. s2 = 12884901888. PERFORM f592 USING s0 s1 s2 CHANGING s0. l5 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = l5. l6 = s0. lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. DO 1 TIMES. " block
@@ -1579,12 +1563,11 @@ FORM f344 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f345 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
-  DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
-  DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i.
-  DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i.
-  DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA lv_br TYPE i. s0 = gv_g0.
-  s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i,
+       s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i,
+       s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i,
+       s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p2. s0 = mem_ld_i32( s0 + 12 ). IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -1636,11 +1619,11 @@ FORM f345 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f346 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i.
-  DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i.
-  DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i.
-  DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i.
-  DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i,
+       s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i,
+       s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i,
+       s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p1. s1 = -8589934592. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 8589934592. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = p0. s1 = 1142123. s2 = 0. PERFORM f970 USING s0 s1 s2 CHANGING s0. s0 = 25769803776. p1 = s0. lv_br = 1. EXIT. " br 1
@@ -1691,11 +1674,11 @@ FORM f346 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f347 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE i.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA l13 TYPE i. DATA l14 TYPE i. DATA l15 TYPE i. DATA l16 TYPE int8. DATA l17 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i.
-  DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i.
-  DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i.
-  DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i.
-  DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l10 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, l13 TYPE i, l14 TYPE i, l15 TYPE i, l16 TYPE int8, l17 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i,
+       s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i,
+       s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i,
+       s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l10 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p3. s1 = p5. s2 = p3. s3 = p5. IF s2 < s3. s2 = 1. ELSE. s2 = 0. ENDIF. IF s2 <> 0. s0 = s0. ELSE. s0 = s1. ENDIF. s1 = 100. IF s0 >= s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = l10. s1 = p1. mem_st_i32( iv_addr = s0 + 24 iv_val = s1 ). s0 = -1. l6 = s0. s0 = p0. s1 = l10. s2 = 8. s1 = s1 + s2. s2 = p2. s3 = p3. s4 = p4. s5 = p5. s6 = 4. PERFORM f25 USING s0 s1 s2 s3 s4 s5 s6 CHANGING s0.
@@ -1747,12 +1730,11 @@ FORM f347 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHAN
 ENDFORM.
 
 FORM f348 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
-  DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
-  DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i.
-  DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i.
-  DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i,
+       s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i,
+       s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i,
+       s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -1816,12 +1798,11 @@ FORM f348 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f349 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
-  DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
-  DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i.
-  DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i.
-  DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i,
+       s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i,
+       s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i,
+       s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -1885,12 +1866,11 @@ FORM f349 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f350 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i.
-  DATA s63 TYPE i. DATA s64 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p1. s1 = -94. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = -1. l3 = s0. s0 = p0. s1 = 8. s2 = p2. PERFORM f300 USING s0 s1 s2 CHANGING s0. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1 lv_br = 2. EXIT. " br 2
@@ -1930,12 +1910,12 @@ FORM f350 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f351 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA l13 TYPE i. DATA l14 TYPE i. DATA l15 TYPE i. DATA l16 TYPE i. DATA l17 TYPE i. DATA l18 TYPE i. DATA l19 TYPE i.
-  DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i.
-  DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i.
-  DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA lv_br TYPE i. s0 = p1. s1 = 1. s0 = s0 + s1. l15 = s0. s0 = p1. s1 = 2. s0 = s0 + s1. l16 = s0. s0 = p1. s1 = -1.
-  s0 = zcl_wasm_rt=>xor32( iv_a = s0 iv_b = s1 ). l12 = s0. s1 = 31. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l17 = s0. s0 = p2. s1 = 3. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
-  l18 = s0. s0 = 32. l11 = s0. s0 = p2. s1 = 7. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = 6. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. l19 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, l13 TYPE i, l14 TYPE i, l15 TYPE i, l16 TYPE i, l17 TYPE i, l18 TYPE i, l19 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i,
+       s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i,
+       s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, lv_br TYPE i.
+  s0 = p1. s1 = 1. s0 = s0 + s1. l15 = s0. s0 = p1. s1 = 2. s0 = s0 + s1. l16 = s0. s0 = p1. s1 = -1. s0 = zcl_wasm_rt=>xor32( iv_a = s0 iv_b = s1 ). l12 = s0. s1 = 31. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l17 = s0. s0 = p2.
+  s1 = 3. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. l18 = s0. s0 = 32. l11 = s0. s0 = p2. s1 = 7. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = 6. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF.
+  l19 = s0. DO 1 TIMES. " block
     DO. " loop
       s0 = p3. s0 = mem_ld_i32( s0 + 20 ). l8 = s0. s1 = p1. s2 = l11. s1 = s1 + s2. l6 = s1. IF zcl_wasm_rt=>lt_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = p3. s0 = mem_ld_i32( s0 + 12 ). IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -1987,11 +1967,10 @@ FORM f351 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i.
 ENDFORM.
 
 FORM f352 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA lv_br TYPE i. s0 = p0. s0 = mem_ld_i32( s0 ). l7 = s0.
-  DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, lv_br TYPE i.
+  s0 = p0. s0 = mem_ld_i32( s0 ). l7 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -2044,10 +2023,10 @@ FORM f352 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f353 USING p0 TYPE i CHANGING rv TYPE i.
-  DATA l1 TYPE i. DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l1 TYPE i, l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s0 = mem_ld_i32( s0 + 8 ). l2 = s0. s1 = p0. s1 = mem_ld_i32( s1 + 12 ). l5 = s1. IF zcl_wasm_rt=>ge_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = l2.
       s0 = mem_ld_i32_8s( s0 ). l1 = s0. s1 = 127. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l3 = s0. DO 1 TIMES. " block
@@ -2091,12 +2070,11 @@ FORM f353 USING p0 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f354 USING p0 TYPE i p1 TYPE int8 p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i.
-  DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 48. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 48. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
     s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>lt_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l6 = s0. s0 = mem_ld_i32_16u( s0 + 6 ).
     s1 = 48. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = l6. s0 = mem_ld_i32( s0 + 32 ). l4 = s0.
   ENDDO. DO 1 TIMES. " block
@@ -2146,8 +2124,9 @@ FORM f354 USING p0 TYPE i p1 TYPE int8 p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f355 USING p0 TYPE i p1 TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -2210,12 +2189,12 @@ FORM f355 USING p0 TYPE i p1 TYPE i.
 ENDFORM.
 
 FORM f356 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i.
-  DATA s63 TYPE i. DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE int8, l9 TYPE int8, l10 TYPE int8, l11 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i,
+       s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i,
+       lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l6 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s1 = p0. s2 = p1. PERFORM f151 USING s1 s2 CHANGING s1. l8 = s1. s2 = 48. s3 = l8. s4 = 0. PERFORM f192 USING s0 s1 s2 s3 s4 CHANGING s0. p1 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ).
       s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -2269,11 +2248,11 @@ FORM f356 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f357 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA l12 TYPE int8. DATA l13 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i.
-  DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i.
-  DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i.
-  DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i.
-  DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 48. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE int8, l10 TYPE int8, l11 TYPE int8, l12 TYPE int8, l13 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i,
+       s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i,
+       s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i,
+       s48 TYPE i, s49 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 48. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -2326,11 +2305,10 @@ FORM f357 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f358 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE i.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     s0 = p1. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = p0. s0 = mem_ld_i32( s0 + 28 ). l6 = s0. s0 = 45. l9 = s0. s0 = p5. s1 = 1. s0 = s0 + s1. lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. s1 = 43. s2 = 1114112. s3 = p0. s3 = mem_ld_i32( s3 + 28 ). l6 = s3. s4 = 1. s3 = zcl_wasm_rt=>and32( iv_a = s3 iv_b = s4 ). p1 = s3. IF s3 <> 0. s1 = s1. ELSE. s1 = s2. ENDIF. l9 = s1. s1 = p1. s2 = p5. s1 = s1 + s2.
@@ -2388,10 +2366,10 @@ FORM f358 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHAN
 ENDFORM.
 
 FORM f359 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
-  DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
-  DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i.
-  DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i,
+       s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i,
+       s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     s0 = p1. s0 = mem_ld_i32_8u( s0 ). s1 = 91. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       DO 1 TIMES. " block
         s0 = p0. s0 = mem_ld_i32( s0 + 16 ). s0 = mem_ld_i32( s0 + 56 ). l3 = s0. s0 = mem_ld_i32( s0 + 856 ). l2 = s0. s0 = mem_ld_i32( s0 + 4 ). s1 = 2147483647. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = p1. s2 = 1.
@@ -2441,12 +2419,12 @@ FORM f359 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f360 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i.
-  DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i.
-  DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i.
-  DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 48. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = l3. s1 = 3. mem_st_i32_8( iv_addr = s0 + 44 iv_val = s1 ). s0 = l3. s1 = 32.
-  mem_st_i32( iv_addr = s0 + 28 iv_val = s1 ). s0 = l3. s1 = 0. mem_st_i32( iv_addr = s0 + 40 iv_val = s1 ). s0 = l3. s1 = p1. mem_st_i32( iv_addr = s0 + 36 iv_val = s1 ). s0 = l3. s1 = p0. mem_st_i32( iv_addr = s0 + 32 iv_val = s1 ).
-  s0 = l3. s1 = 0. mem_st_i32( iv_addr = s0 + 20 iv_val = s1 ). s0 = l3. s1 = 0. mem_st_i32( iv_addr = s0 + 12 iv_val = s1 ). DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i,
+       s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i,
+       s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 48. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = l3. s1 = 3. mem_st_i32_8( iv_addr = s0 + 44 iv_val = s1 ). s0 = l3. s1 = 32. mem_st_i32( iv_addr = s0 + 28 iv_val = s1 ). s0 = l3. s1 = 0.
+  mem_st_i32( iv_addr = s0 + 40 iv_val = s1 ). s0 = l3. s1 = p1. mem_st_i32( iv_addr = s0 + 36 iv_val = s1 ). s0 = l3. s1 = p0. mem_st_i32( iv_addr = s0 + 32 iv_val = s1 ). s0 = l3. s1 = 0. mem_st_i32( iv_addr = s0 + 20 iv_val = s1 ).
+  s0 = l3. s1 = 0. mem_st_i32( iv_addr = s0 + 12 iv_val = s1 ). DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -2499,10 +2477,11 @@ FORM f360 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f361 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i.
-  DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA lv_br TYPE i. s0 = p1.
-  s1 = 6. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l8 = s0. s0 = p1. s1 = 2. s0 = zcl_wasm_rt=>shr_u32( iv_val = s0 iv_shift = s1 ). s1 = 1. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l9 = s0. s0 = 1172864. l5 = s0. DO. " loop
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, lv_br TYPE i.
+  s0 = p1. s1 = 6. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l8 = s0. s0 = p1. s1 = 2. s0 = zcl_wasm_rt=>shr_u32( iv_val = s0 iv_shift = s1 ). s1 = 1. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l9 = s0. s0 = 1172864. l5 = s0.
+  DO. " loop
     s0 = l4. l6 = s0. s0 = l5. s0 = mem_ld_i32_8u( s0 ). l4 = s0. s1 = 31. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l3 = s0. DO 1 TIMES. " block
       s0 = l5. s1 = 1. s0 = s0 + s1. s1 = l4. s2 = 5. s1 = zcl_wasm_rt=>shr_u32( iv_val = s1 iv_shift = s2 ). l2 = s1. s2 = 7. IF s1 <> s2. s1 = 1. ELSE. s1 = 0. ENDIF. IF s1 <> 0. EXIT. ENDIF. " br_if 0 s0 = l5.
       s0 = mem_ld_i32_8s( s0 + 1 ). l2 = s0. s1 = 255. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). l4 = s0. s0 = l2. s1 = 0. IF s0 >= s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -2549,11 +2528,11 @@ FORM f361 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f362 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE int8.
-  DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i.
-  DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i.
-  DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i.
-  DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i.
-  DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 80. s0 = s0 - s1. p3 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE int8, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i,
+       s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i,
+       s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i,
+       s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 80. s0 = s0 - s1. p3 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -2607,13 +2586,12 @@ FORM f362 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i C
 ENDFORM.
 
 FORM f363 USING p0 TYPE i p1 TYPE i p2 TYPE int8 p3 TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i.
-  DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i.
-  DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i.
-  DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 48. s0 = s0 - s1. l4 = s0. gv_g0 = s0. s0 = l4. s1 = 0.
-  mem_st_i32( iv_addr = s0 + 4 iv_val = s1 ). s0 = p1. s1 = l4. s2 = 4. s1 = s1 + s2. s2 = p2. s3 = 0. PERFORM f184 USING s0 s1 s2 s3 CHANGING s0. l6 = s0. s0 = p3. s0 = mem_ld_i32_8u( s0 ). s1 = 5. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF.
-  IF s0 <> 0.
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i,
+       s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 48. s0 = s0 - s1. l4 = s0. gv_g0 = s0. s0 = l4. s1 = 0. mem_st_i32( iv_addr = s0 + 4 iv_val = s1 ). s0 = p1. s1 = l4. s2 = 4. s1 = s1 + s2. s2 = p2. s3 = 0. PERFORM f184 USING s0 s1 s2 s3 CHANGING s0. l6 = s0. s0 = p3.
+  s0 = mem_ld_i32_8u( s0 ). s1 = 5. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     s0 = p3. s0 = mem_ld_i32_8u( s0 + 9 ). l9 = s0. s0 = p3. s0 = mem_ld_i32_8u( s0 + 8 ). l10 = s0. s0 = p3. s0 = mem_ld_i32( s0 + 4 ). p1 = s0. s0 = l4. s0 = mem_ld_i32( s0 + 4 ). l7 = s0. s0 = l4. s1 = 0.
     mem_st_i32( iv_addr = s0 + 16 iv_val = s1 ). s0 = l4. s1 = 4294967296. zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 8 CHANGING cv_mem = mv_mem ). DO 1 TIMES. " block
       s0 = p1. s1 = l7. IF zcl_wasm_rt=>le_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -2652,11 +2630,11 @@ FORM f363 USING p0 TYPE i p1 TYPE i p2 TYPE int8 p3 TYPE i.
 ENDFORM.
 
 FORM f364 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA lv_br TYPE i. s0 = p3. s1 = p1. s1 = mem_ld_i32( s1 ). l6 = s1. s1 = mem_ld_i32( s1 + 28 ). s2 = 3. s1 = s1 * s2. s2 = 2. s1 = s1 / s2. l4 = s1. s2 = p3. s3 = l4.
-  IF s2 > s3. s2 = 1. ELSE. s2 = 0. ENDIF. IF s2 <> 0. s0 = s0. ELSE. s0 = s1. ENDIF. l9 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, lv_br TYPE i.
+  s0 = p3. s1 = p1. s1 = mem_ld_i32( s1 ). l6 = s1. s1 = mem_ld_i32( s1 + 28 ). s2 = 3. s1 = s1 * s2. s2 = 2. s1 = s1 / s2. l4 = s1. s2 = p3. s3 = l4. IF s2 > s3. s2 = 1. ELSE. s2 = 0. ENDIF. IF s2 <> 0. s0 = s0. ELSE. s0 = s1. ENDIF.
+  l9 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p2. IF s0 <> 0.
         s0 = p0. s0 = mem_ld_i32( s0 + 16 ). p3 = s0. s1 = 16. s0 = s0 + s1. s1 = p2. s1 = mem_ld_i32( s1 + 20 ). s2 = l9. s3 = 3. s2 = zcl_wasm_rt=>shl32( iv_val = s2 iv_shift = s3 ). l4 = s2. s3 = p3. s3 = mem_ld_i32( s3 + 8 ).
@@ -2698,8 +2676,9 @@ FORM f364 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f365 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE i.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i.
-  DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA lv_br TYPE i. DO. " loop
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i,
+       s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, lv_br TYPE i.
+  DO. " loop
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -2757,13 +2736,13 @@ FORM f365 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHAN
 ENDFORM.
 
 FORM f366 USING p0 TYPE i p1 TYPE i p2 TYPE int8 CHANGING rv TYPE int8.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i.
-  DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i.
-  DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i.
-  DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i.
-  DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = l3. s1 = 12884901888.
-  zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 24 CHANGING cv_mem = mv_mem ). s0 = l3. s1 = 12884901888. zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 16 CHANGING cv_mem = mv_mem ). s0 = l3. s1 = p0.
-  s2 = 362. s3 = 2. s4 = 0. s5 = 2. s6 = l3. s7 = 16. s6 = s6 + s7. PERFORM f317 USING s1 s2 s3 s4 s5 s6 CHANGING s1. l9 = s1. zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 8 CHANGING cv_mem = mv_mem ). DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE int8, l10 TYPE int8, l11 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i,
+       s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i,
+       s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i,
+       s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = l3. s1 = 12884901888. zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 24 CHANGING cv_mem = mv_mem ). s0 = l3. s1 = 12884901888.
+  zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 16 CHANGING cv_mem = mv_mem ). s0 = l3. s1 = p0. s2 = 362. s3 = 2. s4 = 0. s5 = 2. s6 = l3. s7 = 16. s6 = s6 + s7. PERFORM f317 USING s1 s2 s3 s4 s5 s6 CHANGING s1. l9 = s1.
+  zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 8 CHANGING cv_mem = mv_mem ). DO 1 TIMES. " block
     s0 = l9. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -2812,12 +2791,12 @@ FORM f366 USING p0 TYPE i p1 TYPE i p2 TYPE int8 CHANGING rv TYPE int8.
 ENDFORM.
 
 FORM f367 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 48. s0 = s0 - s1. l5 = s0.
-  gv_g0 = s0. s0 = p1. s1 = 32. s0 = zcl_wasm_rt=>shr_u64( iv_val = s0 iv_shift = s1 ). s0 = zcl_wasm_rt=>wrap_i64( s0 ). s1 = -11. IF zcl_wasm_rt=>ge_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 48. s0 = s0 - s1. l5 = s0. gv_g0 = s0. s0 = p1. s1 = 32. s0 = zcl_wasm_rt=>shr_u64( iv_val = s0 iv_shift = s1 ). s0 = zcl_wasm_rt=>wrap_i64( s0 ). s1 = -11.
+  IF zcl_wasm_rt=>ge_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l6 = s0. s1 = l6. s1 = mem_ld_i32( s1 ). s2 = 1. s1 = s1 + s2. mem_st_i32( iv_addr = s0 iv_val = s1 ).
   ELSE. ENDIF. DO 1 TIMES. " block
     s0 = p0. s1 = p1. s2 = 1. PERFORM f287 USING s0 s1 s2 CHANGING s0. p1 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). l10 = s0. s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -2860,12 +2839,11 @@ FORM f367 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f368 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA l12 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i.
-  DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i.
-  DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i.
-  DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i.
-  DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE int8, l11 TYPE int8, l12 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i,
+       s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i,
+       s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i,
+       s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     s0 = p1. s1 = -8589934592. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 8589934592. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = p0. s1 = 1142123. s2 = 0. PERFORM f970 USING s0 s1 s2 CHANGING s0. s0 = 25769803776. l10 = s0. lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. s0 = 25769803776. l10 = s0. DO 1 TIMES. " block
@@ -2913,11 +2891,10 @@ FORM f368 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f369 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i.
-  DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i.
-  DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i.
-  DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA lv_br TYPE i. s0 = p1. s1 = -8589934592.
-  s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 8589934592. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i,
+       s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i,
+       s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, lv_br TYPE i.
+  s0 = p1. s1 = -8589934592. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 8589934592. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     s0 = p0. s1 = 1142123. s2 = 0. PERFORM f970 USING s0 s1 s2 CHANGING s0. s0 = 25769803776. rv = s0. RETURN.
   ELSE. ENDIF. DO 1 TIMES. " block
     s0 = 25769803776. s1 = p0. s2 = p1. s3 = 0. PERFORM f341 USING s1 s2 s3 CHANGING s1. p1 = s1. s2 = -4294967296. s1 = zcl_wasm_rt=>and64( iv_a = s1 iv_b = s2 ). s2 = 25769803776. IF s1 = s2. s1 = 1. ELSE. s1 = 0. ENDIF.
@@ -2972,10 +2949,10 @@ FORM f369 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f370 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE int8, l9 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     s0 = p1. s0 = mem_ld_i32( s0 + 8 ). l4 = s0. s1 = 2147483646. IF s0 >= s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = 1. l3 = s0. s0 = p2. s1 = 1. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1 s0 = 9223372036854775807. l8 = s0. s0 = l4. s1 = 2147483646. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF.
       IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1 s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>mem_ld_i64_ext( iv_mem = mv_mem iv_addr = s1 + 4 iv_op = 52 ). s2 = 9223372036854775807. s1 = s1 + s2.
@@ -3032,10 +3009,10 @@ FORM f370 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f371 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l8 = s0. s0 = mem_ld_i32_16u( s0 + 6 ). s1 = 21. s0 = s0 - s1. s1 = 65535. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = 11.
@@ -3084,11 +3061,10 @@ FORM f371 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f372 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE int8. DATA l12 TYPE int8. DATA l13 TYPE f. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i.
-  DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i.
-  DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i.
-  DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 96. s0 = s0 - s1. l5 = s0. gv_g0 = s0. s0 = 25769803776. l12 = s0.
-  DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE int8, l12 TYPE int8, l13 TYPE f, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i,
+       s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i,
+       s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 96. s0 = s0 - s1. l5 = s0. gv_g0 = s0. s0 = 25769803776. l12 = s0. DO 1 TIMES. " block
     s0 = p0. s1 = p1. s2 = l5. s3 = 16. s2 = s2 + s3. l9 = s2. s3 = p4. s4 = 15. s3 = zcl_wasm_rt=>and32( iv_a = s3 iv_b = s4 ). l10 = s3. s4 = p4. s5 = 8. s4 = zcl_wasm_rt=>shr_u32( iv_val = s4 iv_shift = s5 ). s5 = 15.
     s4 = zcl_wasm_rt=>and32( iv_a = s4 iv_b = s5 ). l6 = s4. IF s4 = 0. s4 = 1. ELSE. s4 = 0. ENDIF. PERFORM f231 USING s0 s1 s2 s3 s4 CHANGING s0. l7 = s0. s1 = 0. IF s0 < s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0
     s0 = p2. s1 = p4. s2 = 4. s1 = zcl_wasm_rt=>shr_u32( iv_val = s1 iv_shift = s2 ). s2 = 15. s1 = zcl_wasm_rt=>and32( iv_a = s1 iv_b = s2 ). s2 = l6. s1 = s1 - s2. p4 = s1. s2 = p2. s3 = p4. IF s2 < s3. s2 = 1. ELSE. s2 = 0. ENDIF.
@@ -3138,11 +3114,11 @@ FORM f372 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f373 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE int8. DATA l13 TYPE int8. DATA l14 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i.
-  DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i.
-  DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i.
-  DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i.
-  DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE int8, l13 TYPE int8, l14 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i,
+       s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i,
+       s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i,
+       s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l5 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p1. s0 = mem_ld_i32( s0 ). l10 = s0. s1 = p1. s1 = mem_ld_i32( s1 + 8 ). l4 = s1. s0 = s0 - s1. s1 = p3. IF zcl_wasm_rt=>ge_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0
@@ -3210,11 +3186,11 @@ FORM f373 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i.
 ENDFORM.
 
 FORM f374 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i.
-  DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i.
-  DATA lv_br TYPE i. s0 = p1. s1 = 2. s0 = zcl_wasm_rt=>shl32( iv_val = s0 iv_shift = s1 ). s1 = 1176816. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l2 = s0. s1 = p1. s2 = 1. s1 = zcl_wasm_rt=>shl32( iv_val = s1 iv_shift = s2 ). s2 = 1177024.
-  s1 = s1 + s2. s1 = mem_ld_i32_16u( s1 ). s0 = s0 + s1. l9 = s0. s0 = 0. p1 = s0. DO. " loop
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, lv_br TYPE i.
+  s0 = p1. s1 = 2. s0 = zcl_wasm_rt=>shl32( iv_val = s0 iv_shift = s1 ). s1 = 1176816. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l2 = s0. s1 = p1. s2 = 1. s1 = zcl_wasm_rt=>shl32( iv_val = s1 iv_shift = s2 ). s2 = 1177024. s1 = s1 + s2.
+  s1 = mem_ld_i32_16u( s1 ). s0 = s0 + s1. l9 = s0. s0 = 0. p1 = s0. DO. " loop
     s0 = l2. s1 = 1. s0 = s0 + s1. l3 = s0. DO 1 TIMES. " block
       s0 = l2. s0 = mem_ld_i32_8u( s0 ). l7 = s0. s1 = 63. IF zcl_wasm_rt=>le_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = l4. s1 = l7. s2 = 3. s1 = zcl_wasm_rt=>shr_u32( iv_val = s1 iv_shift = s2 ). s0 = s0 + s1. s1 = 1. s0 = s0 + s1. l8 = s0. s0 = p1. IF s0 <> 0.
@@ -3257,10 +3233,10 @@ FORM f374 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f375 USING p0 TYPE i CHANGING rv TYPE i.
-  DATA l1 TYPE i. DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i.
-  DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i.
-  DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = 1. l1 = s0. DO 1 TIMES. " block
+  DATA:  l1 TYPE i, l2 TYPE i, l3 TYPE i, l4 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i,
+       s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i,
+       s35 TYPE i, s36 TYPE i, s37 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = 1. l1 = s0. DO 1 TIMES. " block
     s0 = p0. PERFORM f307 USING s0 CHANGING s0. l4 = s0. s1 = 255. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = 2. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -3311,10 +3287,9 @@ FORM f375 USING p0 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f376 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA l13 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i.
-  DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i.
-  DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA lv_br TYPE i. s0 = p0. s0 = mem_ld_i32( s0 ). l5 = s0.
-  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l8 = s0. s1 = p2. s2 = 4. s1 = s1 + s2. l3 = s1. mem_st_i32( iv_addr = s0 + 12 iv_val = s1 ). s0 = -1. l9 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, l13 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i,
+       s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, lv_br TYPE i.
+  s0 = p0. s0 = mem_ld_i32( s0 ). l5 = s0. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l8 = s0. s1 = p2. s2 = 4. s1 = s1 + s2. l3 = s1. mem_st_i32( iv_addr = s0 + 12 iv_val = s1 ). s0 = -1. l9 = s0. DO 1 TIMES. " block
     s0 = p2. s0 = mem_ld_i32( s0 ). l6 = s0. s1 = -1. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = p0. s0 = mem_ld_i32( s0 + 4 ). l10 = s0. DO. " loop
         s0 = p2. l7 = s0. s0 = l3. p2 = s0. s0 = l10. s1 = p1. l3 = s1. IF s0 <= s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. lv_br = 2. EXIT. ENDIF. " br_if 2 DO. " loop
@@ -3369,10 +3344,10 @@ FORM f376 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f377 USING p0 TYPE i p1 TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE int8. DATA l11 TYPE int8. DATA l12 TYPE int8. DATA l13 TYPE int8. DATA s0 TYPE i.
-  DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i.
-  DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i.
-  DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE int8, l11 TYPE int8, l12 TYPE int8, l13 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i,
+       s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i,
+       s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     s0 = p0. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). l10 = s0. s1 = 67908586878892801. s0 = s0 - s1. s1 = -135817173789408001. IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0.
       s0 = p1. s1 = 32. s0 = s0 + s1. s1 = 0. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = 0. s1 = 0. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p1. s1 = 40. s0 = s0 + s1. s1 = 1214624. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p1.
@@ -3408,12 +3383,12 @@ FORM f377 USING p0 TYPE i p1 TYPE i.
 ENDFORM.
 
 FORM f378 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA l10 TYPE f. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = p0. s1 = p1. PERFORM f151 USING s0 s1 CHANGING s0. p1 = s0. s1 = 32. s0 = zcl_wasm_rt=>shr_u64( iv_val = s0 iv_shift = s1 ).
-  s0 = zcl_wasm_rt=>wrap_i64( s0 ). l5 = s0. s1 = -11. IF zcl_wasm_rt=>ge_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, l10 TYPE f, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i,
+       s50 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = p0. s1 = p1. PERFORM f151 USING s0 s1 CHANGING s0. p1 = s0. s1 = 32. s0 = zcl_wasm_rt=>shr_u64( iv_val = s0 iv_shift = s1 ). s0 = zcl_wasm_rt=>wrap_i64( s0 ). l5 = s0. s1 = -11.
+  IF zcl_wasm_rt=>ge_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). p3 = s0. s1 = p3. s1 = mem_ld_i32( s1 ). s2 = 1. s1 = s1 + s2. mem_st_i32( iv_addr = s0 iv_val = s1 ).
   ELSE. ENDIF. s0 = 25769803776. l9 = s0. DO 1 TIMES. " block
     s0 = p0. s1 = p1. s2 = 1. PERFORM f237 USING s0 s1 s2 CHANGING s0. l7 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0
@@ -3454,13 +3429,12 @@ FORM f378 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f379 USING p0 TYPE f CHANGING rv TYPE f.
-  DATA l1 TYPE i. DATA l2 TYPE int8. DATA l3 TYPE f. DATA l4 TYPE f. DATA l5 TYPE f. DATA l6 TYPE f. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA s62 TYPE i. DATA s63 TYPE i.
-  DATA s64 TYPE i. DATA s65 TYPE i. DATA s66 TYPE i. DATA s67 TYPE i. DATA s68 TYPE i. DATA s69 TYPE i. DATA s70 TYPE i. DATA s71 TYPE i. DATA s72 TYPE i. DATA s73 TYPE i. DATA s74 TYPE i. DATA s75 TYPE i. DATA s76 TYPE i. DATA s77 TYPE i.
-  DATA s78 TYPE i. DATA s79 TYPE i. DATA s80 TYPE i. DATA s81 TYPE i. DATA s82 TYPE i. DATA s83 TYPE i. DATA s84 TYPE i. DATA s85 TYPE i. DATA s86 TYPE i. DATA s87 TYPE i. DATA s88 TYPE i. DATA s89 TYPE i. DATA lv_br TYPE i.
+  DATA:  l1 TYPE i, l2 TYPE int8, l3 TYPE f, l4 TYPE f, l5 TYPE f, l6 TYPE f, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, s62 TYPE i, s63 TYPE i, s64 TYPE i, s65 TYPE i, s66 TYPE i, s67 TYPE i, s68 TYPE i, s69 TYPE i, s70 TYPE i,
+       s71 TYPE i, s72 TYPE i, s73 TYPE i, s74 TYPE i, s75 TYPE i, s76 TYPE i, s77 TYPE i, s78 TYPE i, s79 TYPE i, s80 TYPE i, s81 TYPE i, s82 TYPE i, s83 TYPE i, s84 TYPE i, s85 TYPE i, s86 TYPE i, s87 TYPE i, s88 TYPE i, s89 TYPE i,
+       lv_br TYPE i.
   DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
@@ -3514,10 +3488,10 @@ FORM f379 USING p0 TYPE f CHANGING rv TYPE f.
 ENDFORM.
 
 FORM f380 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE i.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i.
-  DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i.
-  DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16.
-  s0 = s0 - s1. l9 = s0. gv_g0 = s0. s0 = p5. s1 = 4. s0 = s0 + s1. l10 = s0. s0 = p5. s0 = mem_ld_i32( s0 + 8 ). l7 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i,
+       s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i,
+       lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l9 = s0. gv_g0 = s0. s0 = p5. s1 = 4. s0 = s0 + s1. l10 = s0. s0 = p5. s0 = mem_ld_i32( s0 + 8 ). l7 = s0. DO 1 TIMES. " block
     DO. " loop
       s0 = p1. s1 = 0. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p2. s1 = 0. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = l7. s1 = 0. IF s0 > s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = p5. s0 = mem_ld_i32( s0 ). l6 = s0. s0 = l7. l8 = s0. DO. " loop
@@ -3570,11 +3544,11 @@ FORM f380 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHAN
 ENDFORM.
 
 FORM f381 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE int8. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i.
-  DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i.
-  DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i.
-  DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i.
-  DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE int8, l7 TYPE int8, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s1 = p0. s2 = p1. PERFORM f151 USING s1 s2 CHANGING s1. p1 = s1. s2 = 48. s3 = p1. s4 = 0. PERFORM f192 USING s0 s1 s2 s3 s4 CHANGING s0. l6 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ).
       s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -3623,11 +3597,10 @@ FORM f381 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f382 USING p0 TYPE i CHANGING rv TYPE i.
-  DATA l1 TYPE i. DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i.
-  DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i.
-  DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i.
-  DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l7 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l1 TYPE i, l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i,
+       s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i,
+       s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l7 = s0. gv_g0 = s0. DO 1 TIMES. " block
     s0 = p0. s1 = 80. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l3 = s0. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. s0 = l3. DO 1 TIMES. " block
@@ -3668,11 +3641,10 @@ FORM f382 USING p0 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f383 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE f. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i.
-  DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i.
-  DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i.
-  DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i.
-  DATA s52 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. s0 = l4. s1 = p2. mem_st_i32( iv_addr = s0 + 12 iv_val = s1 ). s0 = l4. s1 = p0. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = l4. s1 = 0.
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE f, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i,
+       s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i,
+       s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. l4 = s0. gv_g0 = s0. s0 = l4. s1 = p2. mem_st_i32( iv_addr = s0 + 12 iv_val = s1 ). s0 = l4. s1 = p0. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = l4. s1 = 0.
   zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 16 CHANGING cv_mem = mv_mem ). s0 = l4. s1 = 0. mem_st_i32( iv_addr = s0 + 8 iv_val = s1 ). DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p0. s0 = mem_ld_i32( s0 + 16 ). l5 = s0. s1 = 16. s0 = s0 + s1. s1 = p2. s2 = 17. s1 = s1 + s2. s2 = l5. s2 = mem_ld_i32( s2 ). DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
@@ -3725,11 +3697,10 @@ FORM f383 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f384 USING p0 TYPE i.
-  DATA l1 TYPE i. DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i.
-  DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i.
-  DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = -64.
-  s0 = s0 + s1. l1 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l1 TYPE i, l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i,
+       s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = -64. s0 = s0 + s1. l1 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -3779,11 +3750,10 @@ FORM f384 USING p0 TYPE i.
 ENDFORM.
 
 FORM f385 USING p0 TYPE i p1 TYPE int8 CHANGING rv TYPE int8.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = p0. s1 = l3. s2 = 4. s1 = s1 + s2. s2 = p1. s3 = 0.
-  PERFORM f184 USING s0 s1 s2 s3 CHANGING s0. l4 = s0. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l3 = s0. gv_g0 = s0. s0 = p0. s1 = l3. s2 = 4. s1 = s1 + s2. s2 = p1. s3 = 0. PERFORM f184 USING s0 s1 s2 s3 CHANGING s0. l4 = s0. DO 1 TIMES. " block
     s0 = p1. s1 = 32. s0 = zcl_wasm_rt=>shr_u64( iv_val = s0 iv_shift = s1 ). s0 = zcl_wasm_rt=>wrap_i64( s0 ). s1 = -11. IF zcl_wasm_rt=>lt_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l2 = s0. s1 = l2. s1 = mem_ld_i32( s1 ). l2 = s1. s2 = 1. s1 = s1 - s2. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = l2. s1 = 1.
     IF s0 > s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p0. s0 = mem_ld_i32( s0 + 16 ). s1 = p1. PERFORM f453 USING s0 s1.
@@ -3830,12 +3800,11 @@ FORM f385 USING p0 TYPE i p1 TYPE int8 CHANGING rv TYPE int8.
 ENDFORM.
 
 FORM f386 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE int8.
-  DATA l6 TYPE int8. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA l9 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i.
-  DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i.
-  DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i.
-  DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i.
-  DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA s60 TYPE i. DATA s61 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 80. s0 = s0 - s1. p3 = s0.
-  gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE int8, l7 TYPE int8, l8 TYPE int8, l9 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i,
+       s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i,
+       s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i,
+       s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, s60 TYPE i, s61 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 80. s0 = s0 - s1. p3 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -3880,10 +3849,10 @@ FORM f386 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i C
 ENDFORM.
 
 FORM f387 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE int8 p4 TYPE i.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
-  DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
-  DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i.
-  DATA lv_br TYPE i. s0 = gv_g0. s1 = -64. s0 = s0 + s1. l5 = s0. gv_g0 = s0. s0 = p2. s1 = p2. s1 = mem_ld_i32( s1 ). s2 = 1. s1 = s1 + s2. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p4. PERFORM f117 USING s0. s0 = l5. s1 = p2.
+  DATA:  l5 TYPE i, l6 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i,
+       s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i,
+       s37 TYPE i, s38 TYPE i, s39 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = -64. s0 = s0 + s1. l5 = s0. gv_g0 = s0. s0 = p2. s1 = p2. s1 = mem_ld_i32( s1 ). s2 = 1. s1 = s1 + s2. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p4. PERFORM f117 USING s0. s0 = l5. s1 = p2.
   mem_st_i32( iv_addr = s0 + 56 iv_val = s1 ). s0 = l5. s1 = p3. zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 48 CHANGING cv_mem = mv_mem ). s0 = l5. s1 = 12884901888.
   zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 40 CHANGING cv_mem = mv_mem ). s0 = l5. RAISE EXCEPTION TYPE cx_sy_program_error. " SIMD not supported RAISE EXCEPTION TYPE cx_sy_program_error. " SIMD not supported s1 = l5.
   s2 = 12884901888. zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s2 iv_addr = s1 + 16 CHANGING cv_mem = mv_mem ). s1 = l5. s2 = 0. mem_st_i32_16( iv_addr = s1 + 8 iv_val = s2 ). DO 1 TIMES. " block
@@ -3948,9 +3917,9 @@ FORM f387 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE int8 p4 TYPE i.
 ENDFORM.
 
 FORM f388 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE i. DATA l13 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i.
-  DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i.
-  DATA lv_br TYPE i. s0 = p1. s1 = 1. s0 = s0 - s1. l12 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 4 ). l9 = s0. s0 = p0. s0 = mem_ld_i32( s0 ). l10 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 8 ). l11 = s0. DO. " loop
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE i, l13 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i,
+       s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, lv_br TYPE i.
+  s0 = p1. s1 = 1. s0 = s0 - s1. l12 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 4 ). l9 = s0. s0 = p0. s0 = mem_ld_i32( s0 ). l10 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 8 ). l11 = s0. DO. " loop
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p2. s1 = l3. IF zcl_wasm_rt=>lt_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 DO. " loop
@@ -4003,11 +3972,11 @@ FORM f388 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f389 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i.
-  DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 80. s0 = s0 - s1. l2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i,
+       s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 80. s0 = s0 - s1. l2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -4055,11 +4024,11 @@ FORM f389 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f390 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE int8 CHANGING rv TYPE i.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i.
-  DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i.
-  DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i.
-  DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i.
-  DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i,
+       s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i,
+       s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i,
+       s53 TYPE i, s54 TYPE i, s55 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p2. s1 = 142. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -4110,8 +4079,9 @@ FORM f390 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE int8 CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f391 USING p0 TYPE int8 CHANGING rv TYPE i.
-  DATA l1 TYPE i. DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE f. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i.
-  DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l1 TYPE i, l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE f, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i,
+       s12 TYPE i, s13 TYPE i, s14 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -4160,12 +4130,11 @@ FORM f391 USING p0 TYPE int8 CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f392 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
-  DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE int8. DATA l7 TYPE int8. DATA l8 TYPE f. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i.
-  DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA s56 TYPE i. DATA s57 TYPE i. DATA s58 TYPE i. DATA s59 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l4 = s0.
-  gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE int8, l7 TYPE int8, l8 TYPE f, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i,
+       s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, s56 TYPE i, s57 TYPE i, s58 TYPE i, s59 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         DO 1 TIMES. " block
@@ -4233,10 +4202,10 @@ FORM f392 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
 ENDFORM.
 
 FORM f393 USING p0 TYPE i p1 TYPE int8.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA lv_br TYPE i. DO 1 TIMES. " block
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, lv_br TYPE i.
+  DO 1 TIMES. " block
     s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>lt_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l3 = s0. s0 = mem_ld_i32_16u( s0 + 6 ).
     s1 = 49. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = l3. s0 = mem_ld_i32( s0 + 32 ). l5 = s0. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p0. s1 = 16.
     s0 = s0 + s1. l6 = s0. s0 = l5. s1 = 8. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l3 = s0. s1 = l5. s2 = 4. s1 = s1 + s2. l7 = s1. IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -4282,11 +4251,11 @@ FORM f393 USING p0 TYPE i p1 TYPE int8.
 ENDFORM.
 
 FORM f394 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE int8. DATA l8 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i.
-  DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i.
-  DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i.
-  DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i.
-  DATA s52 TYPE i. DATA s53 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE i, l7 TYPE int8, l8 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i,
+       s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i,
+       s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i,
+       s53 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 16. s0 = s0 - s1. p2 = s0. gv_g0 = s0. DO 1 TIMES. " block
     s0 = p1. s1 = -4294967297. IF zcl_wasm_rt=>le_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
       s0 = p0. s1 = 1137529. s2 = 0. PERFORM f970 USING s0 s1 s2 CHANGING s0. s0 = 25769803776. l7 = s0. lv_br = 1. EXIT. " br 1
     ELSE. ENDIF. DO 1 TIMES. " block
@@ -4326,10 +4295,10 @@ FORM f394 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f395 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE int8. DATA l10 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i.
-  DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i.
-  DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i.
-  DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = -64. s0 = s0 + s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE int8, l10 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i,
+       s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i,
+       s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = -64. s0 = s0 + s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
         s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l6 = s0. s0 = mem_ld_i32_16u( s0 + 6 ). s1 = 21. s0 = s0 - s1. s1 = 65535. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = 11.
@@ -4371,12 +4340,11 @@ FORM f395 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i CHANGING rv TYPE int8
 ENDFORM.
 
 FORM f396 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHANGING rv TYPE i.
-  DATA l6 TYPE i. DATA l7 TYPE i. DATA l8 TYPE i. DATA l9 TYPE i. DATA l10 TYPE i. DATA l11 TYPE i. DATA l12 TYPE int8. DATA l13 TYPE int8. DATA l14 TYPE int8. DATA l15 TYPE int8. DATA l16 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i.
-  DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i.
-  DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i.
-  DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i.
-  DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA s51 TYPE i. DATA s52 TYPE i. DATA s53 TYPE i. DATA s54 TYPE i. DATA s55 TYPE i. DATA lv_br TYPE i. s0 = -1.
-  l10 = s0. DO 1 TIMES. " block
+  DATA:  l6 TYPE i, l7 TYPE i, l8 TYPE i, l9 TYPE i, l10 TYPE i, l11 TYPE i, l12 TYPE int8, l13 TYPE int8, l14 TYPE int8, l15 TYPE int8, l16 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i,
+       s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i,
+       s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i,
+       s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, s51 TYPE i, s52 TYPE i, s53 TYPE i, s54 TYPE i, s55 TYPE i, lv_br TYPE i.
+  s0 = -1. l10 = s0. DO 1 TIMES. " block
     s0 = p0. s1 = p1. s2 = p3. s3 = 19. s4 = p3. s5 = 1. s4 = zcl_wasm_rt=>shr_u32( iv_val = s4 iv_shift = s5 ). l6 = s4. s5 = l6. s6 = 19. IF zcl_wasm_rt=>ge_u32( iv_a = s5 iv_b = s6 ) = abap_true. s5 = 1. ELSE. s5 = 0. ENDIF.
     IF s5 <> 0. s3 = s3. ELSE. s3 = s4. ENDIF. s4 = p3. s5 = 20. IF s4 < s5. s4 = 1. ELSE. s4 = 0. ENDIF. IF s4 <> 0. s2 = s2. ELSE. s2 = s3. ENDIF. l8 = s2. s3 = p3. s4 = l8. s3 = s3 - s4. l9 = s3. s4 = 1. s5 = l8.
     s4 = zcl_wasm_rt=>shl32( iv_val = s4 iv_shift = s5 ). l7 = s4. s5 = 1. s6 = l9. s5 = zcl_wasm_rt=>shl32( iv_val = s5 iv_shift = s6 ). l11 = s5. s6 = 0. s7 = p5. PERFORM f168 USING s0 s1 s2 s3 s4 s5 s6 s7 CHANGING s0.
@@ -4409,10 +4377,10 @@ FORM f396 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i CHAN
 ENDFORM.
 
 FORM f397 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE int8.
-  DATA l2 TYPE i. DATA l3 TYPE i. DATA l4 TYPE i. DATA l5 TYPE i. DATA l6 TYPE int8. DATA l7 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i.
-  DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i.
-  DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
-  DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA lv_br TYPE i. s0 = p1. s1 = 0. IF s0 < s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
+  DATA:  l2 TYPE i, l3 TYPE i, l4 TYPE i, l5 TYPE i, l6 TYPE int8, l7 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i,
+       s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i,
+       s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, lv_br TYPE i.
+  s0 = p1. s1 = 0. IF s0 < s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     s0 = p1. s1 = 2147483647. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s0 = zcl_wasm_rt=>extend_u32( s0 ). rv = s0. RETURN.
   ELSE. ENDIF. s0 = p1. s1 = p0. s1 = mem_ld_i32( s1 + 16 ). l3 = s1. s1 = mem_ld_i32( s1 + 44 ). IF zcl_wasm_rt=>lt_u32( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
     DO 1 TIMES. " block
@@ -4455,10 +4423,10 @@ FORM f397 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE int8.
 ENDFORM.
 
 FORM f398 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE int8.
-  DATA l5 TYPE i. DATA l6 TYPE int8. DATA l7 TYPE int8. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i.
-  DATA s11 TYPE i. DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i.
-  DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i.
-  DATA s39 TYPE i. DATA s40 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = 25769803776. l6 = s0. DO 1 TIMES. " block
+  DATA:  l5 TYPE i, l6 TYPE int8, l7 TYPE int8, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i,
+       s16 TYPE i, s17 TYPE i, s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i,
+       s35 TYPE i, s36 TYPE i, s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 32. s0 = s0 - s1. p2 = s0. gv_g0 = s0. s0 = 25769803776. l6 = s0. DO 1 TIMES. " block
     s0 = p0. s1 = p1. PERFORM f151 USING s0 s1 CHANGING s0. p1 = s0. s1 = -4294967296. s0 = zcl_wasm_rt=>and64( iv_a = s0 iv_b = s1 ). s1 = 25769803776. IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p0.
     s1 = p3. s1 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s1 + 0 ). PERFORM f503 USING s0 s1 CHANGING s0. l5 = s0. IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 DO 1 TIMES. " block
       s0 = p0. s1 = p2. s2 = p1. s2 = zcl_wasm_rt=>wrap_i64( s2 ). s3 = l5. PERFORM f311 USING s0 s1 s2 s3 CHANGING s0. p3 = s0. s1 = 0. IF s0 < s1. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0.
@@ -4503,11 +4471,10 @@ FORM f398 USING p0 TYPE i p1 TYPE int8 p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv
 ENDFORM.
 
 FORM f399 USING p0 TYPE i p1 TYPE int8 p2 TYPE int8 p3 TYPE i CHANGING rv TYPE int8.
-  DATA l4 TYPE i. DATA l5 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
-  DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
-  DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i.
-  DATA s40 TYPE i. DATA s41 TYPE i. DATA s42 TYPE i. DATA s43 TYPE i. DATA s44 TYPE i. DATA s45 TYPE i. DATA s46 TYPE i. DATA s47 TYPE i. DATA s48 TYPE i. DATA s49 TYPE i. DATA s50 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 80.
-  s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
+  DATA:  l4 TYPE i, l5 TYPE i, s0 TYPE i, s1 TYPE i, s2 TYPE i, s3 TYPE i, s4 TYPE i, s5 TYPE i, s6 TYPE i, s7 TYPE i, s8 TYPE i, s9 TYPE i, s10 TYPE i, s11 TYPE i, s12 TYPE i, s13 TYPE i, s14 TYPE i, s15 TYPE i, s16 TYPE i, s17 TYPE i,
+       s18 TYPE i, s19 TYPE i, s20 TYPE i, s21 TYPE i, s22 TYPE i, s23 TYPE i, s24 TYPE i, s25 TYPE i, s26 TYPE i, s27 TYPE i, s28 TYPE i, s29 TYPE i, s30 TYPE i, s31 TYPE i, s32 TYPE i, s33 TYPE i, s34 TYPE i, s35 TYPE i, s36 TYPE i,
+       s37 TYPE i, s38 TYPE i, s39 TYPE i, s40 TYPE i, s41 TYPE i, s42 TYPE i, s43 TYPE i, s44 TYPE i, s45 TYPE i, s46 TYPE i, s47 TYPE i, s48 TYPE i, s49 TYPE i, s50 TYPE i, lv_br TYPE i.
+  s0 = gv_g0. s1 = 80. s0 = s0 - s1. l4 = s0. gv_g0 = s0. DO 1 TIMES. " block
     DO 1 TIMES. " block
       DO 1 TIMES. " block
         s0 = p1. s1 = -4294967296. IF zcl_wasm_rt=>lt_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF. IF s0 <> 0. EXIT. ENDIF. " br_if 0 s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). l5 = s0. s0 = mem_ld_i32_16u( s0 + 6 ).
