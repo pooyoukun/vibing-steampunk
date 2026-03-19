@@ -87,9 +87,6 @@ type Config struct {
 	// Debugger configuration
 	TerminalID string // SAP GUI terminal ID for cross-tool breakpoint sharing
 
-	// Tool mode: "granular" (default, 122 individual tools) or "universal" (single SAP tool)
-	ToolMode string
-
 	// Granular tool visibility (from .vsp.json)
 	// Key: tool name, Value: true=enabled, false=disabled
 	// Takes highest priority over mode and disabled groups
@@ -183,8 +180,8 @@ func NewServer(cfg *Config) *Server {
 		asyncTasks:    make(map[string]*AsyncTask),
 	}
 
-	// Register tools based on mode, disabled groups, granular tool config, and tool mode
-	s.registerTools(cfg.Mode, cfg.DisabledGroups, cfg.ToolsConfig, cfg.ToolMode)
+	// Register tools based on mode, disabled groups, and granular tool config
+	s.registerTools(cfg.Mode, cfg.DisabledGroups, cfg.ToolsConfig)
 
 	return s
 }

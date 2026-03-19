@@ -26,9 +26,9 @@ import (
 //   - If tool is explicitly disabled (false), it will NOT be registered
 //   - If tool is explicitly enabled (true), it WILL be registered (overrides focused mode)
 //   - If tool is not in config, mode/disabledGroups rules apply
-func (s *Server) registerTools(mode string, disabledGroups string, toolsConfig map[string]bool, toolMode string) {
-	// Universal mode: register single SAP tool
-	if toolMode == "universal" {
+func (s *Server) registerTools(mode string, disabledGroups string, toolsConfig map[string]bool) {
+	// Hyperfocused mode: single universal SAP tool
+	if mode == "hyperfocused" {
 		s.registerUniversalTool()
 		return
 	}
