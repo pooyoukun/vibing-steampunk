@@ -57,11 +57,9 @@ FORM f1290 USING p0 TYPE f CHANGING rv TYPE f.
 ENDFORM.
 
 FORM f1291 USING p0 TYPE i p1 TYPE int8.
-  DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA lv_br TYPE i. s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). s0 = mem_ld_i32( s0 + 32 ). p0 = s0.
-  IF s0 <> 0.
+  DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA lv_br TYPE i. s0 = p1. s0 = zcl_wasm_rt=>wrap_i64( s0 ). s0 = mem_ld_i32( s0 + 32 ). p0 = s0. IF s0 <> 0.
     s0 = p0. PERFORM f117 USING s0.
-  ELSE.
-  ENDIF.
+  ELSE. ENDIF.
 ENDFORM.
 
 FORM f1292 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
@@ -130,11 +128,9 @@ FORM f1304 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv T
 ENDFORM.
 
 FORM f1305 USING p0 TYPE i.
-  DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA lv_br TYPE i. s0 = p0. s0 = mem_ld_i32( s0 ).
-  IF s0 <> 0.
+  DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA lv_br TYPE i. s0 = p0. s0 = mem_ld_i32( s0 ). IF s0 <> 0.
     s0 = p0. s0 = mem_ld_i32( s0 + 4 ). PERFORM f125 USING s0.
-  ELSE.
-  ENDIF.
+  ELSE. ENDIF.
 ENDFORM.
 
 FORM f1306 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i CHANGING rv TYPE i.
