@@ -69,7 +69,47 @@ graph LR
 - Dependencies include: `ZIF_ABAPGIT_DEFINITIONS` (massive interface), `ZCX_ABAPGIT_EXCEPTION`, `CL_WB_OBJECT` (14 methods), `IF_ADT_URI_MAPPER` (8 methods), etc.
 - All compressed to **public signatures only** — no implementation bodies, no private sections
 
-**Method-level reads** (`params={"method": "GET_DATA"}`) add another **95% reduction** — returns only the `METHOD...ENDMETHOD` block.
+### Method-Level Surgery — Read and Edit Individual Methods
+
+Why pull an entire 1000-line class when you only need one 30-line method?
+
+```
+# Read just the FACTORIAL method — not the whole class
+SAP(action="read", target="CLAS ZCL_CALCULATOR", params={"method": "FACTORIAL"})
+
+# Edit just that method — vsp handles the rest
+SAP(action="edit", target="CLAS ZCL_CALCULATOR", params={
+  "method": "FACTORIAL",
+  "source": "  METHOD factorial.\n    ...\n  ENDMETHOD."
+})
+```
+
+**What happens under the hood on edit:**
+
+```mermaid
+sequenceDiagram
+    participant LLM as AI Agent
+    participant VSP as vsp
+    participant SAP as SAP System
+
+    LLM->>VSP: SAP(edit, CLAS ZCL_FOO, method=BAR, source=...)
+    VSP->>SAP: GetClassMethods() → find BAR boundaries
+    VSP->>SAP: GetClassSource() → full class
+    Note over VSP: Replace lines 42-58<br/>with new METHOD block
+    VSP->>SAP: SyntaxCheck(full reconstructed source)
+    VSP->>SAP: Lock → UpdateSource → Unlock → Activate
+    VSP->>LLM: ✓ Method BAR updated, class activated
+```
+
+The AI only sends/receives the method block (~30 lines). vsp fetches the full class internally, splices in the new method at the right line range, validates, and pushes back. **95% token reduction** vs full-class round-trips.
+
+**Context compression scopes to the method too** — when reading a single method, dependency analysis runs on _that method's code only_, so the prologue contains exactly the types and interfaces relevant to the method you're working on, not the entire class's dependency tree.
+
+| Operation | Tokens (full class) | Tokens (method-level) | Savings |
+|-----------|:-------------------:|:---------------------:|:-------:|
+| Read source | ~1,000 | ~50 | **20x** |
+| Read + context | ~1,600 | ~250 | **6x** |
+| Edit round-trip | ~2,000 | ~100 | **20x** |
 
 > *Built-in ABAP parser based on [abaplint](https://github.com/abaplint/abaplint) by [Lars Hvam](https://github.com/larshp) — the same parser that powers abaplint's 392 ABAP statement types.*
 
