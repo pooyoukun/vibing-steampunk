@@ -38,8 +38,7 @@ FORM f640 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
   s4 = zcl_wasm_rt=>or32( iv_a = s4 iv_b = s5 ). l4 = s4. mem_st_i32( iv_addr = s3 iv_val = s4 ). s3 = 1. l3 = s3. s3 = l4.
   IF s3 = 0. s3 = 1. ELSE. s3 = 0. ENDIF.
   IF s3 <> 0.
-    s3 = p0. s3 = mem_ld_i32( s3 + 8 ). p0 = s3. s3 = mem_ld_i32( s3 + 20 ). s4 = l2. s5 = 12. s4 = s4 + s5. s5 = p1. s6 = p0. s6 = mem_ld_i32( s6 + 24 ). s6 = mem_ld_i32( s6 + 12 ).
-    DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect
+    s3 = p0. s3 = mem_ld_i32( s3 + 8 ). p0 = s3. s3 = mem_ld_i32( s3 + 20 ). s4 = l2. s5 = 12. s4 = s4 + s5. s5 = p1. s6 = p0. s6 = mem_ld_i32( s6 + 24 ). s6 = mem_ld_i32( s6 + 12 ). DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect
     s3 = dispatch_t11( iv_idx = lv_ci_func p0 = s3 p1 = s4 p2 = s5 ). l3 = s3.
   ELSE.
   ENDIF.
@@ -51,9 +50,8 @@ FORM f641 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
   DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
   DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i. DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i.
   DATA lv_br TYPE i. s0 = gv_g0. s1 = 48. s0 = s0 - s1. l2 = s0. gv_g0 = s0. s0 = p1. s0 = mem_ld_i32( s0 + 20 ). s1 = 1114889. s2 = 6. s3 = p1. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ).
-  DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-  s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l3 = s0. s0 = l2. s1 = 0. mem_st_i32_8( iv_addr = s0 + 13 iv_val = s1 ). s0 = l2. s1 = l3. mem_st_i32_8( iv_addr = s0 + 12 iv_val = s1 ). s0 = l2. s1 = p1.
-  mem_st_i32( iv_addr = s0 + 8 iv_val = s1 ). s0 = l2. s1 = p0. s1 = mem_ld_i32( s1 ). l3 = s1. s1 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s1 + 8 ).
+  DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l3 = s0. s0 = l2. s1 = 0. mem_st_i32_8( iv_addr = s0 + 13 iv_val = s1 ). s0 = l2. s1 = l3.
+  mem_st_i32_8( iv_addr = s0 + 12 iv_val = s1 ). s0 = l2. s1 = p1. mem_st_i32( iv_addr = s0 + 8 iv_val = s1 ). s0 = l2. s1 = p0. s1 = mem_ld_i32( s1 ). l3 = s1. s1 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s1 + 8 ).
   zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 16 CHANGING cv_mem = mv_mem ). s0 = l2. s1 = 8. s0 = s0 + s1. s1 = 1114895. s2 = 2. s3 = l2. s4 = 16. s3 = s3 + s4. s4 = 1114900. PERFORM f629 USING s0 s1 s2 s3 s4 CHANGING s0.
   s1 = 1114884. p1 = s1. s1 = 4. p0 = s1.
   DO 1 TIMES. " block
@@ -78,16 +76,14 @@ FORM f641 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
     s0 = p0. s0 = mem_ld_i32( s0 ). p0 = s0. s0 = l2. s0 = mem_ld_i32_8u( s0 + 13 ).
     IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0.
-      s0 = p0. s0 = mem_ld_i32( s0 + 20 ). s1 = 1050369. s2 = 7. s3 = p0. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
+      s0 = p0. s0 = mem_ld_i32( s0 + 20 ). s1 = 1050369. s2 = 7. s3 = p0. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
       s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). lv_br = 1. EXIT. " br 1
     ELSE.
     ENDIF.
     s1 = p0. s1 = mem_ld_i32_8u( s1 + 28 ). s2 = 4. s1 = zcl_wasm_rt=>and32( iv_a = s1 iv_b = s2 ).
     IF s1 = 0. s1 = 1. ELSE. s1 = 0. ENDIF.
     IF s1 <> 0.
-      s1 = p0. s1 = mem_ld_i32( s1 + 20 ). s2 = 1050376. s3 = 6. s4 = p0. s4 = mem_ld_i32( s4 + 24 ). s4 = mem_ld_i32( s4 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
+      s1 = p0. s1 = mem_ld_i32( s1 + 20 ). s2 = 1050376. s3 = 6. s4 = p0. s4 = mem_ld_i32( s4 + 24 ). s4 = mem_ld_i32( s4 + 12 ). DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
       s1 = dispatch_t11( iv_idx = lv_ci_func p0 = s1 p1 = s2 p2 = s3 ). lv_br = 1. EXIT. " br 1
     ELSE.
     ENDIF.
@@ -95,8 +91,7 @@ FORM f641 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
     zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s3 iv_addr = s2 + 32 CHANGING cv_mem = mv_mem ). s2 = l2. s3 = l2. s4 = 47. s3 = s3 + s4. mem_st_i32( iv_addr = s2 + 40 iv_val = s3 ). s2 = 1. s3 = l2. s4 = 32. s3 = s3 + s4. s4 = 1050382.
     s5 = 3. PERFORM f388 USING s3 s4 s5 CHANGING s3.
     IF s3 <> 0. EXIT. ENDIF. " br_if 0
-    s2 = p0. s2 = mem_ld_i32( s2 + 20 ). s3 = 1080042. s4 = 1. s5 = p0. s5 = mem_ld_i32( s5 + 24 ). s5 = mem_ld_i32( s5 + 12 ).
-    DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect
+    s2 = p0. s2 = mem_ld_i32( s2 + 20 ). s3 = 1080042. s4 = 1. s5 = p0. s5 = mem_ld_i32( s5 + 24 ). s5 = mem_ld_i32( s5 + 12 ). DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect
     s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ).
   ENDDO.
   s3 = l2. s4 = 48. s3 = s3 + s4. gv_g0 = s3. rv = s2.
@@ -346,8 +341,7 @@ FORM f646 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
   DATA lv_br TYPE i. s0 = gv_g0. s1 = 16. s0 = s0 - s1. l2 = s0. gv_g0 = s0. s0 = 1. l7 = s0.
   DO 1 TIMES. " block
     DO 1 TIMES. " block
-      s0 = p1. s0 = mem_ld_i32( s0 + 20 ). l4 = s0. s1 = 39. s2 = p1. s2 = mem_ld_i32( s2 + 24 ). s2 = mem_ld_i32( s2 + 16 ). l5 = s2.
-      DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
+      s0 = p1. s0 = mem_ld_i32( s0 + 20 ). l4 = s0. s1 = 39. s2 = p1. s2 = mem_ld_i32( s2 + 24 ). s2 = mem_ld_i32( s2 + 16 ). l5 = s2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
       s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
       IF s0 <> 0. EXIT. ENDIF. " br_if 0
       s0 = l2. s1 = p0. s1 = mem_ld_i32( s1 ). s2 = 257. PERFORM f302 USING s0 s1 s2.
@@ -373,9 +367,7 @@ FORM f646 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
               s0 = 0. l3 = s0. s0 = l6. s1 = 0. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = l2. s0 = mem_ld_i32( s0 + 4 ). p1 = s0. s0 = l2. s1 = 0.
               zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 0 CHANGING cv_mem = mv_mem ).
             ENDDO.
-            s0 = l4. s1 = p1. s2 = l5.
-            DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-            s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+            s0 = l4. s1 = p1. s2 = l5. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
             IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
             IF s0 <> 0. EXIT. ENDIF. " br_if 0
           ENDDO.
@@ -396,17 +388,13 @@ FORM f646 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
           s0 = l2. s1 = p1. s2 = 1. s1 = s1 + s2. l3 = s1. mem_st_i32_8( iv_addr = s0 + 10 iv_val = s1 ). s0 = p0. s1 = p1.
           IF s0 = s1. s0 = 1. ELSE. s0 = 0. ENDIF.
           IF s0 <> 0. lv_br = 3. EXIT. ENDIF. " br_if 3
-          s0 = p1. s1 = l2. s0 = s0 + s1. l8 = s0. s0 = l3. p1 = s0. s0 = l4. s1 = l8. s1 = mem_ld_i32_8u( s1 ). s2 = l5.
-          DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-          s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+          s0 = p1. s1 = l2. s0 = s0 + s1. l8 = s0. s0 = l3. p1 = s0. s0 = l4. s1 = l8. s1 = mem_ld_i32_8u( s1 ). s2 = l5. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
           IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
           IF s0 <> 0. EXIT. ENDIF. " br_if 0
         ENDDO.
         lv_br = 1. EXIT. " br 1
       ENDDO.
-      s0 = l4. s1 = 39. s2 = l5.
-      DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-      s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ). l7 = s0.
+      s0 = l4. s1 = 39. s2 = l5. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ). l7 = s0.
     ENDDO.
     s0 = l2. s1 = 16. s0 = s0 + s1. gv_g0 = s0. s0 = l7. rv = s0. RETURN.
   ENDDO.
@@ -420,8 +408,7 @@ FORM f647 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
   DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i. DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA s33 TYPE i. DATA s34 TYPE i. DATA s35 TYPE i.
   DATA s36 TYPE i. DATA s37 TYPE i. DATA s38 TYPE i. DATA s39 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = -64. s0 = s0 + s1. l2 = s0. gv_g0 = s0. s0 = 1. l5 = s0.
   DO 1 TIMES. " block
-    s0 = p1. s0 = mem_ld_i32( s0 + 20 ). l4 = s0. s1 = 1050104. s2 = 12. s3 = p1. s3 = mem_ld_i32( s3 + 24 ). l6 = s3. s3 = mem_ld_i32( s3 + 12 ). p1 = s3.
-    DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
+    s0 = p1. s0 = mem_ld_i32( s0 + 20 ). l4 = s0. s1 = 1050104. s2 = 12. s3 = p1. s3 = mem_ld_i32( s3 + 24 ). l6 = s3. s3 = mem_ld_i32( s3 + 12 ). p1 = s3. DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
     s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
     IF s0 <> 0. EXIT. ENDIF. " br_if 0
     s0 = p0. s0 = mem_ld_i32( s0 + 12 ). l3 = s0. s0 = l2. s1 = 3. mem_st_i32( iv_addr = s0 + 20 iv_val = s1 ). s0 = l2. s1 = 1050080. mem_st_i32( iv_addr = s0 + 16 iv_val = s1 ). s0 = l2. s1 = 3.
@@ -431,16 +418,12 @@ FORM f647 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
     zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 48 CHANGING cv_mem = mv_mem ). s0 = l2. s1 = l2. s2 = 40. s1 = s1 + s2. l7 = s1. mem_st_i32( iv_addr = s0 + 24 iv_val = s1 ). s0 = l4. s1 = l6. s2 = l2. s3 = 16.
     s2 = s2 + s3. PERFORM f360 USING s0 s1 s2 CHANGING s0.
     IF s0 <> 0. EXIT. ENDIF. " br_if 0
-    s0 = l4. s1 = 1117910. s2 = 1. s3 = p1.
-    DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-    s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
+    s0 = l4. s1 = 1117910. s2 = 1. s3 = p1. DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
     IF s0 <> 0. EXIT. ENDIF. " br_if 0
     DO 1 TIMES. " block
       s0 = p0. s0 = mem_ld_i32( s0 + 8 ). l3 = s0.
       IF s0 <> 0.
-        s0 = l4. s1 = 1117365. s2 = 1. s3 = p1.
-        DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-        s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
+        s0 = l4. s1 = 1117365. s2 = 1. s3 = p1. DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
         IF s0 <> 0. lv_br = 2. EXIT. ENDIF. " br_if 2
         s0 = l2. s1 = 56. s0 = s0 + s1. s1 = l3. s2 = 16. s1 = s1 + s2. s1 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s1 + 0 ). zcl_wasm_rt=>mem_st_i64( EXPORTING iv_val = s1 iv_addr = s0 + 0 CHANGING cv_mem = mv_mem ). s0 = l2.
         s1 = l3.
@@ -452,21 +435,16 @@ FORM f647 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
         lv_br = 2. EXIT. " br 2
       ELSE.
       ENDIF.
-      s2 = l2. s3 = p0. s3 = mem_ld_i32( s3 ). l3 = s3. s4 = p0. s4 = mem_ld_i32( s4 + 4 ). s5 = 12. s4 = s4 + s5. s4 = mem_ld_i32( s4 ).
-      DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
+      s2 = l2. s3 = p0. s3 = mem_ld_i32( s3 ). l3 = s3. s4 = p0. s4 = mem_ld_i32( s4 + 4 ). s5 = 12. s4 = s4 + s5. s4 = mem_ld_i32( s4 ). DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
       dispatch_t6( iv_idx = lv_ci_func p0 = s2 p1 = s3 ). s2 = l2. s2 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s2 + 0 ). s3 = -5076933981314334344.
       IF s2 <> s3. s2 = 1. ELSE. s2 = 0. ENDIF.
       IF s2 <> 0. EXIT. ENDIF. " br_if 0
       s2 = l2. s2 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s2 + 8 ). s3 = 7199936582794304877.
       IF s2 <> s3. s2 = 1. ELSE. s2 = 0. ENDIF.
       IF s2 <> 0. EXIT. ENDIF. " br_if 0
-      s2 = l4. s3 = 1117365. s4 = 1. s5 = p1.
-      DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect
-      s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ).
+      s2 = l4. s3 = 1117365. s4 = 1. s5 = p1. DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ).
       IF s2 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
-      s2 = l4. s3 = l3. s3 = mem_ld_i32( s3 ). s4 = l3. s4 = mem_ld_i32( s4 + 4 ). s5 = p1.
-      DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect
-      s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ).
+      s2 = l4. s3 = l3. s3 = mem_ld_i32( s3 ). s4 = l3. s4 = mem_ld_i32( s4 + 4 ). s5 = p1. DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ).
       IF s2 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
     ENDDO.
     s2 = 0. l5 = s2.
@@ -519,8 +497,7 @@ FORM f648 USING p0 TYPE i CHANGING rv TYPE i.
           s5 = l1. s5 = mem_ld_i32_8u( s5 + 4 ). s6 = 3.
           IF s5 <> s6. s5 = 1. ELSE. s5 = 0. ENDIF.
           IF s5 <> 0. lv_br = 2. EXIT. ENDIF. " br_if 2
-          s5 = l1. s5 = mem_ld_i32( s5 + 8 ). p0 = s5. s5 = mem_ld_i32( s5 ). l2 = s5. s6 = p0. s7 = 4. s6 = s6 + s7. s6 = mem_ld_i32( s6 ). l3 = s6. s6 = mem_ld_i32( s6 ).
-          DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect
+          s5 = l1. s5 = mem_ld_i32( s5 + 8 ). p0 = s5. s5 = mem_ld_i32( s5 ). l2 = s5. s6 = p0. s7 = 4. s6 = s6 + s7. s6 = mem_ld_i32( s6 ). l3 = s6. s6 = mem_ld_i32( s6 ). DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect
           dispatch_t2( iv_idx = lv_ci_func p0 = s5 ). s5 = l3. s5 = mem_ld_i32( s5 + 4 ).
           IF s5 = 0. s5 = 1. ELSE. s5 = 0. ENDIF.
           IF s5 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
@@ -573,9 +550,8 @@ FORM f649 USING p0 TYPE i p1 TYPE int8 p2 TYPE i CHANGING rv TYPE int8.
         s0 = l4. s0 = mem_ld_i32( s0 + 24 ). l5 = s0.
         IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
-        s0 = l3. s0 = mem_ld_i32( s0 ). s1 = l5. s2 = 0. s3 = l3. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ).
-        DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-        s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). lv_br = 1. EXIT. " br 1
+        s0 = l3. s0 = mem_ld_i32( s0 ). s1 = l5. s2 = 0. s3 = l3. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
+        lv_br = 1. EXIT. " br 1
       ELSE.
       ENDIF.
       s0 = l3. s1 = 4. s0 = s0 - s1. l3 = s0. s1 = l3. s1 = mem_ld_i32( s1 ). l5 = s1. s2 = 1. s1 = s1 - s2. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = l5. s1 = 1.
@@ -592,9 +568,7 @@ FORM f649 USING p0 TYPE i p1 TYPE int8 p2 TYPE i CHANGING rv TYPE int8.
     ELSE.
     ENDIF.
     s0 = p0. s1 = p2. s2 = p2. PERFORM f768 USING s2 CHANGING s2. PERFORM f126 USING s0 s1 s2 CHANGING s0. l6 = s0. s0 = p0. s0 = mem_ld_i32( s0 + 216 ). p0 = s0. s0 = mem_ld_i32( s0 ). s1 = p2. s2 = 0. s3 = p0. s4 = 4. s3 = s3 + s4.
-    s3 = mem_ld_i32( s3 ).
-    DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-    s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
+    s3 = mem_ld_i32( s3 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
   ENDDO.
   s0 = l4. s1 = 32. s0 = s0 + s1. gv_g0 = s0. s0 = l6. rv = s0.
 ENDFORM.
@@ -1131,9 +1105,7 @@ FORM f658 USING p0 TYPE i p1 TYPE int8 CHANGING rv TYPE int8.
       IF s2 <> 0. s0 = s0. ELSE. s0 = s1. ENDIF.
       rv = s0. RETURN.
     ENDDO.
-    s0 = l2. s1 = 16. s0 = s0 + s1. s1 = 24. s2 = l2. s2 = mem_ld_i32( s2 ).
-    DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-    s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ). l2 = s0.
+    s0 = l2. s1 = 16. s0 = s0 + s1. s1 = 24. s2 = l2. s2 = mem_ld_i32( s2 ). DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect s0 = dispatch_t7( iv_idx = lv_ci_func p0 = s0 p1 = s1 ). l2 = s0.
     IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0.
       s0 = 25769803776. p1 = s0. s0 = p0. s1 = 16. s0 = s0 + s1. s0 = mem_ld_i32( s0 ). l2 = s0. s0 = mem_ld_i32_8u( s0 + 136 ).
@@ -1244,9 +1216,8 @@ FORM f660 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i p6 T
   ENDIF.
   s0 = l7. s1 = l8. s2 = 15. s1 = s1 + s2. s2 = 2032. s1 = zcl_wasm_rt=>and32( iv_a = s1 iv_b = s2 ). s0 = s0 - s1. p4 = s0. gv_g0 = s0. s0 = l7. s1 = 8. s0 = s0 + s1. s1 = p0. s2 = p4. s3 = 0. s4 = p1. s5 = 7. s4 = s4 + s5. s5 = p2.
   s6 = p3. s7 = p5. s6 = zcl_wasm_rt=>shl32( iv_val = s6 iv_shift = s7 ). s5 = s5 + s6. s6 = 0. PERFORM f16 USING s0 s1 s2 s3 s4 s5 s6 CHANGING s0. s1 = l7. s1 = mem_ld_i32( s1 + 40 ). s1 = mem_ld_i32( s1 + 16 ). p1 = s1. s2 = 16.
-  s1 = s1 + s2. s2 = l7. s2 = mem_ld_i32( s2 + 48 ). s3 = 0. s4 = p1. s4 = mem_ld_i32( s4 + 8 ).
-  DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
-  s1 = dispatch_t11( iv_idx = lv_ci_func p0 = s1 p1 = s2 p2 = s3 ). s1 = l7. s2 = -64. s1 = s1 - s2. gv_g0 = s1. rv = s0.
+  s1 = s1 + s2. s2 = l7. s2 = mem_ld_i32( s2 + 48 ). s3 = 0. s4 = p1. s4 = mem_ld_i32( s4 + 8 ). DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect s1 = dispatch_t11( iv_idx = lv_ci_func p0 = s1 p1 = s2 p2 = s3 ). s1 = l7. s2 = -64.
+  s1 = s1 - s2. gv_g0 = s1. rv = s0.
 ENDFORM.
 
 FORM f661 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TYPE i.
@@ -1287,10 +1258,9 @@ FORM f661 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TY
     mem_st_i32( iv_addr = s0 + 220 iv_val = s1 ).
   ENDDO.
   s0 = p3. s0 = mem_ld_i32( s0 ). p0 = s0. s1 = -4. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). s1 = p1. s2 = p2. s3 = p3. s3 = mem_ld_i32( s3 + 4 ). s4 = p0. s5 = 3. s4 = zcl_wasm_rt=>and32( iv_a = s4 iv_b = s5 ). s5 = 2.
-  s4 = zcl_wasm_rt=>shl32( iv_val = s4 iv_shift = s5 ). s5 = 1185632. s4 = s4 + s5. s4 = mem_ld_i32( s4 ).
-  DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
-  s0 = dispatch_t15( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 p3 = s3 ). l9 = s0. s0 = p3. s0 = mem_ld_i32( s0 ). s1 = -4. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). PERFORM f117 USING s0. s0 = p4. s1 = p4. s1 = mem_ld_i32( s1 ).
-  s2 = 1073741823. s1 = zcl_wasm_rt=>and32( iv_a = s1 iv_b = s2 ). mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p3. s1 = 12884901888. s2 = l9. s3 = l9. s4 = -4294967296. s3 = zcl_wasm_rt=>and64( iv_a = s3 iv_b = s4 ). s4 = 25769803776.
+  s4 = zcl_wasm_rt=>shl32( iv_val = s4 iv_shift = s5 ). s5 = 1185632. s4 = s4 + s5. s4 = mem_ld_i32( s4 ). DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect s0 = dispatch_t15( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 p3 = s3 ).
+  l9 = s0. s0 = p3. s0 = mem_ld_i32( s0 ). s1 = -4. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ). PERFORM f117 USING s0. s0 = p4. s1 = p4. s1 = mem_ld_i32( s1 ). s2 = 1073741823. s1 = zcl_wasm_rt=>and32( iv_a = s1 iv_b = s2 ).
+  mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p3. s1 = 12884901888. s2 = l9. s3 = l9. s4 = -4294967296. s3 = zcl_wasm_rt=>and64( iv_a = s3 iv_b = s4 ). s4 = 25769803776.
   IF s3 = s4. s3 = 1. ELSE. s3 = 0. ENDIF.
   p0 = s3.
   IF s3 <> 0. s1 = s1. ELSE. s1 = s2. ENDIF.
@@ -1567,9 +1537,8 @@ FORM f666 USING p0 TYPE i p1 TYPE int8 p2 TYPE i CHANGING rv TYPE i.
           IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
           IF s0 <> 0. EXIT. ENDIF. " br_if 0
           s0 = l3. s1 = l3. s1 = mem_ld_i32( s1 ). s2 = 1. s1 = s1 + s2. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p0. s1 = l3. s1 = zcl_wasm_rt=>extend_u32( s1 ). s2 = -4294967296. s1 = zcl_wasm_rt=>or64( iv_a = s1 iv_b = s2 ). p1 = s1.
-          s2 = p2. s3 = l4.
-          DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-          s0 = dispatch_t51( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l4 = s0. s0 = l3. s1 = l3. s1 = mem_ld_i32( s1 ). p2 = s1. s2 = 1. s1 = s1 - s2. mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p2. s1 = 1.
+          s2 = p2. s3 = l4. DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t51( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l4 = s0. s0 = l3. s1 = l3. s1 = mem_ld_i32( s1 ). p2 = s1. s2 = 1. s1 = s1 - s2.
+          mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p2. s1 = 1.
           IF s0 > s1. s0 = 1. ELSE. s0 = 0. ENDIF.
           IF s0 <> 0. lv_br = 3. EXIT. ENDIF. " br_if 3
           s0 = p0. s0 = mem_ld_i32( s0 + 16 ). s1 = p1. PERFORM f453 USING s0 s1. s0 = l4. rv = s0. RETURN.
@@ -1929,25 +1898,19 @@ FORM f672 USING p0 TYPE i p1 TYPE int8 p2 TYPE i.
         s0 = l3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 8 ). p1 = s0. s1 = -8589934592.
         IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0.
-          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2.
-          DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-          dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
         ELSE.
         ENDIF.
         s0 = l3. s1 = 16. s0 = s0 + s1. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). p1 = s0. s1 = -8589934592.
         IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0.
-          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2.
-          DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-          dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
         ELSE.
         ENDIF.
         s0 = l3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 24 ). p1 = s0. s1 = -8589934592.
         IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0.
-          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2.
-          DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-          dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
         ELSE.
         ENDIF.
         s0 = l3. s0 = mem_ld_i32( s0 + 4 ). l3 = s0. s1 = l5.
@@ -1963,25 +1926,19 @@ FORM f672 USING p0 TYPE i p1 TYPE int8 p2 TYPE i.
         s0 = l3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 8 ). p1 = s0. s1 = -8589934592.
         IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0.
-          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2.
-          DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-          dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
         ELSE.
         ENDIF.
         s0 = l3. s1 = 16. s0 = s0 + s1. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 0 ). p1 = s0. s1 = -8589934592.
         IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0.
-          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2.
-          DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-          dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
         ELSE.
         ENDIF.
         s0 = l3. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 24 ). p1 = s0. s1 = -8589934592.
         IF zcl_wasm_rt=>ge_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0.
-          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2.
-          DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-          dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+          s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
         ELSE.
         ENDIF.
         s0 = l3. s0 = mem_ld_i32( s0 + 4 ). l3 = s0. s1 = l5.
@@ -1993,9 +1950,7 @@ FORM f672 USING p0 TYPE i p1 TYPE int8 p2 TYPE i.
     s0 = l4. s0 = zcl_wasm_rt=>mem_ld_i64( iv_mem = mv_mem iv_addr = s0 + 24 ). p1 = s0. s1 = -8589934592.
     IF zcl_wasm_rt=>lt_u64( iv_a = s0 iv_b = s1 ) = abap_true. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0. EXIT. ENDIF. " br_if 0
-    s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2.
-    DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-    dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
+    s0 = p0. s1 = p1. s1 = zcl_wasm_rt=>wrap_i64( s1 ). s2 = p2. DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ).
   ENDDO.
 ENDFORM.
 
@@ -2172,8 +2127,7 @@ FORM f676 USING p0 TYPE i CHANGING rv TYPE int8.
       s1 = p0. s1 = mem_ld_i32( s1 + 4 ). l1 = s1. s1 = p0. s1 = mem_ld_i32( s1 + 8 ). l2 = s1.
       IF s1 = 0. s1 = 1. ELSE. s1 = 0. ENDIF.
       IF s1 <> 0.
-        s1 = p0. s1 = mem_ld_i32( s1 ). s1 = mem_ld_i32( s1 + 16 ). l2 = s1. s2 = 16. s1 = s1 + s2. s2 = l1. s3 = l2. s3 = mem_ld_i32( s3 + 4 ).
-        DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
+        s1 = p0. s1 = mem_ld_i32( s1 ). s1 = mem_ld_i32( s1 + 16 ). l2 = s1. s2 = 16. s1 = s1 + s2. s2 = l1. s3 = l2. s3 = mem_ld_i32( s3 + 4 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
         dispatch_t6( iv_idx = lv_ci_func p0 = s1 p1 = s2 ). s1 = p0. s2 = 0. mem_st_i32( iv_addr = s1 + 4 iv_val = s2 ). s1 = p0. s1 = mem_ld_i32( s1 ). s1 = mem_ld_i32( s1 + 16 ). p0 = s1. s1 = mem_ld_i32( s1 + 44 ). s2 = 47.
         IF zcl_wasm_rt=>le_u32( iv_a = s1 iv_b = s2 ) = abap_true. s1 = 1. ELSE. s1 = 0. ENDIF.
         IF s1 <> 0. lv_br = 2. EXIT. ENDIF. " br_if 2
@@ -2185,9 +2139,7 @@ FORM f676 USING p0 TYPE i CHANGING rv TYPE int8.
       IF s1 > s2. s1 = 1. ELSE. s1 = 0. ENDIF.
       IF s1 <> 0.
         s1 = p0. s1 = mem_ld_i32( s1 ). s1 = mem_ld_i32( s1 + 16 ). l3 = s1. s2 = 16. s1 = s1 + s2. s2 = l1. s3 = l2. s4 = p0. s4 = mem_ld_i32( s4 + 16 ). l1 = s4. s3 = zcl_wasm_rt=>shl32( iv_val = s3 iv_shift = s4 ). s4 = l1. s3 = s3 - s4.
-        s4 = 17. s3 = s3 + s4. s4 = l3. s4 = mem_ld_i32( s4 + 8 ).
-        DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
-        s1 = dispatch_t11( iv_idx = lv_ci_func p0 = s1 p1 = s2 p2 = s3 ). l1 = s1.
+        s4 = 17. s3 = s3 + s4. s4 = l3. s4 = mem_ld_i32( s4 + 8 ). DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect s1 = dispatch_t11( iv_idx = lv_ci_func p0 = s1 p1 = s2 p2 = s3 ). l1 = s1.
         IF s1 = 0. s1 = 1. ELSE. s1 = 0. ENDIF.
         IF s1 <> 0.
           s1 = p0. s1 = mem_ld_i32( s1 + 4 ). l1 = s1.
@@ -2255,8 +2207,7 @@ FORM f677 USING p0 TYPE i CHANGING rv TYPE i.
               s1 = p0. s1 = mem_ld_i32_8u( s1 + 4 ). s2 = 3.
               IF s1 <> s2. s1 = 1. ELSE. s1 = 0. ENDIF.
               IF s1 <> 0. lv_br = 4. EXIT. ENDIF. " br_if 4
-              s1 = p0. s1 = mem_ld_i32( s1 + 8 ). p0 = s1. s1 = mem_ld_i32( s1 ). l2 = s1. s2 = p0. s3 = 4. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). l3 = s2. s2 = mem_ld_i32( s2 ).
-              DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
+              s1 = p0. s1 = mem_ld_i32( s1 + 8 ). p0 = s1. s1 = mem_ld_i32( s1 ). l2 = s1. s2 = p0. s3 = 4. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). l3 = s2. s2 = mem_ld_i32( s2 ). DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
               dispatch_t2( iv_idx = lv_ci_func p0 = s1 ). s1 = l3. s1 = mem_ld_i32( s1 + 4 ).
               IF s1 = 0. s1 = 1. ELSE. s1 = 0. ENDIF.
               IF s1 <> 0. lv_br = 3. EXIT. ENDIF. " br_if 3
@@ -2543,9 +2494,7 @@ FORM f682 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
       PERFORM f244 USING s3 s4 s5 CHANGING s3. lv_br = 1. EXIT. " br 1
     ELSE.
     ENDIF.
-    s4 = p1. s4 = mem_ld_i32( s4 + 20 ). s5 = p0. s6 = p1. s6 = mem_ld_i32( s6 + 24 ). s6 = mem_ld_i32( s6 + 16 ).
-    DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect
-    s4 = dispatch_t7( iv_idx = lv_ci_func p0 = s4 p1 = s5 ).
+    s4 = p1. s4 = mem_ld_i32( s4 + 20 ). s5 = p0. s6 = p1. s6 = mem_ld_i32( s6 + 24 ). s6 = mem_ld_i32( s6 + 16 ). DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect s4 = dispatch_t7( iv_idx = lv_ci_func p0 = s4 p1 = s5 ).
   ENDDO.
   s5 = l2. s6 = 16. s5 = s5 + s6. gv_g0 = s5. rv = s4.
 ENDFORM.
@@ -2727,9 +2676,7 @@ FORM f685 USING p0 TYPE i p1 TYPE i.
       ELSE.
         s2 = l2.
       ENDIF.
-      s3 = p0. s3 = mem_ld_i32( s3 + 4 ).
-      DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-      dispatch_t6( iv_idx = lv_ci_func p0 = s1 p1 = s2 ). s1 = p1. s2 = 0. mem_st_i32( iv_addr = s1 + 72 iv_val = s2 ).
+      s3 = p0. s3 = mem_ld_i32( s3 + 4 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s1 p1 = s2 ). s1 = p1. s2 = 0. mem_st_i32( iv_addr = s1 + 72 iv_val = s2 ).
     ELSE.
     ENDIF.
     DO 1 TIMES. " block
@@ -2834,9 +2781,8 @@ FORM f687 USING p0 TYPE i.
       IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
       s0 = 1116632. s1 = l2. s2 = p0.
       IF s2 <> 0. s0 = s0. ELSE. s0 = s1. ENDIF.
-      p0 = s0. s0 = mem_ld_i32( s0 ). l2 = s0. s1 = p0. s2 = 4. s1 = s1 + s2. s1 = mem_ld_i32( s1 ). l3 = s1. s1 = mem_ld_i32( s1 ).
-      DATA(lv_ci_func) = mt_tab0[ s1 + 1 ]. " call_indirect
-      dispatch_t2( iv_idx = lv_ci_func p0 = s0 ). s0 = l3. s0 = mem_ld_i32( s0 + 4 ).
+      p0 = s0. s0 = mem_ld_i32( s0 ). l2 = s0. s1 = p0. s2 = 4. s1 = s1 + s2. s1 = mem_ld_i32( s1 ). l3 = s1. s1 = mem_ld_i32( s1 ). DATA(lv_ci_func) = mt_tab0[ s1 + 1 ]. " call_indirect dispatch_t2( iv_idx = lv_ci_func p0 = s0 ). s0 = l3.
+      s0 = mem_ld_i32( s0 + 4 ).
       IF s0 <> 0.
         s0 = l2. PERFORM f125 USING s0.
       ELSE.
@@ -2850,9 +2796,8 @@ FORM f687 USING p0 TYPE i.
     IF zcl_wasm_rt=>le_u32( iv_a = s1 iv_b = s2 ) = abap_true. s1 = 1. ELSE. s1 = 0. ENDIF.
     s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ).
     IF s0 <> 0. EXIT. ENDIF. " br_if 0
-    s0 = l2. s0 = mem_ld_i32( s0 ). p0 = s0. s1 = l2. s2 = 4. s1 = s1 + s2. s1 = mem_ld_i32( s1 ). l3 = s1. s1 = mem_ld_i32( s1 ).
-    DATA(lv_ci_func) = mt_tab0[ s1 + 1 ]. " call_indirect
-    dispatch_t2( iv_idx = lv_ci_func p0 = s0 ). s0 = l3. s0 = mem_ld_i32( s0 + 4 ).
+    s0 = l2. s0 = mem_ld_i32( s0 ). p0 = s0. s1 = l2. s2 = 4. s1 = s1 + s2. s1 = mem_ld_i32( s1 ). l3 = s1. s1 = mem_ld_i32( s1 ). DATA(lv_ci_func) = mt_tab0[ s1 + 1 ]. " call_indirect dispatch_t2( iv_idx = lv_ci_func p0 = s0 ). s0 = l3.
+    s0 = mem_ld_i32( s0 + 4 ).
     IF s0 <> 0.
       s0 = p0. PERFORM f125 USING s0.
     ELSE.
@@ -3008,8 +2953,7 @@ FORM f690 USING p0 TYPE i p1 TYPE i p2 TYPE i.
         s0 = l5.
         IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
-        s0 = 1. l5 = s0. s0 = l4. s0 = mem_ld_i32( s0 + 20 ). s1 = 1080445. s2 = 2. s3 = l4. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ).
-        DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
+        s0 = 1. l5 = s0. s0 = l4. s0 = mem_ld_i32( s0 + 20 ). s1 = 1080445. s2 = 2. s3 = l4. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
         s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
         IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
         IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
@@ -3019,8 +2963,7 @@ FORM f690 USING p0 TYPE i p1 TYPE i p2 TYPE i.
       s0 = l5.
       IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
       IF s0 <> 0.
-        s0 = 1. l5 = s0. s0 = l4. s0 = mem_ld_i32( s0 + 20 ). s1 = 1117365. s2 = 1. s3 = l4. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ).
-        DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
+        s0 = 1. l5 = s0. s0 = l4. s0 = mem_ld_i32( s0 + 20 ). s1 = 1117365. s2 = 1. s3 = l4. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
         s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
         IF s0 <> 0. lv_br = 2. EXIT. ENDIF. " br_if 2
         s0 = l4. s0 = mem_ld_i32( s0 + 28 ). l6 = s0.
@@ -3032,16 +2975,12 @@ FORM f690 USING p0 TYPE i p1 TYPE i p2 TYPE i.
       RAISE EXCEPTION TYPE cx_sy_program_error. " SIMD not supported
       RAISE EXCEPTION TYPE cx_sy_program_error. " SIMD not supported
       s2 = l3. s3 = l3. s4 = 15. s3 = s3 + s4. mem_st_i32( iv_addr = s2 + 8 iv_val = s3 ). s2 = l3. s3 = l3. mem_st_i32( iv_addr = s2 + 36 iv_val = s3 ). s2 = p1. s3 = l3. s4 = 16. s3 = s3 + s4. s4 = p2. s4 = mem_ld_i32( s4 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
-      s2 = dispatch_t7( iv_idx = lv_ci_func p0 = s2 p1 = s3 ).
+      DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect s2 = dispatch_t7( iv_idx = lv_ci_func p0 = s2 p1 = s3 ).
       IF s2 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
-      s2 = l3. s2 = mem_ld_i32( s2 + 36 ). s3 = 1050367. s4 = 2. s5 = l3. s5 = mem_ld_i32( s5 + 40 ). s5 = mem_ld_i32( s5 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect
+      s2 = l3. s2 = mem_ld_i32( s2 + 36 ). s3 = 1050367. s4 = 2. s5 = l3. s5 = mem_ld_i32( s5 + 40 ). s5 = mem_ld_i32( s5 + 12 ). DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect
       s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ). l5 = s2. lv_br = 1. EXIT. " br 1
     ENDDO.
-    s2 = p1. s3 = l4. s4 = p2. s4 = mem_ld_i32( s4 + 12 ).
-    DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
-    s2 = dispatch_t7( iv_idx = lv_ci_func p0 = s2 p1 = s3 ). l5 = s2.
+    s2 = p1. s3 = l4. s4 = p2. s4 = mem_ld_i32( s4 + 12 ). DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect s2 = dispatch_t7( iv_idx = lv_ci_func p0 = s2 p1 = s3 ). l5 = s2.
   ENDDO.
   s2 = p0. s3 = 1. mem_st_i32_8( iv_addr = s2 + 5 iv_val = s3 ). s2 = p0. s3 = l5. mem_st_i32_8( iv_addr = s2 + 4 iv_val = s3 ). s2 = l3. s3 = -64. s2 = s2 - s3. gv_g0 = s2.
 ENDFORM.
@@ -3060,20 +2999,15 @@ FORM f691 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
       IF s5 <> 0. s3 = s3. ELSE. s3 = s4. ENDIF.
       s4 = 2. s5 = 1. s6 = l5.
       IF s6 <> 0. s4 = s4. ELSE. s4 = s5. ENDIF.
-      s5 = l4. s5 = mem_ld_i32( s5 + 24 ). s5 = mem_ld_i32( s5 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect
-      s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ).
+      s5 = l4. s5 = mem_ld_i32( s5 + 24 ). s5 = mem_ld_i32( s5 + 12 ). DATA(lv_ci_func) = mt_tab0[ s5 + 1 ]. " call_indirect s2 = dispatch_t11( iv_idx = lv_ci_func p0 = s2 p1 = s3 p2 = s4 ).
       IF s2 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
-      s1 = p1. s2 = l4. s3 = p2. s3 = mem_ld_i32( s3 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-      s1 = dispatch_t7( iv_idx = lv_ci_func p0 = s1 p1 = s2 ). lv_br = 1. EXIT. " br 1
+      s1 = p1. s2 = l4. s3 = p2. s3 = mem_ld_i32( s3 + 12 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s1 = dispatch_t7( iv_idx = lv_ci_func p0 = s1 p1 = s2 ). lv_br = 1. EXIT. " br 1
     ELSE.
     ENDIF.
     s2 = l5.
     IF s2 = 0. s2 = 1. ELSE. s2 = 0. ENDIF.
     IF s2 <> 0.
-      s2 = 1. s3 = l4. s3 = mem_ld_i32( s3 + 20 ). s4 = 1050385. s5 = 2. s6 = l4. s6 = mem_ld_i32( s6 + 24 ). s6 = mem_ld_i32( s6 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect
+      s2 = 1. s3 = l4. s3 = mem_ld_i32( s3 + 20 ). s4 = 1050385. s5 = 2. s6 = l4. s6 = mem_ld_i32( s6 + 24 ). s6 = mem_ld_i32( s6 + 12 ). DATA(lv_ci_func) = mt_tab0[ s6 + 1 ]. " call_indirect
       s3 = dispatch_t11( iv_idx = lv_ci_func p0 = s3 p1 = s4 p2 = s5 ).
       IF s3 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
       s2 = l4. s2 = mem_ld_i32( s2 + 28 ). l6 = s2.
@@ -3085,11 +3019,9 @@ FORM f691 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
     RAISE EXCEPTION TYPE cx_sy_program_error. " SIMD not supported
     RAISE EXCEPTION TYPE cx_sy_program_error. " SIMD not supported
     s4 = l3. s5 = l3. s6 = 15. s5 = s5 + s6. mem_st_i32( iv_addr = s4 + 8 iv_val = s5 ). s4 = l3. s5 = l3. mem_st_i32( iv_addr = s4 + 36 iv_val = s5 ). s4 = 1. s5 = p1. s6 = l3. s7 = 16. s6 = s6 + s7. s7 = p2. s7 = mem_ld_i32( s7 + 12 ).
-    DATA(lv_ci_func) = mt_tab0[ s7 + 1 ]. " call_indirect
-    s5 = dispatch_t7( iv_idx = lv_ci_func p0 = s5 p1 = s6 ).
+    DATA(lv_ci_func) = mt_tab0[ s7 + 1 ]. " call_indirect s5 = dispatch_t7( iv_idx = lv_ci_func p0 = s5 p1 = s6 ).
     IF s5 <> 0. EXIT. ENDIF. " br_if 0
-    s4 = l3. s4 = mem_ld_i32( s4 + 36 ). s5 = 1050367. s6 = 2. s7 = l3. s7 = mem_ld_i32( s7 + 40 ). s7 = mem_ld_i32( s7 + 12 ).
-    DATA(lv_ci_func) = mt_tab0[ s7 + 1 ]. " call_indirect
+    s4 = l3. s4 = mem_ld_i32( s4 + 36 ). s5 = 1050367. s6 = 2. s7 = l3. s7 = mem_ld_i32( s7 + 40 ). s7 = mem_ld_i32( s7 + 12 ). DATA(lv_ci_func) = mt_tab0[ s7 + 1 ]. " call_indirect
     s4 = dispatch_t11( iv_idx = lv_ci_func p0 = s4 p1 = s5 p2 = s6 ).
   ENDDO.
   mem_st_i32_8( iv_addr = s3 + 8 iv_val = s4 ). s3 = p0. s4 = l5. s5 = 1. s4 = s4 + s5. mem_st_i32( iv_addr = s3 iv_val = s4 ). s3 = l3. s4 = -64. s3 = s3 - s4. gv_g0 = s3. s3 = p0. rv = s3.
@@ -3133,9 +3065,7 @@ FORM f692 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i p5 TYPE i p6 T
     s0 = l7. s0 = mem_ld_i32( s0 + 24 ). p1 = s0.
     IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0. EXIT. ENDIF. " br_if 0
-    s0 = p0. s0 = mem_ld_i32( s0 ). s1 = p1. s2 = 0. s3 = p0. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ).
-    DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-    s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
+    s0 = p0. s0 = mem_ld_i32( s0 ). s1 = p1. s2 = 0. s3 = p0. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
   ENDDO.
   s0 = l7. s1 = 32. s0 = s0 + s1. gv_g0 = s0. s0 = p3. rv = s0.
 ENDFORM.
@@ -3507,14 +3437,13 @@ FORM f700 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
   DATA l2 TYPE i. DATA l3 TYPE i. DATA s0 TYPE i. DATA s1 TYPE i. DATA s2 TYPE i. DATA s3 TYPE i. DATA s4 TYPE i. DATA s5 TYPE i. DATA s6 TYPE i. DATA s7 TYPE i. DATA s8 TYPE i. DATA s9 TYPE i. DATA s10 TYPE i. DATA s11 TYPE i.
   DATA s12 TYPE i. DATA s13 TYPE i. DATA s14 TYPE i. DATA s15 TYPE i. DATA s16 TYPE i. DATA s17 TYPE i. DATA s18 TYPE i. DATA s19 TYPE i. DATA s20 TYPE i. DATA s21 TYPE i. DATA s22 TYPE i. DATA s23 TYPE i. DATA s24 TYPE i. DATA s25 TYPE i.
   DATA s26 TYPE i. DATA s27 TYPE i. DATA s28 TYPE i. DATA s29 TYPE i. DATA s30 TYPE i. DATA s31 TYPE i. DATA s32 TYPE i. DATA lv_br TYPE i. s0 = gv_g0. s1 = 32. s0 = s0 - s1. l2 = s0. gv_g0 = s0. s0 = p1. s0 = mem_ld_i32( s0 + 20 ).
-  s1 = 1121833. s2 = 5. s3 = p1. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ).
-  DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-  s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l3 = s0. s0 = l2. s1 = 0. mem_st_i32_8( iv_addr = s0 + 13 iv_val = s1 ). s0 = l2. s1 = l3. mem_st_i32_8( iv_addr = s0 + 12 iv_val = s1 ). s0 = l2. s1 = p1.
-  mem_st_i32( iv_addr = s0 + 8 iv_val = s1 ). s0 = l2. s1 = 8. s0 = s0 + s1. s1 = 1119572. s2 = 4. s3 = p0. s4 = 1121840. PERFORM f629 USING s0 s1 s2 s3 s4 CHANGING s0. s1 = l2. s2 = p0.
-  s2 = zcl_wasm_rt=>mem_ld_i32_16s( iv_mem = mv_mem iv_addr = s2 ). s3 = 2. s2 = zcl_wasm_rt=>shl32( iv_val = s2 iv_shift = s3 ). p0 = s2. s3 = 1121856. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). mem_st_i32( iv_addr = s1 + 20 iv_val = s2 ).
-  s1 = l2. s2 = p0. s3 = 1122164. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). mem_st_i32( iv_addr = s1 + 16 iv_val = s2 ). s1 = p0. s2 = 1122472. s1 = s1 + s2. s1 = mem_ld_i32( s1 ). l3 = s1. s1 = 1119576. s2 = 4. s3 = l2. s4 = 16. s3 = s3 + s4.
-  s4 = 1119580. PERFORM f629 USING s0 s1 s2 s3 s4 CHANGING s0. s1 = l2. s2 = l3. mem_st_i32( iv_addr = s1 + 28 iv_val = s2 ). s1 = l2. s2 = p0. s3 = 1122780. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). mem_st_i32( iv_addr = s1 + 24 iv_val = s2 ).
-  s1 = 1119596. s2 = 7. s3 = l2. s4 = 24. s3 = s3 + s4. s4 = 1119580. PERFORM f629 USING s0 s1 s2 s3 s4 CHANGING s0. l3 = s0. s0 = l2. s0 = mem_ld_i32_8u( s0 + 12 ). p0 = s0.
+  s1 = 1121833. s2 = 5. s3 = p1. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l3 = s0. s0 = l2. s1 = 0.
+  mem_st_i32_8( iv_addr = s0 + 13 iv_val = s1 ). s0 = l2. s1 = l3. mem_st_i32_8( iv_addr = s0 + 12 iv_val = s1 ). s0 = l2. s1 = p1. mem_st_i32( iv_addr = s0 + 8 iv_val = s1 ). s0 = l2. s1 = 8. s0 = s0 + s1. s1 = 1119572. s2 = 4. s3 = p0.
+  s4 = 1121840. PERFORM f629 USING s0 s1 s2 s3 s4 CHANGING s0. s1 = l2. s2 = p0. s2 = zcl_wasm_rt=>mem_ld_i32_16s( iv_mem = mv_mem iv_addr = s2 ). s3 = 2. s2 = zcl_wasm_rt=>shl32( iv_val = s2 iv_shift = s3 ). p0 = s2. s3 = 1121856.
+  s2 = s2 + s3. s2 = mem_ld_i32( s2 ). mem_st_i32( iv_addr = s1 + 20 iv_val = s2 ). s1 = l2. s2 = p0. s3 = 1122164. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). mem_st_i32( iv_addr = s1 + 16 iv_val = s2 ). s1 = p0. s2 = 1122472. s1 = s1 + s2.
+  s1 = mem_ld_i32( s1 ). l3 = s1. s1 = 1119576. s2 = 4. s3 = l2. s4 = 16. s3 = s3 + s4. s4 = 1119580. PERFORM f629 USING s0 s1 s2 s3 s4 CHANGING s0. s1 = l2. s2 = l3. mem_st_i32( iv_addr = s1 + 28 iv_val = s2 ). s1 = l2. s2 = p0.
+  s3 = 1122780. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). mem_st_i32( iv_addr = s1 + 24 iv_val = s2 ). s1 = 1119596. s2 = 7. s3 = l2. s4 = 24. s3 = s3 + s4. s4 = 1119580. PERFORM f629 USING s0 s1 s2 s3 s4 CHANGING s0. l3 = s0. s0 = l2.
+  s0 = mem_ld_i32_8u( s0 + 12 ). p0 = s0.
   DO 1 TIMES. " block
     s0 = p0. s1 = 0.
     IF s0 <> s1. s0 = 1. ELSE. s0 = 0. ENDIF.
@@ -3526,13 +3455,11 @@ FORM f700 USING p0 TYPE i p1 TYPE i CHANGING rv TYPE i.
     s0 = l3. s0 = mem_ld_i32( s0 ). p0 = s0. s0 = mem_ld_i32_8u( s0 + 28 ). s1 = 4. s0 = zcl_wasm_rt=>and32( iv_a = s0 iv_b = s1 ).
     IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0.
-      s0 = p0. s0 = mem_ld_i32( s0 + 20 ). s1 = 1080545. s2 = 2. s3 = p0. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ).
-      DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
+      s0 = p0. s0 = mem_ld_i32( s0 + 20 ). s1 = 1080545. s2 = 2. s3 = p0. s3 = mem_ld_i32( s3 + 24 ). s3 = mem_ld_i32( s3 + 12 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
       s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). lv_br = 1. EXIT. " br 1
     ELSE.
     ENDIF.
-    s1 = p0. s1 = mem_ld_i32( s1 + 20 ). s2 = 1080042. s3 = 1. s4 = p0. s4 = mem_ld_i32( s4 + 24 ). s4 = mem_ld_i32( s4 + 12 ).
-    DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
+    s1 = p0. s1 = mem_ld_i32( s1 + 20 ). s2 = 1080042. s3 = 1. s4 = p0. s4 = mem_ld_i32( s4 + 24 ). s4 = mem_ld_i32( s4 + 12 ). DATA(lv_ci_func) = mt_tab0[ s4 + 1 ]. " call_indirect
     s1 = dispatch_t11( iv_idx = lv_ci_func p0 = s1 p1 = s2 p2 = s3 ).
   ENDDO.
   s2 = l2. s3 = 32. s2 = s2 + s3. gv_g0 = s2. rv = s1.
@@ -4081,8 +4008,8 @@ FORM f713 USING p0 TYPE i p1 TYPE i.
       ENDDO.
       s0 = l4. s1 = l2. s2 = 2. s1 = zcl_wasm_rt=>shl32( iv_val = s1 iv_shift = s2 ). s0 = s0 + s1. s1 = p0. s1 = mem_ld_i32( s1 + 60 ). s2 = 1. s1 = zcl_wasm_rt=>shl32( iv_val = s1 iv_shift = s2 ). s2 = 1.
       s1 = zcl_wasm_rt=>or32( iv_a = s1 iv_b = s2 ). mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = p0. s1 = l2. mem_st_i32( iv_addr = s0 + 60 iv_val = s1 ). s0 = p0. s1 = 16. s0 = s0 + s1. s1 = p1. s2 = p0. s2 = mem_ld_i32( s2 + 4 ).
-      DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-      dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ). s0 = p0. s1 = p0. s1 = mem_ld_i32( s1 + 40 ). p0 = s1. s2 = 1. s1 = s1 - s2. mem_st_i32( iv_addr = s0 + 40 iv_val = s1 ). s0 = p0. s1 = 0.
+      DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t6( iv_idx = lv_ci_func p0 = s0 p1 = s1 ). s0 = p0. s1 = p0. s1 = mem_ld_i32( s1 + 40 ). p0 = s1. s2 = 1. s1 = s1 - s2. mem_st_i32( iv_addr = s0 + 40 iv_val = s1 ).
+      s0 = p0. s1 = 0.
       IF s0 <= s1. s0 = 1. ELSE. s0 = 0. ENDIF.
       IF s0 <> 0. lv_br = 1. EXIT. ENDIF. " br_if 1
       RETURN.
@@ -4199,9 +4126,8 @@ FORM f715 USING p0 TYPE i p1 TYPE i p2 TYPE i CHANGING rv TYPE i.
           s1 = zcl_wasm_rt=>and32( iv_a = s1 iv_b = s2 ).
           IF s1 = 0. s1 = 1. ELSE. s1 = 0. ENDIF.
           IF s1 <> 0.
-            s1 = p1. s1 = mem_ld_i32( s1 ). p2 = s1. s2 = p1. s3 = 4. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). l3 = s2. s2 = mem_ld_i32( s2 ).
-            DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect
-            dispatch_t2( iv_idx = lv_ci_func p0 = s1 ). s1 = l3. s1 = mem_ld_i32( s1 + 4 ).
+            s1 = p1. s1 = mem_ld_i32( s1 ). p2 = s1. s2 = p1. s3 = 4. s2 = s2 + s3. s2 = mem_ld_i32( s2 ). l3 = s2. s2 = mem_ld_i32( s2 ). DATA(lv_ci_func) = mt_tab0[ s2 + 1 ]. " call_indirect dispatch_t2( iv_idx = lv_ci_func p0 = s1 ).
+            s1 = l3. s1 = mem_ld_i32( s1 + 4 ).
             IF s1 <> 0.
               s1 = p2. PERFORM f125 USING s1.
             ELSE.
@@ -4284,9 +4210,7 @@ FORM f717 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TY
         s0 = l5. s1 = -2147483648. mem_st_i32( iv_addr = s0 + 16 iv_val = s1 ). lv_br = 1. EXIT. " br 1
       ELSE.
       ENDIF.
-      s0 = l7. s0 = mem_ld_i32( s0 ). s1 = 0. s2 = 4. s3 = l7. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ).
-      DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-      s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l6 = s0.
+      s0 = l7. s0 = mem_ld_i32( s0 ). s1 = 0. s2 = 4. s3 = l7. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ). l6 = s0.
       IF s0 <> 0.
         s0 = l5. s1 = 1. mem_st_i32( iv_addr = s0 + 20 iv_val = s1 ). s0 = l6. s1 = p1. s2 = p1. s2 = zcl_wasm_rt=>clz32( s2 ). p1 = s2. s1 = zcl_wasm_rt=>shl32( iv_val = s1 iv_shift = s2 ). mem_st_i32( iv_addr = s0 iv_val = s1 ). s0 = l5.
         s1 = l6. mem_st_i32( iv_addr = s0 + 24 iv_val = s1 ). s0 = l5. s1 = 32. s2 = p1. s1 = s1 - s2. mem_st_i32( iv_addr = s0 + 16 iv_val = s1 ). s0 = 0. l6 = s0. lv_br = 1. EXIT. " br 1
@@ -4300,9 +4224,7 @@ FORM f717 USING p0 TYPE i p1 TYPE i p2 TYPE i p3 TYPE i p4 TYPE i CHANGING rv TY
     s0 = l5. s0 = mem_ld_i32( s0 + 24 ). p2 = s0.
     IF s0 = 0. s0 = 1. ELSE. s0 = 0. ENDIF.
     IF s0 <> 0. EXIT. ENDIF. " br_if 0
-    s0 = p0. s0 = mem_ld_i32( s0 ). s1 = p2. s2 = 0. s3 = p0. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ).
-    DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect
-    s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
+    s0 = p0. s0 = mem_ld_i32( s0 ). s1 = p2. s2 = 0. s3 = p0. s4 = 4. s3 = s3 + s4. s3 = mem_ld_i32( s3 ). DATA(lv_ci_func) = mt_tab0[ s3 + 1 ]. " call_indirect s0 = dispatch_t11( iv_idx = lv_ci_func p0 = s0 p1 = s1 p2 = s2 ).
   ENDDO.
   s0 = l5. s1 = 32. s0 = s0 + s1. gv_g0 = s0. s0 = p1. rv = s0.
 ENDFORM.
