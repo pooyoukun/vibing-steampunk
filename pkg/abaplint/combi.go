@@ -19,8 +19,29 @@ type Matcher func(tokens []Token, positions []int) []int
 
 // --- Keyword / String matching ---
 
-// Str matches a single keyword (case-insensitive).
+// Str matches a keyword or keyword sequence (case-insensitive).
+// Multi-word strings like "AND RETURN" are split on spaces/dashes
+// and matched as a sequence (same as abaplint's WordSequence).
 func Str(keyword string) Matcher {
+	if strings.ContainsAny(keyword, " -") {
+		// Split on spaces, expanding dashes: "NO-GAP" → ["NO", "-", "GAP"]
+		expanded := strings.ReplaceAll(keyword, "-", " - ")
+		parts := strings.Fields(expanded)
+		matchers := make([]Matcher, len(parts))
+		for i, p := range parts {
+			upper := strings.ToUpper(p)
+			matchers[i] = func(tokens []Token, positions []int) []int {
+				var result []int
+				for _, pos := range positions {
+					if pos < len(tokens) && strings.ToUpper(tokens[pos].Str) == upper {
+						result = append(result, pos+1)
+					}
+				}
+				return result
+			}
+		}
+		return Seq(matchers...)
+	}
 	upper := strings.ToUpper(keyword)
 	return func(tokens []Token, positions []int) []int {
 		var result []int
@@ -228,6 +249,34 @@ func AnyToken() Matcher {
 			}
 		}
 		return result
+	}
+}
+
+// expressionRegistry maps expression names to their matcher constructors.
+// Populated by generated grammar code (grammar_gen.go).
+var expressionRegistry = map[string]func() Matcher{}
+
+// Expr lazily resolves an expression by name from the expressionRegistry.
+// This breaks circular dependencies between expressions.
+func Expr(name string) Matcher {
+	var cached Matcher
+	return func(tokens []Token, positions []int) []int {
+		if cached == nil {
+			if factory, ok := expressionRegistry[name]; ok {
+				cached = factory()
+			} else {
+				// Unknown expression — match nothing
+				return nil
+			}
+		}
+		return cached(tokens, positions)
+	}
+}
+
+// FailMatcher always fails to match (used for failCombinator/failStar).
+func FailMatcher() Matcher {
+	return func(tokens []Token, positions []int) []int {
+		return nil
 	}
 }
 
