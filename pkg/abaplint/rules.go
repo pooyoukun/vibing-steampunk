@@ -71,23 +71,33 @@ func (r *MaxOneStatementRule) GetKey() string { return "max_one_statement" }
 
 func (r *MaxOneStatementRule) Run(file *ABAPFile) []Issue {
 	var issues []Issue
-	prev := 0
+	// Track which rows already have a statement ending (period/comma)
+	rowHasEnd := map[int]bool{}
 	for _, stmt := range file.GetStatements() {
-		if stmt.Type == "Comment" || stmt.Type == "Empty" {
+		if stmt.Type == "Comment" || stmt.Type == "Empty" || stmt.Type == "NativeSQL" {
 			continue
 		}
 		if len(stmt.Tokens) == 0 {
 			continue
 		}
-		last := stmt.Tokens[len(stmt.Tokens)-1]
-		if last.Row == prev {
+		// Skip chained statements (colon chains are one logical group)
+		if stmt.Colon != nil {
+			continue
+		}
+		// The end row is the last token (period)
+		lastRow := stmt.Tokens[len(stmt.Tokens)-1].Row
+		// The start row is the first real token
+		firstRow := stmt.Tokens[0].Row
+
+		// Check if another statement already ended on first token's row
+		if rowHasEnd[firstRow] {
 			issues = append(issues, Issue{
-				Key: r.GetKey(), Row: last.Row, Col: last.Col,
+				Key: r.GetKey(), Row: firstRow, Col: stmt.Tokens[0].Col,
 				Message:  "Only one statement per line",
 				Severity: "Error",
 			})
 		}
-		prev = last.Row
+		rowHasEnd[lastRow] = true
 	}
 	return issues
 }
@@ -110,9 +120,15 @@ func (r *PreferredCompareOperatorRule) Run(file *ABAPFile) []Issue {
 		bad[strings.ToUpper(op)] = replacements[strings.ToUpper(op)]
 	}
 
+	// Only check inside conditional statements
+	condStmts := map[string]bool{
+		"If": true, "ElseIf": true, "While": true,
+		"Check": true,
+	}
+
 	var issues []Issue
 	for _, stmt := range file.GetStatements() {
-		if stmt.Type == "Comment" {
+		if !condStmts[stmt.Type] {
 			continue
 		}
 		for _, tok := range stmt.Tokens {
