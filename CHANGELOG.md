@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.32.0] - 2026-03-22
+### Features
+
+- **CLI Toolchain** — Full ABAP development from the terminal:
+  - `vsp query <table> --top N --where "..."` — query SAP tables (standard ADT)
+  - `vsp grep <pattern> --package PKG` — search source code across packages
+  - `vsp system info` — SAP version, kernel, ZADT_VSP check
+  - `vsp lint` — offline ABAP linter (7 rules, no SAP needed)
+  - `vsp execute <code|file>` — run ABAP on SAP
+  - `vsp compile wasm <file>` — WASM→ABAP compiler (offline)
+  - `vsp compile ts <file>` — TypeScript→ABAP transpiler
+  - `vsp parse` — ABAP parser with text/json/summary output
+- **CLI Documentation** — `docs/cli-guide.md` with feature requirements matrix showing which commands need Standard ADT, ZADT_VSP, Node.js, or work fully offline.
+- **WASM Self-Host Compiler Verified** — 3-way WASM correctness proof:
+  1. Native WASM (Node.js): 51/51 PASS
+  2. Go WASM→ABAP compiler: compiles OK
+  3. ABAP self-host on SAP A4H: 11/11 PASS (12 functions: add, factorial, fibonacci, gcd, is_prime, abs, max, min, pow, sum_to, collatz, select)
+- **ABAP Linter** — 8 lint rules, 100% oracle match on 4 rules vs TypeScript abaplint, 795μs/file
+
 ## [2.31.0] - 2026-03-20
 ### Features
 

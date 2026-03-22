@@ -159,8 +159,23 @@ Compile WebAssembly binaries to native ABAP. Three paths, one goal:
 
 > *Branch: `feat/wasm-abap`. See [reports/2026-03-20-001](reports/2026-03-20-001-wasm-abap-achievement.md) for full details.*
 
+### Full CLI Toolchain — SAP from the Terminal
+
+Every vsp feature is available as a CLI command. No SAP GUI, no Eclipse, no IDE.
+
+```bash
+vsp query T000 --top 5                          # query tables
+vsp grep "SELECT.*mara" --package '$TMP'         # search source code
+vsp lint --file myclass.clas.abap                # offline ABAP linter
+vsp compile wasm program.wasm --class ZCL_DEMO   # WASM→ABAP compiler
+vsp parse --stdin --format summary < source.abap # ABAP parser
+vsp system info                                  # system version check
+```
+
+Most commands work with standard ADT. `lint`, `parse`, `compile wasm` work fully offline.
+See **[CLI Guide](docs/cli-guide.md)** for the complete reference with feature requirements matrix.
+
 ### Other Highlights
-- **CLI DevOps Surface**: Full ABAP DevOps from the terminal — `vsp source read/write/edit/context`, `vsp test`, `vsp atc`, `vsp deploy`, `vsp transport list/get`, `vsp install zadt-vsp/abapgit`. Pipe source code, script CI/CD pipelines, bootstrap SAP systems without MCP.
 - **Bootstrap from CLI**: `vsp install abapgit` + `vsp install zadt-vsp` — deploy dependencies to SAP systems directly from the command line. No SAP GUI needed.
 - **Codebase Decomposition**: `server.go` (2,539→256 lines), `workflows.go` (3,564→402 lines) split into domain-specific files. Easier to contribute, review, and maintain.
 
