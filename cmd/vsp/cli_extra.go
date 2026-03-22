@@ -502,6 +502,21 @@ func runGraph(cmd *cobra.Command, args []string) error {
 
 	ctx := context.Background()
 
+	// For transactions: resolve TCODE → program name first
+	if objType == "TRAN" || objType == "TCODE" {
+		result, err := client.RunQuery(ctx,
+			fmt.Sprintf("SELECT PGMNA FROM TSTC WHERE TCODE = '%s'", name), 1)
+		if err == nil && result != nil && len(result.Rows) > 0 {
+			pgm := fmt.Sprintf("%v", result.Rows[0]["PGMNA"])
+			fmt.Fprintf(os.Stderr, "Transaction %s → Program %s\n\n", name, pgm)
+			name = strings.TrimSpace(pgm)
+			objType = "PROG"
+			objURI = "/sap/bc/adt/programs/programs/" + strings.ToLower(name)
+		} else {
+			return fmt.Errorf("transaction %s not found in TSTC", name)
+		}
+	}
+
 	// Try ADT call graph first, fallback to WBCROSSGT
 	adtFailed := false
 
@@ -558,49 +573,79 @@ func runGraph(cmd *cobra.Command, args []string) error {
 }
 
 func graphFromCross(ctx context.Context, client *adt.Client, name, objType, direction string) error {
-	var sql string
+	// Build queries for BOTH cross-reference tables
+	// WBCROSSGT: OO references (classes, interfaces, methods, types)
+	// CROSS:     procedural references (FORMs, function modules, programs)
+	var queries []string
+
 	if direction == "callers" {
-		// Who references this object? Search by NAME (any OTYPE — TY, CL, IF, DA, ME)
-		sql = fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE NAME LIKE '%s%%'", name)
+		// Who references this object?
+		queries = append(queries,
+			fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE NAME LIKE '%s%%'", name))
+		// Also check CROSS for procedural callers
+		queries = append(queries,
+			fmt.Sprintf("SELECT INCLUDE, TYPE AS OTYPE, NAME FROM CROSS WHERE NAME LIKE '%s%%'", name))
 	} else {
-		// What does this object reference? WBCROSSGT.INCLUDE LIKE our object
-		sql = fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE INCLUDE LIKE '%s%%'", name)
+		// What does this object reference? Pattern depends on object type
+		switch objType {
+		case "CLAS":
+			// Class includes: CLASSNAME===========CM001, etc.
+			queries = append(queries,
+				fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE INCLUDE LIKE '%s%%'", name))
+		case "PROG":
+			// Programs: direct include name
+			queries = append(queries,
+				fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE INCLUDE = '%s'", name))
+			queries = append(queries,
+				fmt.Sprintf("SELECT INCLUDE, TYPE AS OTYPE, NAME FROM CROSS WHERE INCLUDE = '%s'", name))
+		case "FUGR":
+			// Function group: L<name>* includes
+			queries = append(queries,
+				fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE INCLUDE LIKE 'L%s%%'", name))
+			queries = append(queries,
+				fmt.Sprintf("SELECT INCLUDE, TYPE AS OTYPE, NAME FROM CROSS WHERE INCLUDE LIKE 'L%s%%'", name))
+		default:
+			queries = append(queries,
+				fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE INCLUDE LIKE '%s%%'", name))
+		}
 	}
 
-	result, err := client.RunQuery(ctx, sql, 200)
-	if err != nil {
-		return fmt.Errorf("WBCROSSGT query failed: %w", err)
-	}
-
-	if result == nil || len(result.Rows) == 0 {
-		fmt.Println("  (no references found)")
-		return nil
-	}
-
-	// Deduplicate and format
+	// Execute all queries and merge
 	seen := map[string]bool{}
-	for _, row := range result.Rows {
-		var key string
-		if direction == "callers" {
-			inc := fmt.Sprintf("%v", row["INCLUDE"])
-			// Extract class name from include (e.g., "ZCL_FOO===========CM001" → "ZCL_FOO")
-			parts := strings.Split(inc, "=")
-			key = parts[0]
-		} else {
-			ot := fmt.Sprintf("%v", row["OTYPE"])
-			nm := fmt.Sprintf("%v", row["NAME"])
-			// Skip internal references
-			if strings.Contains(nm, "\\") {
-				continue // skip component refs like ZCL_FOO\DA:FIELD
-			}
-			key = fmt.Sprintf("%-4s %s", crossToADTType(ot), nm)
+	for _, sql := range queries {
+		result, err := client.RunQuery(ctx, sql, 200)
+		if err != nil {
+			continue // skip failed queries silently
 		}
-		if key != "" && !seen[key] {
-			seen[key] = true
-			fmt.Printf("  %s\n", key)
+		if result == nil {
+			continue
+		}
+		for _, row := range result.Rows {
+			var key string
+			if direction == "callers" {
+				inc := fmt.Sprintf("%v", row["INCLUDE"])
+				parts := strings.Split(inc, "=")
+				key = parts[0]
+			} else {
+				ot := fmt.Sprintf("%v", row["OTYPE"])
+				nm := fmt.Sprintf("%v", row["NAME"])
+				if strings.Contains(nm, "\\") {
+					continue
+				}
+				key = fmt.Sprintf("%-4s %s", crossToADTType(ot), nm)
+			}
+			if key != "" && key != name && !seen[key] {
+				seen[key] = true
+				fmt.Printf("  %s\n", key)
+			}
 		}
 	}
-	fmt.Fprintf(os.Stderr, "\n%d unique references\n", len(seen))
+
+	if len(seen) == 0 {
+		fmt.Println("  (no references found)")
+	} else {
+		fmt.Fprintf(os.Stderr, "\n%d unique references\n", len(seen))
+	}
 	return nil
 }
 
