@@ -365,12 +365,12 @@ When creating a new report:
 | Metric | Value |
 |--------|-------|
 | **Tools** | 122 (81 focused, 122 expert) |
-| **Unit Tests** | 244 |
+| **Unit Tests** | 250+ |
 | **Integration Tests** | 34 |
 | **Platforms** | 9 |
 | **Phase** | 5 (TAS-Style Debugging) - Complete |
 | **Reports** | 29 numbered + 6 reference docs |
-| **Lua Scripting** | ✅ Complete (v2.14 - REPL, 40+ bindings, example scripts) |
+| **Lua Scripting** | ✅ Complete (v2.32 - REPL, 50+ bindings, 8 example scripts) |
 | **Cache Package** | ✅ Complete (in-memory + SQLite) |
 | **Safety System** | ✅ Complete (operation filtering, package restrictions) |
 | **Feature Detection** | ✅ Complete (GetFeatures tool, auto/on/off for abapGit, RAP, AMDP, UI5, Transport) |
@@ -393,7 +393,12 @@ When creating a new report:
 | **abapGit Integration** | ✅ Complete (v2.16.0 - WebSocket, GitTypes, GitExport - 158 object types) |
 | **Install Tools** | ✅ Complete (v2.17.0 - InstallZADTVSP, InstallAbapGit, ListDependencies) |
 | **Native ABAP Lexer** | ✅ Complete (v2.31 - abaplint lexer ported to Go, 100% oracle match, 22K tokens verified) |
+| **ABAP Statement Parser** | ✅ Complete (v2.31 - 91 statement types, 100% oracle match, 3,254 statements) |
+| **ABAP Linter** | ✅ Complete (v2.32 - 8 rules, 100% oracle match, 795μs/file) |
 | **Context Depth** | ✅ Complete (v2.31 - multi-level dep expansion, depth 1-3, cycle detection) |
+| **CLI Toolchain** | ✅ Complete (v2.32 - 28 commands: query, grep, graph, deps, lint, parse, compile, execute) |
+| **WASM Self-Host** | ✅ Verified (v2.32 - 3-way proof: Native 51/51, Go OK, ABAP 11/11 on SAP) |
+| **TS→Go Transpiler** | ✅ Complete (v2.32 - produces valid Go from abaplint TS, 3 files compile) |
 
 ### DSL & Workflow Usage
 
