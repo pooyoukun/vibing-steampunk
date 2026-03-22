@@ -31,8 +31,8 @@ end
 print()
 
 -- Query data dictionary for a table
-print("--- MARA Table Structure (first 10 fields) ---")
-local fields = query("SELECT FIELDNAME, ROLLNAME, DATATYPE, LENG FROM DD03L WHERE TABNAME = 'MARA'", 10)
+print("--- T000 Table Structure (first 10 fields) ---")
+local fields = query("SELECT FIELDNAME, ROLLNAME, DATATYPE, LENG FROM DD03L WHERE TABNAME = 'T000'", 10)
 if fields then
     for _, f in ipairs(fields) do
         print("  " .. f.FIELDNAME .. "  " .. f.ROLLNAME .. "  " .. f.DATATYPE .. "(" .. f.LENG .. ")")

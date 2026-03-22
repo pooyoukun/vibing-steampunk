@@ -110,7 +110,7 @@ vsp query USR02 --where "BNAME = 'DEVELOPER'" --top 10
 vsp query TADIR --where "DEVCLASS = '\$TMP' AND OBJECT = 'CLAS'" --top 20 --order "OBJ_NAME"
 
 # Data dictionary exploration
-vsp query DD03L --where "TABNAME = 'MARA'" --fields "FIELDNAME,DATATYPE,LENG"
+vsp query DD03L --where "TABNAME = 'T000'" --fields "FIELDNAME,DATATYPE,LENG"
 vsp query DD02L --where "TABNAME LIKE 'Z%'" --fields "TABNAME,TABCLASS" --top 20
 
 # Cross-reference tables (who uses what)
