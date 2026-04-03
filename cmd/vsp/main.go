@@ -68,7 +68,18 @@ Configuration files:
 Configuration priority: CLI flags > env vars > .env file > defaults
 Ready-to-use configs for 8 AI agents: docs/cli-agents/`,
 	Version: fmt.Sprintf("%s (commit: %s, built: %s)", Version, Commit, BuildDate),
-	RunE:    runServer,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// Also check SAP_VERBOSE env var (viper reads it, but resolveConfig
+		// is only called for the MCP server mode, so we check it here too)
+		if !cfg.Verbose {
+			cfg.Verbose = viper.GetBool("VERBOSE")
+		}
+		if cfg.Verbose {
+			adt.SetLogOutput(os.Stderr)
+		}
+		return nil
+	},
+	RunE: runServer,
 }
 
 func init() {
@@ -121,7 +132,7 @@ func init() {
 	rootCmd.Flags().StringVar(&cfg.TerminalID, "terminal-id", "", "SAP GUI terminal ID for cross-tool breakpoint sharing")
 
 	// Output options
-	rootCmd.Flags().BoolVarP(&cfg.Verbose, "verbose", "v", false, "Enable verbose output to stderr")
+	rootCmd.PersistentFlags().BoolVarP(&cfg.Verbose, "verbose", "v", false, "Enable verbose output to stderr")
 
 	// Bind flags to viper for environment variable support
 	viper.BindPFlag("url", rootCmd.Flags().Lookup("url"))
@@ -143,7 +154,7 @@ func init() {
 	viper.BindPFlag("allow-transportable-edits", rootCmd.Flags().Lookup("allow-transportable-edits"))
 	viper.BindPFlag("mode", rootCmd.Flags().Lookup("mode"))
 	viper.BindPFlag("disabled-groups", rootCmd.Flags().Lookup("disabled-groups"))
-	viper.BindPFlag("verbose", rootCmd.Flags().Lookup("verbose"))
+	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
 	// Feature configuration
 	viper.BindPFlag("feature-hana", rootCmd.Flags().Lookup("feature-hana"))
@@ -174,11 +185,6 @@ func runServer(cmd *cobra.Command, args []string) error {
 	// Process cookie authentication
 	if err := processCookieAuth(cmd); err != nil {
 		return err
-	}
-
-	// Set verbose log output for feature probing
-	if cfg.Verbose {
-		adt.SetLogOutput(os.Stderr)
 	}
 
 	if cfg.Verbose {
