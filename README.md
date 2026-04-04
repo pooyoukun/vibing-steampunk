@@ -23,7 +23,7 @@ The full version history is in [CHANGELOG.md](CHANGELOG.md).
 
 ### Hyperfocused Mode — 1 Tool to Rule Them All
 
-Single `SAP(action, target, params)` tool replaces up to 122 individual tool definitions.
+Single `SAP(action, target, params)` tool replaces up to 129 individual tool definitions.
 
 ```
 SAP(action="read",   target="CLAS ZCL_TRAVEL")
@@ -32,7 +32,7 @@ SAP(action="create", target="DEVC", params={"name": "$ZOZIK", "description": "Ne
 SAP(action="help",   target="debug")
 ```
 
-| Metric | Focused (81 tools) | Expert (122 tools) | Hyperfocused (1 tool) |
+| Metric | Focused (88 tools) | Expert (129 tools) | Hyperfocused (1 tool) |
 |--------|-------------------:|-------------------:|----------------------:|
 | MCP schema tokens | ~14,000 | ~40,000 | **~200** |
 | Reduction | — | — | **99.5%** |
@@ -193,7 +193,7 @@ See **[CLI Guide](docs/cli-guide.md)** for the complete reference with feature r
 | **ABAP LSP** | Built-in Language Server — real-time diagnostics, go-to-definition, context push |
 | **AI Debugger** | Breakpoints, listener, attach, step, inspect stack & variables |
 | **RAP OData E2E** | Create CDS views, Service Definitions, Bindings → Publish OData services |
-| **Focused Mode** | 81 curated tools optimized for AI assistants |
+| **Focused Mode** | 88 curated tools optimized for AI assistants |
 | **AI-Powered RCA** | Root cause analysis with dumps, traces, profiler + code intelligence |
 | **DSL & Workflows** | Fluent Go API + YAML automation for CI/CD pipelines |
 | **ExecuteABAP** | Run arbitrary ABAP code via unit test wrapper |
@@ -386,7 +386,7 @@ Configure multiple SAP systems in `.vsp.json`:
 ```bash
 vsp --url https://host:44300 --user admin --password secret
 vsp --url https://host:44300 --cookie-file cookies.txt
-vsp --mode expert          # Enable all 122 tools
+vsp --mode expert          # Enable all 129 tools
 vsp --mode hyperfocused    # Single SAP tool (~200 tokens instead of ~40K)
 ```
 
@@ -556,7 +556,7 @@ One axis, three values — `--mode` or `SAP_MODE`:
 
 ```mermaid
 graph LR
-    F["focused<br/>81 tools<br/>~14K tokens<br/><i>default</i>"] --> E["expert<br/>122 tools<br/>~40K tokens"]
+    F["focused<br/>88 tools<br/>~14K tokens<br/><i>default</i>"] --> E["expert<br/>129 tools<br/>~40K tokens"]
     E --> H["hyperfocused<br/>1 tool<br/>~200 tokens"]
     style H fill:#2d6a4f,color:#fff
     style F fill:#264653,color:#fff
@@ -573,8 +573,8 @@ graph LR
 | **Safety controls** | All apply | All apply | All apply (same code path) |
 
 ```bash
-vsp --mode focused       # default — 81 curated tools
-vsp --mode expert        # all 122 tools individually
+vsp --mode focused       # default — 88 curated tools
+vsp --mode expert        # all 129 tools individually
 vsp --mode hyperfocused  # single SAP(action, target, params) tool
 ```
 
@@ -805,7 +805,7 @@ See [AI-Powered RCA Workflows](reports/2025-12-05-013-ai-powered-rca-workflows.m
 - **Reports:** RunReport, GetVariants, GetTextElements, SetTextElements
 - **Install:** InstallZADTVSP, InstallAbapGit, ListDependencies
 
-See [README_TOOLS.md](README_TOOLS.md) for complete tool documentation (122 tools).
+See [README_TOOLS.md](README_TOOLS.md) for complete tool documentation (129 tools).
 
 <details>
 <summary><strong>Capability Matrix</strong></summary>
