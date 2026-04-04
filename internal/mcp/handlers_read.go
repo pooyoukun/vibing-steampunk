@@ -213,9 +213,45 @@ func (s *Server) handleGetTableContents(ctx context.Context, request mcp.CallToo
 		sqlQuery = sq
 	}
 
-	contents, err := s.adtClient.GetTableContents(ctx, tableName, maxRows, sqlQuery)
+	offset := 0
+	if off, ok := request.Params.Arguments["offset"].(float64); ok && off > 0 {
+		offset = int(off)
+	}
+
+	columnsOnly := false
+	if co, ok := request.Params.Arguments["columns_only"].(bool); ok {
+		columnsOnly = co
+	}
+
+	// Fetch extra rows to support client-side offset
+	fetchRows := maxRows
+	if offset > 0 {
+		fetchRows = maxRows + offset
+	}
+	if columnsOnly {
+		fetchRows = 1 // minimal fetch for schema
+	}
+
+	contents, err := s.adtClient.GetTableContents(ctx, tableName, fetchRows, sqlQuery)
 	if err != nil {
 		return newToolResultError(fmt.Sprintf("Failed to get table contents: %v", err)), nil
+	}
+
+	// Apply client-side offset
+	if offset > 0 && contents != nil {
+		if offset >= len(contents.Rows) {
+			contents.Rows = nil
+		} else {
+			contents.Rows = contents.Rows[offset:]
+			if len(contents.Rows) > maxRows {
+				contents.Rows = contents.Rows[:maxRows]
+			}
+		}
+	}
+
+	// Strip rows for columns_only
+	if columnsOnly && contents != nil {
+		contents.Rows = nil
 	}
 
 	result, _ := json.MarshalIndent(contents, "", "  ")

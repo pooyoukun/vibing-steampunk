@@ -191,6 +191,12 @@ func (s *Server) registerReadTools(shouldRegister func(string) bool) {
 			mcp.WithString("sql_query",
 				mcp.Description("Optional ABAP SQL SELECT statement. Uses ABAP syntax: ASCENDING/DESCENDING work, ASC/DESC fail. Example: SELECT * FROM T000 WHERE MANDT = '001' ORDER BY MANDT DESCENDING"),
 			),
+			mcp.WithNumber("offset",
+				mcp.Description("Skip first N rows (client-side pagination). Use with max_rows for paging through results"),
+			),
+			mcp.WithBoolean("columns_only",
+				mcp.Description("Return only column metadata (names, types, lengths) without data rows"),
+			),
 		), s.handleGetTableContents)
 	}
 
