@@ -34,70 +34,93 @@ cd vibing-steampunk && go build -o vsp ./cmd/vsp
 
 ## 2. MCP Configuration
 
-Create `.mcp.json` in the project root:
+Codex supports **two config formats**. Use whichever your Codex version expects.
 
-### Read-Only Configuration (Recommended for Q/A)
+### Option A: TOML format (`codex.toml`) — Codex native
 
-```json
-{
-  "mcpServers": {
-    "sap-adt": {
-      "command": "/path/to/vsp",
-      "env": {
-        "SAP_URL": "https://your-sap-host:44300",
-        "SAP_USER": "YOUR_USER",
-        "SAP_PASSWORD": "<password>",
-        "SAP_CLIENT": "001",
-        "SAP_READ_ONLY": "true",
-        "SAP_MODE": "focused"
-      }
-    }
-  }
-}
+Create `codex.toml` in the project root:
+
+```toml
+# Read-Only (recommended for Q/A)
+[mcp_servers.sap-adt]
+command = "/path/to/vsp"
+enabled = true
+
+[mcp_servers.sap-adt.env]
+SAP_URL = "https://your-sap-host:44300"
+SAP_USER = "YOUR_USER"
+SAP_PASSWORD = "<password>"
+SAP_CLIENT = "001"
+SAP_READ_ONLY = "true"
+SAP_MODE = "focused"
 ```
 
-### Restricted Write Configuration (Search + Read + Query Only)
+```toml
+# Restricted Write (Search + Read + Query)
+[mcp_servers.sap-adt]
+command = "/path/to/vsp"
+enabled = true
 
-If you need SQL query capability but no write operations:
+[mcp_servers.sap-adt.env]
+SAP_URL = "https://your-sap-host:44300"
+SAP_USER = "YOUR_USER"
+SAP_PASSWORD = "<password>"
+SAP_CLIENT = "001"
+SAP_ALLOWED_OPS = "RSQ"
+SAP_MODE = "focused"
+```
 
-```json
-{
-  "mcpServers": {
-    "sap-adt": {
-      "command": "/path/to/vsp",
-      "env": {
-        "SAP_URL": "https://your-sap-host:44300",
-        "SAP_USER": "YOUR_USER",
-        "SAP_PASSWORD": "<password>",
-        "SAP_CLIENT": "001",
-        "SAP_ALLOWED_OPS": "RSQ",
-        "SAP_MODE": "focused"
-      }
-    }
-  }
-}
+```toml
+# Windows example
+[mcp_servers.sap-adt]
+command = "C:\\SOFT\\vsp.exe"
+enabled = true
+
+[mcp_servers.sap-adt.env]
+SAP_URL = "http://127.0.0.1:50000"
+SAP_USER = "DEVELOPER"
+SAP_PASSWORD = "<password>"
 ```
 
 > **`SAP_ALLOWED_OPS` codes:** `R` = Read, `S` = Search, `Q` = Query (SQL), `C` = Create, `D` = Delete, `U` = Update, `A` = Activate, `T` = Transport
 
-### Cookie Authentication (Alternative)
+> **Security:** `codex.toml` contains credentials — it is in `.gitignore` by default. Never commit it.
 
-If your SAP system uses SSO or you prefer cookie-based auth:
+### Option B: JSON format (`.mcp.json`) — also works
 
 ```json
 {
   "mcpServers": {
     "sap-adt": {
       "command": "/path/to/vsp",
-      "args": ["--cookie-file", "/path/to/cookies.txt"],
       "env": {
         "SAP_URL": "https://your-sap-host:44300",
+        "SAP_USER": "YOUR_USER",
+        "SAP_PASSWORD": "<password>",
+        "SAP_CLIENT": "001",
         "SAP_READ_ONLY": "true",
         "SAP_MODE": "focused"
       }
     }
   }
 }
+```
+
+### Cookie Authentication (Alternative)
+
+For SSO or cookie-based auth (both formats):
+
+```toml
+# TOML
+[mcp_servers.sap-adt]
+command = "/path/to/vsp"
+args = ["--cookie-file", "/path/to/cookies.txt"]
+enabled = true
+
+[mcp_servers.sap-adt.env]
+SAP_URL = "https://your-sap-host:44300"
+SAP_READ_ONLY = "true"
+SAP_MODE = "focused"
 ```
 
 ---
@@ -256,15 +279,12 @@ AMDP, transport management).
 
 ### Additional Safety Flags
 
-```json
-{
-  "env": {
-    "SAP_READ_ONLY": "true",
-    "SAP_BLOCK_FREE_SQL": "true",
-    "SAP_ALLOWED_PACKAGES": "Z*,$TMP",
-    "SAP_ALLOW_TRANSPORTABLE_EDITS": "false"
-  }
-}
+```toml
+# Add to [mcp_servers.sap-adt.env] section
+SAP_READ_ONLY = "true"
+SAP_BLOCK_FREE_SQL = "true"
+SAP_ALLOWED_PACKAGES = "Z*,$TMP"
+SAP_ALLOW_TRANSPORTABLE_EDITS = "false"
 ```
 
 ---
@@ -284,12 +304,9 @@ Set via `SAP_MODE` environment variable in the MCP config.
 
 To further reduce the tool surface (faster startup, less noise):
 
-```json
-{
-  "env": {
-    "SAP_DISABLED_GROUPS": "5THD"
-  }
-}
+```toml
+# Add to [mcp_servers.sap-adt.env]
+SAP_DISABLED_GROUPS = "5THD"
 ```
 
 | Code | Group | Description |

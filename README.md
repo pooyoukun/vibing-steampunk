@@ -284,7 +284,7 @@ VSP works with **8 CLI coding agents** — not just Claude! Full setup guides wi
 | **Gemini CLI** | Gemini 2.5 Pro/Flash | Yes (1000 req/day) | `.gemini/settings.json` |
 | **Claude Code** | Claude Opus/Sonnet 4.6 | No ($20+/mo) | `.mcp.json` |
 | **GitHub Copilot** | Claude, GPT-5, Gemini | No ($10+/mo) | `.copilot/mcp-config.json` |
-| **OpenAI Codex** | GPT-5-Codex, GPT-4.1 | No ($20+/mo) | `.mcp.json` |
+| **OpenAI Codex** | GPT-5-Codex, GPT-4.1 | No ($20+/mo) | `codex.toml` |
 | **Qwen Code** | Qwen3-Coder | Yes (1000 req/day) | `.qwen/settings.json` |
 | **OpenCode** | 75+ models (BYOK) | Yes (own key) | `opencode.json` |
 | **Goose** | 75+ providers (BYOK) | Yes (own key) | `~/.config/goose/config.yaml` |
