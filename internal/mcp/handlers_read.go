@@ -111,7 +111,7 @@ func (s *Server) routeReadAction(ctx context.Context, action, objectType, object
 // --- Read Handlers ---
 
 func (s *Server) handleGetProgram(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	programName, ok := request.Params.Arguments["program_name"].(string)
+	programName, ok := request.GetArguments()["program_name"].(string)
 	if !ok || programName == "" {
 		return newToolResultError("program_name is required"), nil
 	}
@@ -125,7 +125,7 @@ func (s *Server) handleGetProgram(ctx context.Context, request mcp.CallToolReque
 }
 
 func (s *Server) handleGetClass(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	className, ok := request.Params.Arguments["class_name"].(string)
+	className, ok := request.GetArguments()["class_name"].(string)
 	if !ok || className == "" {
 		return newToolResultError("class_name is required"), nil
 	}
@@ -139,7 +139,7 @@ func (s *Server) handleGetClass(ctx context.Context, request mcp.CallToolRequest
 }
 
 func (s *Server) handleGetInterface(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	interfaceName, ok := request.Params.Arguments["interface_name"].(string)
+	interfaceName, ok := request.GetArguments()["interface_name"].(string)
 	if !ok || interfaceName == "" {
 		return newToolResultError("interface_name is required"), nil
 	}
@@ -153,12 +153,12 @@ func (s *Server) handleGetInterface(ctx context.Context, request mcp.CallToolReq
 }
 
 func (s *Server) handleGetFunction(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	functionName, ok := request.Params.Arguments["function_name"].(string)
+	functionName, ok := request.GetArguments()["function_name"].(string)
 	if !ok || functionName == "" {
 		return newToolResultError("function_name is required"), nil
 	}
 
-	functionGroup, ok := request.Params.Arguments["function_group"].(string)
+	functionGroup, ok := request.GetArguments()["function_group"].(string)
 	if !ok || functionGroup == "" {
 		return newToolResultError("function_group is required"), nil
 	}
@@ -172,7 +172,7 @@ func (s *Server) handleGetFunction(ctx context.Context, request mcp.CallToolRequ
 }
 
 func (s *Server) handleGetFunctionGroup(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	groupName, ok := request.Params.Arguments["function_group"].(string)
+	groupName, ok := request.GetArguments()["function_group"].(string)
 	if !ok || groupName == "" {
 		return newToolResultError("function_group is required"), nil
 	}
@@ -187,7 +187,7 @@ func (s *Server) handleGetFunctionGroup(ctx context.Context, request mcp.CallToo
 }
 
 func (s *Server) handleGetInclude(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	includeName, ok := request.Params.Arguments["include_name"].(string)
+	includeName, ok := request.GetArguments()["include_name"].(string)
 	if !ok || includeName == "" {
 		return newToolResultError("include_name is required"), nil
 	}
@@ -201,7 +201,7 @@ func (s *Server) handleGetInclude(ctx context.Context, request mcp.CallToolReque
 }
 
 func (s *Server) handleGetTable(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	tableName, ok := request.Params.Arguments["table_name"].(string)
+	tableName, ok := request.GetArguments()["table_name"].(string)
 	if !ok || tableName == "" {
 		return newToolResultError("table_name is required"), nil
 	}
@@ -215,28 +215,28 @@ func (s *Server) handleGetTable(ctx context.Context, request mcp.CallToolRequest
 }
 
 func (s *Server) handleGetTableContents(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	tableName, ok := request.Params.Arguments["table_name"].(string)
+	tableName, ok := request.GetArguments()["table_name"].(string)
 	if !ok || tableName == "" {
 		return newToolResultError("table_name is required"), nil
 	}
 
 	maxRows := 100
-	if mr, ok := request.Params.Arguments["max_rows"].(float64); ok && mr > 0 {
+	if mr, ok := request.GetArguments()["max_rows"].(float64); ok && mr > 0 {
 		maxRows = int(mr)
 	}
 
 	sqlQuery := ""
-	if sq, ok := request.Params.Arguments["sql_query"].(string); ok {
+	if sq, ok := request.GetArguments()["sql_query"].(string); ok {
 		sqlQuery = sq
 	}
 
 	offset := 0
-	if off, ok := request.Params.Arguments["offset"].(float64); ok && off > 0 {
+	if off, ok := request.GetArguments()["offset"].(float64); ok && off > 0 {
 		offset = int(off)
 	}
 
 	columnsOnly := false
-	if co, ok := request.Params.Arguments["columns_only"].(bool); ok {
+	if co, ok := request.GetArguments()["columns_only"].(bool); ok {
 		columnsOnly = co
 	}
 
@@ -276,13 +276,13 @@ func (s *Server) handleGetTableContents(ctx context.Context, request mcp.CallToo
 }
 
 func (s *Server) handleRunQuery(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	sqlQuery, ok := request.Params.Arguments["sql_query"].(string)
+	sqlQuery, ok := request.GetArguments()["sql_query"].(string)
 	if !ok || sqlQuery == "" {
 		return newToolResultError("sql_query is required"), nil
 	}
 
 	maxRows := 100
-	if mr, ok := request.Params.Arguments["max_rows"].(float64); ok && mr > 0 {
+	if mr, ok := request.GetArguments()["max_rows"].(float64); ok && mr > 0 {
 		maxRows = int(mr)
 	}
 
@@ -296,7 +296,7 @@ func (s *Server) handleRunQuery(ctx context.Context, request mcp.CallToolRequest
 }
 
 func (s *Server) handleGetCDSDependencies(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	ddlsName, ok := request.Params.Arguments["ddls_name"].(string)
+	ddlsName, ok := request.GetArguments()["ddls_name"].(string)
 	if !ok || ddlsName == "" {
 		return newToolResultError("ddls_name is required"), nil
 	}
@@ -306,15 +306,15 @@ func (s *Server) handleGetCDSDependencies(ctx context.Context, request mcp.CallT
 		WithAssociations: false,
 	}
 
-	if level, ok := request.Params.Arguments["dependency_level"].(string); ok && level != "" {
+	if level, ok := request.GetArguments()["dependency_level"].(string); ok && level != "" {
 		opts.DependencyLevel = level
 	}
 
-	if assoc, ok := request.Params.Arguments["with_associations"].(bool); ok {
+	if assoc, ok := request.GetArguments()["with_associations"].(bool); ok {
 		opts.WithAssociations = assoc
 	}
 
-	if pkg, ok := request.Params.Arguments["context_package"].(string); ok && pkg != "" {
+	if pkg, ok := request.GetArguments()["context_package"].(string); ok && pkg != "" {
 		opts.ContextPackage = pkg
 	}
 
@@ -342,7 +342,7 @@ func (s *Server) handleGetCDSDependencies(ctx context.Context, request mcp.CallT
 }
 
 func (s *Server) handleGetStructure(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	structName, ok := request.Params.Arguments["structure_name"].(string)
+	structName, ok := request.GetArguments()["structure_name"].(string)
 	if !ok || structName == "" {
 		return newToolResultError("structure_name is required"), nil
 	}
@@ -356,7 +356,7 @@ func (s *Server) handleGetStructure(ctx context.Context, request mcp.CallToolReq
 }
 
 func (s *Server) handleGetPackage(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	packageName, ok := request.Params.Arguments["package_name"].(string)
+	packageName, ok := request.GetArguments()["package_name"].(string)
 	if !ok || packageName == "" {
 		return newToolResultError("package_name is required"), nil
 	}
@@ -371,7 +371,7 @@ func (s *Server) handleGetPackage(ctx context.Context, request mcp.CallToolReque
 }
 
 func (s *Server) handleGetMessages(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	msgClass, ok := request.Params.Arguments["message_class"].(string)
+	msgClass, ok := request.GetArguments()["message_class"].(string)
 	if !ok || msgClass == "" {
 		return newToolResultError("message_class is required"), nil
 	}
@@ -386,7 +386,7 @@ func (s *Server) handleGetMessages(ctx context.Context, request mcp.CallToolRequ
 }
 
 func (s *Server) handleGetTransaction(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	tcode, ok := request.Params.Arguments["transaction_name"].(string)
+	tcode, ok := request.GetArguments()["transaction_name"].(string)
 	if !ok || tcode == "" {
 		return newToolResultError("transaction_name is required"), nil
 	}
@@ -401,7 +401,7 @@ func (s *Server) handleGetTransaction(ctx context.Context, request mcp.CallToolR
 }
 
 func (s *Server) handleGetTypeInfo(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	typeName, ok := request.Params.Arguments["type_name"].(string)
+	typeName, ok := request.GetArguments()["type_name"].(string)
 	if !ok || typeName == "" {
 		return newToolResultError("type_name is required"), nil
 	}
@@ -416,7 +416,7 @@ func (s *Server) handleGetTypeInfo(ctx context.Context, request mcp.CallToolRequ
 }
 
 func (s *Server) handleGetAPIReleaseState(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	objectURI, ok := request.Params.Arguments["object_uri"].(string)
+	objectURI, ok := request.GetArguments()["object_uri"].(string)
 	if !ok || objectURI == "" {
 		return newToolResultError("object_uri is required"), nil
 	}

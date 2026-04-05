@@ -32,7 +32,7 @@ func (s *Server) handleGctsListRepositories(ctx context.Context, request mcp.Cal
 }
 
 func (s *Server) handleGctsGetRepository(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}
@@ -51,9 +51,9 @@ func (s *Server) handleGctsGetRepository(ctx context.Context, request mcp.CallTo
 }
 
 func (s *Server) handleGctsCreateRepository(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, _ := request.Params.Arguments["rid"].(string)
-	name, _ := request.Params.Arguments["name"].(string)
-	repoURL, _ := request.Params.Arguments["url"].(string)
+	rid, _ := request.GetArguments()["rid"].(string)
+	name, _ := request.GetArguments()["name"].(string)
+	repoURL, _ := request.GetArguments()["url"].(string)
 
 	if rid == "" || name == "" || repoURL == "" {
 		return newToolResultError("rid, name, and url are required"), nil
@@ -65,13 +65,13 @@ func (s *Server) handleGctsCreateRepository(ctx context.Context, request mcp.Cal
 		URL:  repoURL,
 	}
 
-	if branch, ok := request.Params.Arguments["branch"].(string); ok && branch != "" {
+	if branch, ok := request.GetArguments()["branch"].(string); ok && branch != "" {
 		opts.Branch = branch
 	}
-	if pkg, ok := request.Params.Arguments["package"].(string); ok && pkg != "" {
+	if pkg, ok := request.GetArguments()["package"].(string); ok && pkg != "" {
 		opts.Package = pkg
 	}
-	if role, ok := request.Params.Arguments["role"].(string); ok && role != "" {
+	if role, ok := request.GetArguments()["role"].(string); ok && role != "" {
 		opts.Role = role
 	}
 
@@ -89,7 +89,7 @@ func (s *Server) handleGctsCreateRepository(ctx context.Context, request mcp.Cal
 }
 
 func (s *Server) handleGctsDeleteRepository(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}
@@ -103,7 +103,7 @@ func (s *Server) handleGctsDeleteRepository(ctx context.Context, request mcp.Cal
 }
 
 func (s *Server) handleGctsCloneRepository(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}
@@ -117,12 +117,12 @@ func (s *Server) handleGctsCloneRepository(ctx context.Context, request mcp.Call
 }
 
 func (s *Server) handleGctsPull(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}
 
-	commitID, _ := request.Params.Arguments["commit_id"].(string)
+	commitID, _ := request.GetArguments()["commit_id"].(string)
 
 	result, err := s.adtClient.GctsPull(ctx, rid, commitID)
 	if err != nil {
@@ -138,12 +138,12 @@ func (s *Server) handleGctsPull(ctx context.Context, request mcp.CallToolRequest
 }
 
 func (s *Server) handleGctsCommit(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}
 
-	message, ok := request.Params.Arguments["message"].(string)
+	message, ok := request.GetArguments()["message"].(string)
 	if !ok || message == "" {
 		return newToolResultError("message is required"), nil
 	}
@@ -153,7 +153,7 @@ func (s *Server) handleGctsCommit(ctx context.Context, request mcp.CallToolReque
 	}
 
 	// Parse objects array if provided
-	if objectsRaw, ok := request.Params.Arguments["objects"]; ok && objectsRaw != nil {
+	if objectsRaw, ok := request.GetArguments()["objects"]; ok && objectsRaw != nil {
 		if objectsJSON, err := json.Marshal(objectsRaw); err == nil {
 			var objects []adt.GctsCommitObject
 			if err := json.Unmarshal(objectsJSON, &objects); err == nil {
@@ -176,7 +176,7 @@ func (s *Server) handleGctsCommit(ctx context.Context, request mcp.CallToolReque
 }
 
 func (s *Server) handleGctsListBranches(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}
@@ -199,12 +199,12 @@ func (s *Server) handleGctsListBranches(ctx context.Context, request mcp.CallToo
 }
 
 func (s *Server) handleGctsSwitchBranch(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}
 
-	branch, ok := request.Params.Arguments["branch"].(string)
+	branch, ok := request.GetArguments()["branch"].(string)
 	if !ok || branch == "" {
 		return newToolResultError("branch is required"), nil
 	}
@@ -218,7 +218,7 @@ func (s *Server) handleGctsSwitchBranch(ctx context.Context, request mcp.CallToo
 }
 
 func (s *Server) handleGctsGetHistory(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	rid, ok := request.Params.Arguments["rid"].(string)
+	rid, ok := request.GetArguments()["rid"].(string)
 	if !ok || rid == "" {
 		return newToolResultError("rid is required"), nil
 	}

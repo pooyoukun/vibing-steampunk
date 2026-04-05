@@ -87,6 +87,11 @@ type Config struct {
 	// Debugger configuration
 	TerminalID string // SAP GUI terminal ID for cross-tool breakpoint sharing
 
+	// Transport mode: "stdio" (default) or "http"
+	Transport string
+	// HTTP address for Streamable HTTP transport (default: ":8080")
+	HTTPAddr string
+
 	// Granular tool visibility (from .vsp.json)
 	// Key: tool name, Value: true=enabled, false=disabled
 	// Takes highest priority over mode and disabled groups
@@ -201,6 +206,17 @@ func parseFeatureMode(s string) adt.FeatureMode {
 // ServeStdio starts the MCP server on stdin/stdout.
 func (s *Server) ServeStdio() error {
 	return server.ServeStdio(s.mcpServer)
+}
+
+// ServeHTTP starts the MCP server as a Streamable HTTP endpoint.
+func (s *Server) ServeHTTP(addr string) error {
+	httpServer := server.NewStreamableHTTPServer(s.mcpServer)
+	return httpServer.Start(addr)
+}
+
+// GetMCPServer returns the underlying MCP server (for custom transport setup).
+func (s *Server) GetMCPServer() *server.MCPServer {
+	return s.mcpServer
 }
 
 // newToolResultError creates an error result for tool execution failures.

@@ -116,8 +116,12 @@ func init() {
 	rootCmd.Flags().BoolVar(&cfg.AllowTransportableEdits, "allow-transportable-edits", false, "Allow editing objects in transportable packages (requires transport parameter)")
 
 	// Mode options
-	rootCmd.Flags().StringVar(&cfg.Mode, "mode", "focused", "Tool mode: focused (81 tools), expert (122 tools), or hyperfocused (single universal SAP tool)")
-	rootCmd.Flags().StringVar(&cfg.DisabledGroups, "disabled-groups", "", "Disable tool groups: 5/U=UI5, T=Tests, H=HANA, D=Debug (e.g., \"TH\" disables Tests and HANA)")
+	rootCmd.Flags().StringVar(&cfg.Mode, "mode", "focused", "Tool mode: focused (100 tools), expert (147 tools), or hyperfocused (single universal SAP tool)")
+	rootCmd.Flags().StringVar(&cfg.DisabledGroups, "disabled-groups", "", "Disable tool groups: 5/U=UI5, T=Tests, H=HANA, D=Debug, GC=gCTS, N=i18n")
+
+	// Transport options
+	rootCmd.Flags().StringVar(&cfg.Transport, "transport", "stdio", "Transport mode: stdio (default) or http")
+	rootCmd.Flags().StringVar(&cfg.HTTPAddr, "http-addr", ":8080", "HTTP listen address for Streamable HTTP transport")
 
 	// Feature configuration (safety network)
 	// Values: "auto" (default), "on", "off"
@@ -249,8 +253,18 @@ func runServer(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create and start MCP server
-	server := mcp.NewServer(cfg)
-	return server.ServeStdio()
+	srv := mcp.NewServer(cfg)
+
+	switch cfg.Transport {
+	case "http":
+		addr := cfg.HTTPAddr
+		if cfg.Verbose {
+			fmt.Fprintf(os.Stderr, "[VERBOSE] Transport: Streamable HTTP on %s\n", addr)
+		}
+		return srv.ServeHTTP(addr)
+	default:
+		return srv.ServeStdio()
+	}
 }
 
 func resolveConfig(cmd *cobra.Command) {

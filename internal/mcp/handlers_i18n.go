@@ -14,12 +14,12 @@ import (
 // --- i18n Handlers ---
 
 func (s *Server) handleGetObjectTextsInLanguage(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	objectURL, ok := request.Params.Arguments["object_url"].(string)
+	objectURL, ok := request.GetArguments()["object_url"].(string)
 	if !ok || objectURL == "" {
 		return newToolResultError("object_url is required"), nil
 	}
 
-	lang, ok := request.Params.Arguments["language"].(string)
+	lang, ok := request.GetArguments()["language"].(string)
 	if !ok || lang == "" {
 		return newToolResultError("language is required"), nil
 	}
@@ -33,12 +33,12 @@ func (s *Server) handleGetObjectTextsInLanguage(ctx context.Context, request mcp
 }
 
 func (s *Server) handleGetDataElementLabels(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	name, ok := request.Params.Arguments["name"].(string)
+	name, ok := request.GetArguments()["name"].(string)
 	if !ok || name == "" {
 		return newToolResultError("name is required"), nil
 	}
 
-	lang, ok := request.Params.Arguments["language"].(string)
+	lang, ok := request.GetArguments()["language"].(string)
 	if !ok || lang == "" {
 		return newToolResultError("language is required"), nil
 	}
@@ -57,12 +57,12 @@ func (s *Server) handleGetDataElementLabels(ctx context.Context, request mcp.Cal
 }
 
 func (s *Server) handleGetMessageClassTexts(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	name, ok := request.Params.Arguments["name"].(string)
+	name, ok := request.GetArguments()["name"].(string)
 	if !ok || name == "" {
 		return newToolResultError("name is required"), nil
 	}
 
-	lang, ok := request.Params.Arguments["language"].(string)
+	lang, ok := request.GetArguments()["language"].(string)
 	if !ok || lang == "" {
 		return newToolResultError("language is required"), nil
 	}
@@ -85,25 +85,25 @@ func (s *Server) handleGetMessageClassTexts(ctx context.Context, request mcp.Cal
 }
 
 func (s *Server) handleWriteMessageClassTexts(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	name, ok := request.Params.Arguments["name"].(string)
+	name, ok := request.GetArguments()["name"].(string)
 	if !ok || name == "" {
 		return newToolResultError("name is required"), nil
 	}
 
-	lang, ok := request.Params.Arguments["language"].(string)
+	lang, ok := request.GetArguments()["language"].(string)
 	if !ok || lang == "" {
 		return newToolResultError("language is required"), nil
 	}
 
-	lockHandle, ok := request.Params.Arguments["lock_handle"].(string)
+	lockHandle, ok := request.GetArguments()["lock_handle"].(string)
 	if !ok || lockHandle == "" {
 		return newToolResultError("lock_handle is required"), nil
 	}
 
-	transport, _ := request.Params.Arguments["transport"].(string)
+	transport, _ := request.GetArguments()["transport"].(string)
 
 	// Parse texts from arguments
-	textsRaw, ok := request.Params.Arguments["texts"]
+	textsRaw, ok := request.GetArguments()["texts"]
 	if !ok || textsRaw == nil {
 		return newToolResultError("texts is required"), nil
 	}
@@ -127,34 +127,34 @@ func (s *Server) handleWriteMessageClassTexts(ctx context.Context, request mcp.C
 }
 
 func (s *Server) handleWriteDataElementLabels(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	name, ok := request.Params.Arguments["name"].(string)
+	name, ok := request.GetArguments()["name"].(string)
 	if !ok || name == "" {
 		return newToolResultError("name is required"), nil
 	}
 
-	lang, ok := request.Params.Arguments["language"].(string)
+	lang, ok := request.GetArguments()["language"].(string)
 	if !ok || lang == "" {
 		return newToolResultError("language is required"), nil
 	}
 
-	lockHandle, ok := request.Params.Arguments["lock_handle"].(string)
+	lockHandle, ok := request.GetArguments()["lock_handle"].(string)
 	if !ok || lockHandle == "" {
 		return newToolResultError("lock_handle is required"), nil
 	}
 
-	transport, _ := request.Params.Arguments["transport"].(string)
+	transport, _ := request.GetArguments()["transport"].(string)
 
 	labels := &adt.DataElementLabels{}
-	if short, ok := request.Params.Arguments["short"].(string); ok {
+	if short, ok := request.GetArguments()["short"].(string); ok {
 		labels.Short = short
 	}
-	if medium, ok := request.Params.Arguments["medium"].(string); ok {
+	if medium, ok := request.GetArguments()["medium"].(string); ok {
 		labels.Medium = medium
 	}
-	if long, ok := request.Params.Arguments["long"].(string); ok {
+	if long, ok := request.GetArguments()["long"].(string); ok {
 		labels.Long = long
 	}
-	if heading, ok := request.Params.Arguments["heading"].(string); ok {
+	if heading, ok := request.GetArguments()["heading"].(string); ok {
 		labels.Heading = heading
 	}
 
@@ -167,12 +167,12 @@ func (s *Server) handleWriteDataElementLabels(ctx context.Context, request mcp.C
 }
 
 func (s *Server) handleGetTextPoolInLanguage(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	programName, ok := request.Params.Arguments["program_name"].(string)
+	programName, ok := request.GetArguments()["program_name"].(string)
 	if !ok || programName == "" {
 		return newToolResultError("program_name is required"), nil
 	}
 
-	lang, ok := request.Params.Arguments["language"].(string)
+	lang, ok := request.GetArguments()["language"].(string)
 	if !ok || lang == "" {
 		return newToolResultError("language is required"), nil
 	}
@@ -195,17 +195,17 @@ func (s *Server) handleGetTextPoolInLanguage(ctx context.Context, request mcp.Ca
 }
 
 func (s *Server) handleCompareObjectLanguages(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	objectURL, ok := request.Params.Arguments["object_url"].(string)
+	objectURL, ok := request.GetArguments()["object_url"].(string)
 	if !ok || objectURL == "" {
 		return newToolResultError("object_url is required"), nil
 	}
 
-	sourceLang, ok := request.Params.Arguments["source_language"].(string)
+	sourceLang, ok := request.GetArguments()["source_language"].(string)
 	if !ok || sourceLang == "" {
 		return newToolResultError("source_language is required"), nil
 	}
 
-	targetLang, ok := request.Params.Arguments["target_language"].(string)
+	targetLang, ok := request.GetArguments()["target_language"].(string)
 	if !ok || targetLang == "" {
 		return newToolResultError("target_language is required"), nil
 	}

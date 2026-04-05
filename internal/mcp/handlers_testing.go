@@ -15,16 +15,16 @@ import (
 // --- Code Coverage Handler ---
 
 func (s *Server) handleGetCodeCoverage(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	objectURL, ok := request.Params.Arguments["object_url"].(string)
+	objectURL, ok := request.GetArguments()["object_url"].(string)
 	if !ok || objectURL == "" {
 		return newToolResultError("object_url is required"), nil
 	}
 
 	flags := adt.DefaultUnitTestFlags()
-	if includeDangerous, ok := request.Params.Arguments["include_dangerous"].(bool); ok && includeDangerous {
+	if includeDangerous, ok := request.GetArguments()["include_dangerous"].(bool); ok && includeDangerous {
 		flags.Dangerous = true
 	}
-	if includeLong, ok := request.Params.Arguments["include_long"].(bool); ok && includeLong {
+	if includeLong, ok := request.GetArguments()["include_long"].(bool); ok && includeLong {
 		flags.Long = true
 	}
 
@@ -40,7 +40,7 @@ func (s *Server) handleGetCodeCoverage(ctx context.Context, request mcp.CallTool
 // --- Check Run Results Handler ---
 
 func (s *Server) handleGetCheckRunResults(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	checkRunID, ok := request.Params.Arguments["check_run_id"].(string)
+	checkRunID, ok := request.GetArguments()["check_run_id"].(string)
 	if !ok || checkRunID == "" {
 		return newToolResultError("check_run_id is required"), nil
 	}
