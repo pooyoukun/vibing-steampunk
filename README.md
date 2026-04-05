@@ -32,7 +32,7 @@ SAP(action="create", target="DEVC", params={"name": "$ZOZIK", "description": "Ne
 SAP(action="help",   target="debug")
 ```
 
-| Metric | Focused (88 tools) | Expert (129 tools) | Hyperfocused (1 tool) |
+| Metric | Focused (100 tools) | Expert (147 tools) | Hyperfocused (1 tool) |
 |--------|-------------------:|-------------------:|----------------------:|
 | MCP schema tokens | ~14,000 | ~40,000 | **~200** |
 | Reduction | — | — | **99.5%** |
@@ -386,7 +386,7 @@ Configure multiple SAP systems in `.vsp.json`:
 ```bash
 vsp --url https://host:44300 --user admin --password secret
 vsp --url https://host:44300 --cookie-file cookies.txt
-vsp --mode expert          # Enable all 129 tools
+vsp --mode expert          # Enable all 147 tools
 vsp --mode hyperfocused    # Single SAP tool (~200 tokens instead of ~40K)
 ```
 
@@ -556,7 +556,7 @@ One axis, three values — `--mode` or `SAP_MODE`:
 
 ```mermaid
 graph LR
-    F["focused<br/>88 tools<br/>~14K tokens<br/><i>default</i>"] --> E["expert<br/>129 tools<br/>~40K tokens"]
+    F["focused<br/>100 tools<br/>~14K tokens<br/><i>default</i>"] --> E["expert<br/>147 tools<br/>~40K tokens"]
     E --> H["hyperfocused<br/>1 tool<br/>~200 tokens"]
     style H fill:#2d6a4f,color:#fff
     style F fill:#264653,color:#fff
@@ -574,7 +574,7 @@ graph LR
 
 ```bash
 vsp --mode focused       # default — 88 curated tools
-vsp --mode expert        # all 129 tools individually
+vsp --mode expert        # all 147 tools individually
 vsp --mode hyperfocused  # single SAP(action, target, params) tool
 ```
 
@@ -805,7 +805,7 @@ See [AI-Powered RCA Workflows](reports/2025-12-05-013-ai-powered-rca-workflows.m
 - **Reports:** RunReport, GetVariants, GetTextElements, SetTextElements
 - **Install:** InstallZADTVSP, InstallAbapGit, ListDependencies
 
-See [README_TOOLS.md](README_TOOLS.md) for complete tool documentation (129 tools).
+See [README_TOOLS.md](README_TOOLS.md) for complete tool documentation (147 tools).
 
 <details>
 <summary><strong>Capability Matrix</strong></summary>
