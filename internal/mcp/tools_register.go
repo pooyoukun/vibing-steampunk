@@ -464,6 +464,42 @@ func (s *Server) registerAnalysisTools(shouldRegister func(string) bool) {
 			),
 		), s.handleTraceExecution)
 	}
+
+	// --- Graph Engine: Dependency & Boundary Analysis ---
+
+	if shouldRegister("CheckBoundaries") {
+		s.mcpServer.AddTool(mcp.NewTool("CheckBoundaries",
+			mcp.WithDescription("Analyze package boundary violations. Checks if a package/object's dependencies cross package boundaries. Detects: same-package deps, SAP standard deps, whitelisted Z-package deps, violations (cross-package Z* deps), and dynamic calls. Uses embedded ABAP parser (offline) + TADIR resolution (online)."),
+			mcp.WithString("package",
+				mcp.Description("Package to analyze (e.g., $ZDEV). All objects in package are checked."),
+			),
+			mcp.WithString("object",
+				mcp.Description("Single object to analyze (e.g., ZCL_TEST). Source is read from SAP."),
+			),
+			mcp.WithString("source",
+				mcp.Description("ABAP source code to analyze offline (no SAP connection needed)."),
+			),
+			mcp.WithString("whitelist",
+				mcp.Description("Comma-separated list of allowed Z-packages (supports glob: '$ZCOMMON,$ZUTIL*'). Dependencies on these packages are OK."),
+			),
+			mcp.WithNumber("depth",
+				mcp.Description("Analysis depth (default: 1). Higher values follow transitive deps."),
+			),
+			mcp.WithString("format",
+				mcp.Description("Output format: 'text' (default), 'json', 'full' (includes standard deps)"),
+			),
+		), s.handleCheckBoundaries)
+	}
+
+	if shouldRegister("GraphStats") {
+		s.mcpServer.AddTool(mcp.NewTool("GraphStats",
+			mcp.WithDescription("Extract dependency statistics from ABAP source code using embedded parser. Returns node/edge counts by type, edge kind, and source. Works offline without SAP."),
+			mcp.WithString("source",
+				mcp.Required(),
+				mcp.Description("ABAP source code to analyze"),
+			),
+		), s.handleGraphStats)
+	}
 }
 
 // registerDiagnosticsTools registers runtime error, profiler, and SQL trace tools.

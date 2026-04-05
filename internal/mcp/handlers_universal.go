@@ -16,11 +16,19 @@ import (
 // registerUniversalTool registers a single SAP tool that routes to all handlers.
 func (s *Server) registerUniversalTool() {
 	s.mcpServer.AddTool(mcp.NewTool("SAP",
-		mcp.WithDescription(`Universal SAP tool. Use SAP(action="help") for full documentation.
+		mcp.WithDescription(`SAP ABAP development: read/edit/create/test/analyze/debug objects on a live SAP system.
 
-Actions: read, edit, create, delete, search, query, grep, test, analyze, debug, system, help
-Target: "TYPE NAME" (e.g. "CLAS ZCL_TEST", "PROG ZREPORT")
-Params: action-specific parameters as JSON object`),
+common target types: CLAS, PROG, INTF, FUNC, FUGR, DDLS, TABL, DEVC, BDEF, SRVD
+actions: read, edit, create, delete, search, query, grep, test, analyze, debug, system, help
+some actions (analyze, test, debug, system, help) use params only — no target needed.
+
+SAP(action="read", target="CLAS ZCL_TEST")  — source + dependency context
+SAP(action="read", target="CLAS ZCL_TEST", params={"method": "GET_DATA"})  — one method + context
+SAP(action="edit", target="CLAS ZCL_TEST", params={"source": "..."})  — auto lock/activate
+SAP(action="edit", target="CLAS ZCL_TEST", params={"method": "X", "source": "METHOD x.\nENDMETHOD."})
+SAP(action="search", target="ZCL_*")
+SAP(action="analyze", params={"type": "check_boundaries", "package": "$ZDEV"})
+SAP(action="help") — full docs; SAP(action="help", target="tips") — best practices`),
 		mcp.WithString("action",
 			mcp.Required(),
 			mcp.Description("Action to perform: read, edit, create, delete, search, query, grep, test, analyze, debug, system, help"),

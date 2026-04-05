@@ -70,6 +70,7 @@ func focusedToolSet() map[string]bool {
 		"AnalyzeCallGraph":   true, // Call graph statistics
 		"CompareCallGraphs":  true, // Compare static vs actual execution
 		"TraceExecution":     true, // Composite RCA tool
+		"CheckBoundaries":   true, // Package boundary violation analysis
 
 		// Runtime errors / Short dumps (2)
 		"ListDumps": true, // List runtime errors (consistent with List* pattern)

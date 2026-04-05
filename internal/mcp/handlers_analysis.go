@@ -32,6 +32,10 @@ func (s *Server) routeAnalysisAction(ctx context.Context, action, objectType, ob
 		return s.callHandler(ctx, s.handleCompareCallGraphs, params)
 	case "trace_execution":
 		return s.callHandler(ctx, s.handleTraceExecution, params)
+	case "check_boundaries":
+		return s.callHandler(ctx, s.handleCheckBoundaries, params)
+	case "graph_stats":
+		return s.callHandler(ctx, s.handleGraphStats, params)
 	}
 	return nil, false, nil
 }
