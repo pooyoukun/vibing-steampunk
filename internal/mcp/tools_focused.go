@@ -150,5 +150,12 @@ func focusedToolSet() map[string]bool {
 		"ListDependencies": true, // List available dependencies for installation
 		"InstallDummyTest": true, // Test tool for verifying Install* workflow
 		"DeployZip":        true, // Deploy objects from abapGit-format ZIP to SAP package
+
+		// i18n/Translation tools (read-only in focused mode)
+		"GetObjectTextsInLanguage": true, // Get object source in specific language
+		"GetDataElementLabels":     true, // Get data element labels in specific language
+		"GetMessageClassTexts":     true, // Get message class texts in specific language
+		"GetTextPool":              true, // Get text pool entries in specific language
+		"CompareLanguages":         true, // Compare object texts between two languages
 	}
 }

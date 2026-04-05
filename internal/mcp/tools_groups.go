@@ -3,7 +3,7 @@
 package mcp
 
 // toolGroups defines groups of tools that can be selectively disabled.
-// Short codes: 5/U=UI5, T=Tests, H=HANA, D=Debug, C=CTS, G=Git, R=Reports, I=Install, X=Experimental
+// Short codes: 5/U=UI5, T=Tests, H=HANA, D=Debug, C=CTS, G=Git, R=Reports, I=Install, N=i18N, X=Experimental
 func toolGroups() map[string][]string {
 	groups := map[string][]string{
 		"5": { // UI5/BSP tools (also mapped as "U") - read-only, write ops need custom plugin
@@ -52,6 +52,11 @@ func toolGroups() map[string][]string {
 			"AMDPDebuggerStep", "AMDPGetVariables", "AMDPSetBreakpoint", "AMDPGetBreakpoints",
 			// RunReport - requires ZADT_VSP, APC context limitations
 			"RunReport",
+		},
+		"N": { // i18n/Translation tools
+			"GetObjectTextsInLanguage", "GetDataElementLabels", "GetMessageClassTexts",
+			"WriteMessageClassTexts", "WriteDataElementLabels",
+			"GetTextPool", "CompareLanguages",
 		},
 	}
 	// Map "U" to same tools as "5"
