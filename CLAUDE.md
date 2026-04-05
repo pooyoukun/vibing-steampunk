@@ -410,6 +410,7 @@ When creating a new report:
 | **LLVM IR→ABAP** | ✅ Complete (v2.33 - typed CLASS-METHODS, 34+28 functions, FatFS, SAP verified 5/5) |
 | **WASM Block-as-METHOD** | ✅ Complete (v2.33 - CLASS g, 12K methods, QuickJS GENERATE rc=0 on SAP) |
 | **TS→ABAP Pipeline** | ✅ Proven (v2.33 - Porffor→WASM→ABAP chain verified) |
+| **Graph Engine** | ✅ Slice 1+2 (v2.37 - boundary analysis, dynamic call detection, offline parser, 11 tests) |
 
 ### Offline ABAP Testing (without SAP)
 
@@ -484,7 +485,7 @@ pipeline := dsl.RAPPipeline(client, "./src/", "$ZRAY", "ZTRAVEL_SB")
 ```
 
 ### Roadmap
-- **Phase 5:** Graph Traversal & Analysis (Design: Reports 005-007)
+- **Phase 5:** Graph Traversal & Analysis — ✅ Slice 1+2 done (pkg/graph, boundary analysis, dynamic call detection)
 - **Phase 6:** Standard API Surface Scraper (Design: Report 006)
 - **Phase 7:** Test Intelligence (Design: Report 008)
 - Transport Management
