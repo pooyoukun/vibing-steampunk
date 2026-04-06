@@ -140,6 +140,22 @@ Examples:
 	RunE: runGraphCoChange,
 }
 
+var graphWhereUsedConfigCmd = &cobra.Command{
+	Use:   "where-used-config <variable>",
+	Short: "Find programs that read a TVARVC/STVARV variable (heuristic)",
+	Long: `Find ABAP programs/classes that read a specific TVARVC variable.
+Uses CROSS table to find candidates, then greps source to confirm.
+
+Results show confidence: HIGH = grep-confirmed, MEDIUM = CROSS-only candidate.
+
+Examples:
+  vsp graph where-used-config ZKEKEKE
+  vsp graph where-used-config ZKEKEKE --no-grep
+  vsp graph where-used-config ZKEKEKE --format json`,
+	Args: cobra.ExactArgs(1),
+	RunE: runGraphWhereUsedConfig,
+}
+
 func init() {
 	// Graph flags
 	graphCmd.Flags().String("direction", "callees", "Direction: callees, callers, or both")
@@ -150,6 +166,11 @@ func init() {
 	graphCoChangeCmd.Flags().Int("top", 20, "Maximum results (0=all)")
 	graphCoChangeCmd.Flags().String("format", "text", "Output format: text or json")
 	graphCmd.AddCommand(graphCoChangeCmd)
+
+	// Graph where-used-config subcommand
+	graphWhereUsedConfigCmd.Flags().String("format", "text", "Output format: text or json")
+	graphWhereUsedConfigCmd.Flags().Bool("no-grep", false, "Skip source grep (faster, MEDIUM confidence only)")
+	graphCmd.AddCommand(graphWhereUsedConfigCmd)
 
 	// Query flags
 	queryCmd.Flags().Int("top", 0, "Maximum number of rows (0=all)")
@@ -954,6 +975,164 @@ func runGraphCoChange(cmd *cobra.Command, args []string) error {
 	))
 	fmt.Fprintf(os.Stderr, "\n%d co-changing objects\n", len(result.CoChanges))
 	return nil
+}
+
+// --- graph where-used-config handler ---
+
+func runGraphWhereUsedConfig(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	variable := strings.ToUpper(strings.TrimSpace(args[0]))
+	format, _ := cmd.Flags().GetString("format")
+	noGrep, _ := cmd.Flags().GetBool("no-grep")
+	doGrep := !noGrep
+	ctx := context.Background()
+
+	// Step 1: Find programs that reference TVARVC table
+	fmt.Fprintf(os.Stderr, "Querying CROSS for TVARVC references...\n")
+	crossQuery := "SELECT INCLUDE, TYPE, NAME FROM CROSS WHERE NAME = 'TVARVC' AND TYPE = 'DA'"
+	crossResult, err := client.RunQuery(ctx, crossQuery, 500)
+	if err != nil {
+		return fmt.Errorf("CROSS query failed: %w", err)
+	}
+	if crossResult == nil || len(crossResult.Rows) == 0 {
+		fmt.Println("No programs reference the TVARVC table.")
+		return nil
+	}
+
+	// Step 2: Normalize includes → deduplicate to object level
+	type candidate struct {
+		objType string
+		objName string
+	}
+	seen := make(map[string]bool)
+	var candidates []candidate
+
+	for _, row := range crossResult.Rows {
+		include := strings.TrimSpace(fmt.Sprintf("%v", row["INCLUDE"]))
+		if include == "" {
+			continue
+		}
+		_, objType, objName := graph.NormalizeInclude(include)
+		key := objType + ":" + objName
+		if !seen[key] {
+			seen[key] = true
+			candidates = append(candidates, candidate{objType, objName})
+		}
+	}
+	fmt.Fprintf(os.Stderr, "Found %d candidate programs. ", len(candidates))
+
+	// Step 3: Grep each candidate for the variable name
+	var refs []graph.TVARVCReference
+	grepCount := 0
+	for _, c := range candidates {
+		confirmed := false
+		if doGrep {
+			objURL := cliADTObjectURL(c.objType, c.objName)
+			if objURL != "" {
+				grepResult, err := client.GrepObject(ctx, objURL, variable, true, 0)
+				if err == nil && grepResult != nil && len(grepResult.Matches) > 0 {
+					confirmed = true
+					grepCount++
+				}
+			}
+		}
+		refs = append(refs, graph.TVARVCReference{
+			VariableName: variable,
+			ObjectType:   c.objType,
+			ObjectName:   c.objName,
+			Confirmed:    confirmed,
+		})
+	}
+	if doGrep {
+		fmt.Fprintf(os.Stderr, "Grep confirmed %d.\n", grepCount)
+	} else {
+		fmt.Fprintf(os.Stderr, "Grep skipped.\n")
+	}
+
+	// Step 4: Build graph and run query
+	g := graph.BuildConfigGraph(
+		[]graph.TVARVCVariable{{Name: variable}},
+		refs,
+	)
+	result := graph.WhereUsedConfig(g, variable)
+
+	// Output
+	if format == "json" {
+		data, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+		return nil
+	}
+
+	// Text output
+	fmt.Printf("Where-used config: %s\n", variable)
+	fmt.Printf("Found: %v\n\n", result.Found)
+
+	if len(result.Readers) == 0 {
+		fmt.Println("No programs found reading this variable.")
+		return nil
+	}
+
+	tableRows := make([][]string, 0, len(result.Readers))
+	for _, r := range result.Readers {
+		pkg := r.Package
+		if pkg == "" {
+			pkg = "-"
+		}
+		tableRows = append(tableRows, []string{
+			r.Confidence,
+			r.Type,
+			r.Name,
+			pkg,
+		})
+	}
+
+	fmt.Print(formatTable(
+		[]string{"Confidence", "Type", "Name", "Package"},
+		tableRows,
+	))
+	fmt.Fprintf(os.Stderr, "\n%d readers (%d HIGH, %d MEDIUM)\n",
+		len(result.Readers),
+		countConfidence(result.Readers, "HIGH"),
+		countConfidence(result.Readers, "MEDIUM"),
+	)
+	return nil
+}
+
+func cliADTObjectURL(objType, objName string) string {
+	name := strings.ToLower(objName)
+	switch objType {
+	case "CLAS":
+		return "/sap/bc/adt/oo/classes/" + name
+	case "PROG":
+		return "/sap/bc/adt/programs/programs/" + name
+	case "INTF":
+		return "/sap/bc/adt/oo/interfaces/" + name
+	case "FUGR":
+		return "/sap/bc/adt/functions/groups/" + name
+	default:
+		return ""
+	}
+}
+
+func countConfidence(readers []graph.ConfigReaderEntry, confidence string) int {
+	n := 0
+	for _, r := range readers {
+		if r.Confidence == confidence {
+			n++
+		}
+	}
+	return n
 }
 
 // formatTable formats results as a simple table.

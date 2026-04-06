@@ -656,6 +656,139 @@ func (s *Server) fetchReverseDeps(ctx context.Context, objType, objName string, 
 	return g, nil
 }
 
+// handleWhereUsedConfig finds programs that read a specific TVARVC/STVARV variable.
+// MCP: SAP(action="analyze", params={"type": "where_used_config", "variable": "ZKEKEKE"})
+// Optional: "grep": false to skip source confirmation (faster, MEDIUM confidence only)
+//
+// Data source: CROSS table (who references TVARVC) + optional source grep for confirmation.
+// This is a heuristic query. Confidence: HIGH = grep-confirmed, MEDIUM = CROSS-only.
+func (s *Server) handleWhereUsedConfig(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args := request.GetArguments()
+	variable := strings.ToUpper(strings.TrimSpace(getStringParam(args, "variable")))
+	doGrep := true
+	if g, ok := getBoolParam(args, "grep"); ok {
+		doGrep = g
+	}
+
+	if variable == "" {
+		return newToolResultError("variable is required. Example: SAP(action=\"analyze\", params={\"type\": \"where_used_config\", \"variable\": \"ZKEKEKE\"})"), nil
+	}
+	if s.adtClient == nil {
+		return newToolResultError("SAP connection required for where-used-config"), nil
+	}
+
+	refs, err := s.fetchConfigRefs(ctx, variable, doGrep)
+	if err != nil {
+		return newToolResultError(fmt.Sprintf("where_used_config failed: %v", err)), nil
+	}
+
+	g := graph.BuildConfigGraph(
+		[]graph.TVARVCVariable{{Name: variable}},
+		refs,
+	)
+
+	// Resolve packages
+	s.resolvePackages(ctx, g)
+
+	result := graph.WhereUsedConfig(g, variable)
+
+	// Backfill package info
+	for i, r := range result.Readers {
+		if n := g.GetNode(r.NodeID); n != nil && n.Package != "" {
+			result.Readers[i].Package = n.Package
+		}
+	}
+
+	data, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		return newToolResultError(fmt.Sprintf("JSON marshal error: %v", err)), nil
+	}
+	return mcp.NewToolResultText(string(data)), nil
+}
+
+// fetchConfigRefs finds programs referencing a TVARVC variable via CROSS + optional grep.
+// Steps:
+//  1. CROSS WHERE NAME = 'TVARVC' AND TYPE = 'DA' → programs that read TVARVC table
+//  2. NormalizeInclude → deduplicate to object level
+//  3. For each candidate, grep source for literal variable name (if doGrep=true)
+//  4. Return TVARVCReference slice with Confirmed flag
+func (s *Server) fetchConfigRefs(ctx context.Context, variable string, doGrep bool) ([]graph.TVARVCReference, error) {
+	// Step 1: Find programs that reference TVARVC table
+	crossQuery := "SELECT INCLUDE, TYPE, NAME FROM CROSS WHERE NAME = 'TVARVC' AND TYPE = 'DA'"
+	crossResult, err := s.adtClient.RunQuery(ctx, crossQuery, 500)
+	if err != nil {
+		return nil, fmt.Errorf("CROSS query: %w", err)
+	}
+	if crossResult == nil || len(crossResult.Rows) == 0 {
+		return nil, nil
+	}
+
+	// Step 2: Normalize includes → deduplicate to object level
+	type candidate struct {
+		objType string
+		objName string
+	}
+	seen := make(map[string]bool)
+	var candidates []candidate
+
+	for _, row := range crossResult.Rows {
+		include := strings.TrimSpace(fmt.Sprintf("%v", row["INCLUDE"]))
+		if include == "" {
+			continue
+		}
+		_, objType, objName := graph.NormalizeInclude(include)
+		key := objType + ":" + objName
+		if !seen[key] {
+			seen[key] = true
+			candidates = append(candidates, candidate{objType, objName})
+		}
+	}
+
+	// Step 3: Grep each candidate's source for the variable name
+	var refs []graph.TVARVCReference
+	for _, c := range candidates {
+		confirmed := false
+
+		if doGrep {
+			// Build ADT URL for grep
+			objURL := buildADTObjectURL(c.objType, c.objName)
+			if objURL != "" {
+				grepResult, err := s.adtClient.GrepObject(ctx, objURL, variable, true, 0)
+				if err == nil && grepResult != nil && len(grepResult.Matches) > 0 {
+					confirmed = true
+				}
+			}
+		}
+
+		refs = append(refs, graph.TVARVCReference{
+			VariableName: variable,
+			ObjectType:   c.objType,
+			ObjectName:   c.objName,
+			Confirmed:    confirmed,
+		})
+	}
+
+	return refs, nil
+}
+
+// buildADTObjectURL constructs an ADT URL for an object by type and name.
+func buildADTObjectURL(objType, objName string) string {
+	name := strings.ToLower(objName)
+	switch objType {
+	case "CLAS":
+		return "/sap/bc/adt/oo/classes/" + name
+	case "PROG":
+		return "/sap/bc/adt/programs/programs/" + name
+	case "INTF":
+		return "/sap/bc/adt/oo/interfaces/" + name
+	case "FUGR":
+		return "/sap/bc/adt/functions/groups/" + name
+	default:
+		// Can't build URL for unknown types — skip grep
+		return ""
+	}
+}
+
 func formatBoundaryResult(report *graph.BoundaryReport, format string) (*mcp.CallToolResult, error) {
 	switch format {
 	case "json":
