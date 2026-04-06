@@ -156,6 +156,21 @@ Examples:
 	RunE: runGraphWhereUsedConfig,
 }
 
+var renamePreviewCmd = &cobra.Command{
+	Use:   "rename-preview <type> <old_name> <new_name>",
+	Short: "Preview what references would be affected by renaming an object (read-only)",
+	Long: `Show all static references that would need updating if an object is renamed.
+No changes are made — this is a preview/risk assessment tool.
+
+Examples:
+  vsp rename-preview CLAS ZCL_OLD_HELPER ZCL_NEW_HELPER
+  vsp rename-preview FUNC Z_OLD_FM Z_NEW_FM
+  vsp rename-preview PROG ZOLD_REPORT ZNEW_REPORT
+  vsp rename-preview CLAS ZCL_FOO ZCL_BAR --format json`,
+	Args: cobra.ExactArgs(3),
+	RunE: runRenamePreview,
+}
+
 var slimCmd = &cobra.Command{
 	Use:   "slim <package>",
 	Short: "Find dead code in a package (read-only analysis)",
@@ -208,6 +223,10 @@ func init() {
 	examplesCmd.Flags().Int("top", 10, "Maximum examples to show")
 	examplesCmd.Flags().String("format", "text", "Output format: text or json")
 	rootCmd.AddCommand(examplesCmd)
+
+	// Rename preview command (top-level)
+	renamePreviewCmd.Flags().String("format", "text", "Output format: text or json")
+	rootCmd.AddCommand(renamePreviewCmd)
 
 	// Slim command (top-level)
 	slimCmd.Flags().Bool("include-subpackages", false, "Include subpackages")
@@ -1040,6 +1059,108 @@ func runGraphCoChange(cmd *cobra.Command, args []string) error {
 		tableRows,
 	))
 	fmt.Fprintf(os.Stderr, "\n%d co-changing objects\n", len(result.CoChanges))
+	return nil
+}
+
+// --- rename-preview handler ---
+
+func runRenamePreview(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	objType := strings.ToUpper(args[0])
+	oldName := strings.ToUpper(args[1])
+	newName := strings.ToUpper(args[2])
+	format, _ := cmd.Flags().GetString("format")
+	ctx := context.Background()
+
+	fmt.Fprintf(os.Stderr, "Scanning references to %s %s...\n", objType, oldName)
+
+	// Query WBCROSSGT: who references this object name?
+	var allRefs []graph.RenameRefRow
+
+	wbQuery := fmt.Sprintf("SELECT INCLUDE, OTYPE, NAME FROM WBCROSSGT WHERE NAME LIKE '%s%%'", oldName)
+	wbResult, err := client.RunQuery(ctx, wbQuery, 2000)
+	if err == nil && wbResult != nil {
+		for _, row := range wbResult.Rows {
+			allRefs = append(allRefs, graph.RenameRefRow{
+				CallerInclude: strings.TrimSpace(fmt.Sprintf("%v", row["INCLUDE"])),
+				TargetName:    strings.TrimSpace(fmt.Sprintf("%v", row["NAME"])),
+				RefType:       strings.TrimSpace(fmt.Sprintf("%v", row["OTYPE"])),
+				Source:        "WBCROSSGT",
+			})
+		}
+	}
+
+	// Query CROSS: procedural references
+	crossQuery := fmt.Sprintf("SELECT INCLUDE, TYPE, NAME FROM CROSS WHERE NAME LIKE '%s%%'", oldName)
+	crossResult, err := client.RunQuery(ctx, crossQuery, 2000)
+	if err == nil && crossResult != nil {
+		for _, row := range crossResult.Rows {
+			allRefs = append(allRefs, graph.RenameRefRow{
+				CallerInclude: strings.TrimSpace(fmt.Sprintf("%v", row["INCLUDE"])),
+				TargetName:    strings.TrimSpace(fmt.Sprintf("%v", row["NAME"])),
+				RefType:       strings.TrimSpace(fmt.Sprintf("%v", row["TYPE"])),
+				Source:        "CROSS",
+			})
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "Found %d cross-references.\n", len(allRefs))
+
+	// Compute preview
+	result := graph.ComputeRenamePreview(objType, oldName, newName, allRefs)
+
+	// Output
+	if format == "json" {
+		data, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+		return nil
+	}
+
+	// Text output
+	fmt.Printf("Rename Preview: %s %s → %s\n", result.ObjectType, result.OldName, result.NewName)
+	fmt.Printf("Affected objects: %d (%d total references)\n\n", result.AffectedCount, result.TotalRefs)
+
+	if result.AffectedCount > 0 {
+		tableRows := make([][]string, 0, len(result.Refs))
+		for _, r := range result.Refs {
+			tableRows = append(tableRows, []string{
+				r.Confidence,
+				fmt.Sprintf("%d", r.RefCount),
+				r.CallerType,
+				r.CallerName,
+				r.Source,
+			})
+		}
+		fmt.Print(formatTable(
+			[]string{"Confidence", "Refs", "Type", "Object", "Source"},
+			tableRows,
+		))
+		fmt.Println()
+	} else {
+		fmt.Println("No static references found.")
+		fmt.Println()
+	}
+
+	// Risks
+	if len(result.Risks) > 0 {
+		fmt.Println("⚠️  Risks (not detectable by static analysis):")
+		for _, r := range result.Risks {
+			fmt.Printf("  [%s] %s\n", r.Kind, r.Description)
+		}
+		fmt.Println()
+	}
+
 	return nil
 }
 
