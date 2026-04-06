@@ -44,6 +44,8 @@ func (s *Server) routeAnalysisAction(ctx context.Context, action, objectType, ob
 		return s.callHandler(ctx, s.handleWhereUsedConfig, params)
 	case "usage_examples":
 		return s.callHandler(ctx, s.handleUsageExamples, params)
+	case "health":
+		return s.callHandler(ctx, s.handleHealth, params)
 	}
 	return nil, false, nil
 }

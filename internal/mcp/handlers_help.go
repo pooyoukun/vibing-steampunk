@@ -222,6 +222,8 @@ Graph queries:
   SAP(action="analyze", params={"type": "usage_examples", "object_type": "CLAS", "object_name": "ZCL_API", "method": "GET_DATA"})
   SAP(action="analyze", params={"type": "usage_examples", "object_type": "PROG", "object_name": "ZLEGACY", "form": "BUILD_OUTPUT"})
   SAP(action="analyze", params={"type": "usage_examples", "object_type": "PROG", "object_name": "ZBATCH_RUN", "submit": true})
+  SAP(action="analyze", params={"type": "health", "package": "$ZDEV"})
+  SAP(action="analyze", params={"type": "health", "object_type": "CLAS", "object_name": "ZCL_ORDER_SERVICE"})
 
 Execute ABAP:
   SAP(action="analyze", params={"type": "execute_abap", "code": "WRITE 'Hello'."})
