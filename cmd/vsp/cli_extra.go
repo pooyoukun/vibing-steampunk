@@ -156,6 +156,19 @@ Examples:
 	RunE: runGraphWhereUsedConfig,
 }
 
+var methodSigCmd = &cobra.Command{
+	Use:   "method-signature <class_name> <method_name>",
+	Short: "Show method signature (parameters, types, visibility)",
+	Long: `Read a method signature from SAP without fetching the whole class source.
+Shows parameters by direction, types, OPTIONAL/DEFAULT, RAISING, and visibility.
+
+Examples:
+  vsp method-signature ZCL_TRAVEL GET_DATA
+  vsp method-signature ZCL_TRAVEL FACTORY --format json`,
+	Args: cobra.ExactArgs(2),
+	RunE: runMethodSignature,
+}
+
 var classSectionsCmd = &cobra.Command{
 	Use:   "class-sections <class_name>",
 	Short: "Show class structure organized by PUBLIC/PROTECTED/PRIVATE sections",
@@ -240,6 +253,10 @@ func init() {
 	// Rename preview command (top-level)
 	renamePreviewCmd.Flags().String("format", "text", "Output format: text or json")
 	rootCmd.AddCommand(renamePreviewCmd)
+
+	// Method signature command (top-level)
+	methodSigCmd.Flags().String("format", "text", "Output format: text or json")
+	rootCmd.AddCommand(methodSigCmd)
 
 	// Class sections command (top-level)
 	classSectionsCmd.Flags().String("format", "text", "Output format: text or json")
@@ -1076,6 +1093,51 @@ func runGraphCoChange(cmd *cobra.Command, args []string) error {
 		tableRows,
 	))
 	fmt.Fprintf(os.Stderr, "\n%d co-changing objects\n", len(result.CoChanges))
+	return nil
+}
+
+// --- method-signature handler ---
+
+func runMethodSignature(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	className := strings.ToUpper(strings.TrimSpace(args[0]))
+	methodName := strings.ToUpper(strings.TrimSpace(args[1]))
+	format, _ := cmd.Flags().GetString("format")
+	ctx := context.Background()
+
+	fmt.Fprintf(os.Stderr, "Reading definition of %s=>%s...\n", className, methodName)
+
+	// Fetch class definition source (not implementation)
+	source, err := client.GetSource(ctx, "CLAS", className, nil)
+	if err != nil {
+		return fmt.Errorf("failed to read class source: %w", err)
+	}
+
+	sig := graph.ExtractMethodSignature(className, methodName, source)
+
+	if sig.RawDef == "" {
+		return fmt.Errorf("method %s not found in class %s definition", methodName, className)
+	}
+
+	// Output
+	if format == "json" {
+		data, err := json.MarshalIndent(sig, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+		return nil
+	}
+
+	fmt.Print(graph.FormatMethodSignature(sig))
 	return nil
 }
 
