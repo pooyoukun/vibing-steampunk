@@ -15,8 +15,10 @@
 
 - `vsp graph co-change CLAS ZCL_FOO` for transport-based co-change analysis
 - `vsp graph where-used-config ZKEKEKE` for heuristic TVARVC usage discovery
+- `vsp api-surface '$ZDEV'` for top standard SAP API inventory used by a custom package
 - `SAP(action="analyze", params={"type":"co_change", ...})` for MCP co-change
 - `SAP(action="analyze", params={"type":"impact", ...})` for reverse dependency impact
+- **[Refactoring Roadmap](reports/2026-04-06-010-refactoring-roadmap.md)** for what comes next: `rename-preview`, `slim`, class section tools, method-signature surgery, and later clone/fork flows
 - **[Graph Guide](docs/graph-guide.md)** for examples, data sources, and current limits
 
 ## 100 Stars!
