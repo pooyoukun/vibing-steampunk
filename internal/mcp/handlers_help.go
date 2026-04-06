@@ -212,6 +212,13 @@ Analyze dependencies (unified 5-layer: regex + parser + SCAN + CROSS + ADT):
   SAP(action="analyze", params={"type": "analyze_deps", "source": "..."})
   SAP(action="analyze", params={"type": "analyze_deps", "object_type": "CLAS", "name": "ZCL_TEST"})
 
+Graph queries:
+  SAP(action="analyze", params={"type": "co_change", "object_type": "CLAS", "object_name": "ZCL_FOO", "top_n": 10})
+  SAP(action="analyze", params={"type": "impact", "object_type": "CLAS", "object_name": "ZCL_FOO", "max_depth": 3})
+  SAP(action="analyze", params={"type": "impact", "object_type": "CLAS", "object_name": "ZCL_FOO", "include_source_analysis": true})
+  SAP(action="analyze", params={"type": "where_used_config", "variable": "ZKEKEKE"})
+  SAP(action="analyze", params={"type": "where_used_config", "variable": "ZKEKEKE", "grep": false})
+
 Execute ABAP:
   SAP(action="analyze", params={"type": "execute_abap", "code": "WRITE 'Hello'."})
 

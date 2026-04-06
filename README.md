@@ -14,6 +14,7 @@
 ## Hot Right Now
 
 - `vsp graph co-change CLAS ZCL_FOO` for transport-based co-change analysis
+- `vsp graph where-used-config ZKEKEKE` for heuristic TVARVC usage discovery
 - `SAP(action="analyze", params={"type":"co_change", ...})` for MCP co-change
 - `SAP(action="analyze", params={"type":"impact", ...})` for reverse dependency impact
 - **[Graph Guide](docs/graph-guide.md)** for examples, data sources, and current limits
@@ -34,6 +35,8 @@ VSP now has a first graph-MVP layer for questions that are bigger than grep and 
 
 - `vsp graph co-change CLAS ZCL_FOO`
   Transport-based co-change: what usually moves together with this object?
+- `vsp graph where-used-config ZKEKEKE`
+  Heuristic TVARVC usage: who likely reads this variable?
 - `SAP(action="analyze", params={"type":"co_change","object_type":"CLAS","object_name":"ZCL_FOO"})`
   The same co-change analysis over MCP.
 - `SAP(action="analyze", params={"type":"impact","object_type":"CLAS","object_name":"ZCL_FOO","max_depth":3})`
@@ -188,6 +191,7 @@ vsp query T000 --top 5                           # query tables
 vsp grep "SELECT.*mara" --package '$TMP'          # search source code
 vsp graph CLAS ZCL_FOO --direction callers        # who uses this class?
 vsp graph co-change CLAS ZCL_FOO                  # what changes together with this object?
+vsp graph where-used-config ZKEKEKE               # who likely reads this TVARVC variable?
 vsp deps '$ZFINANCE' --format summary             # transport readiness check
 vsp lint --file myclass.clas.abap                 # offline ABAP linter
 vsp compile wasm program.wasm --class ZCL_DEMO    # WASM→ABAP compiler
@@ -342,6 +346,8 @@ vsp -s dev search "Z*ORDER*" --type CLAS --max 50
 vsp -s a4h graph CLAS ZCL_FOO                      # call graph
 vsp -s a4h graph co-change CLAS ZCL_FOO           # transport-based co-change
 vsp -s a4h graph co-change PROG ZREPORT --format json
+vsp -s a4h graph where-used-config ZKEKEKE        # TVARVC readers (heuristic)
+vsp -s a4h graph where-used-config ZKEKEKE --format mermaid > config.mmd
 
 # Testing & code quality
 vsp -s a4h test CLAS ZCL_MY_CLASS                 # run unit tests
@@ -373,8 +379,10 @@ vsp lsp --stdio
 Graph-MVP highlights:
 
 - `vsp graph co-change <type> <name>` for transport-based co-change analysis
+- `vsp graph where-used-config <variable>` for heuristic TVARVC usage analysis
 - `SAP(action="analyze", params={"type":"co_change", ...})` for MCP co-change
 - `SAP(action="analyze", params={"type":"impact", ...})` for reverse dependency impact
+- `SAP(action="analyze", params={"type":"where_used_config", ...})` for MCP TVARVC usage
 
 ### System Profiles (`.vsp.json`)
 
