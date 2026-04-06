@@ -125,6 +125,7 @@ unit tests, ATC findings, boundary analysis, and staleness.
 
 Examples:
   vsp health --package '$ZDEV'
+  vsp health --package '$ZDEV' --fast
   vsp health CLAS ZCL_ORDER_SERVICE
   vsp health --package '$ZDEV' --format json`,
 	RunE: runHealth,
@@ -279,6 +280,7 @@ func init() {
 
 	// Health flags
 	healthCmd.Flags().String("package", "", "Analyze an entire package")
+	healthCmd.Flags().Bool("fast", false, "Faster package snapshot: skip expensive checks like tests and boundary scan")
 	healthCmd.Flags().String("format", "text", "Output format: text or json")
 
 	// ATC flags
@@ -668,6 +670,7 @@ func runHealth(cmd *cobra.Command, args []string) error {
 	}
 
 	packageName, _ := cmd.Flags().GetString("package")
+	fast, _ := cmd.Flags().GetBool("fast")
 	format, _ := cmd.Flags().GetString("format")
 	packageName = strings.ToUpper(strings.TrimSpace(packageName))
 
@@ -675,7 +678,7 @@ func runHealth(cmd *cobra.Command, args []string) error {
 
 	if packageName != "" {
 		result.Scope = cliHealthScope{Kind: "package", Package: packageName}
-		populatePackageHealthCLI(context.Background(), client, packageName, result)
+		populatePackageHealthCLI(context.Background(), client, packageName, fast, result)
 	} else {
 		if len(args) != 2 {
 			return fmt.Errorf("usage: vsp health <type> <name> or vsp health --package <package>")
@@ -701,10 +704,15 @@ func runHealth(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func populatePackageHealthCLI(ctx context.Context, client *adt.Client, pkg string, result *cliHealthResult) {
-	result.Signals["tests"] = collectPackageTestsCLI(ctx, client, pkg)
+func populatePackageHealthCLI(ctx context.Context, client *adt.Client, pkg string, fast bool, result *cliHealthResult) {
+	if fast {
+		result.Signals["tests"] = cliHealthSignal{Status: "SKIPPED", Details: map[string]any{"reason": "fast mode"}}
+		result.Signals["boundaries"] = cliHealthSignal{Status: "SKIPPED", Details: map[string]any{"reason": "fast mode"}}
+	} else {
+		result.Signals["tests"] = collectPackageTestsCLI(ctx, client, pkg)
+		result.Signals["boundaries"] = collectPackageBoundariesCLI(ctx, client, pkg)
+	}
 	result.Signals["atc"] = collectPackageATCCLI(ctx, client, pkg)
-	result.Signals["boundaries"] = collectPackageBoundariesCLI(ctx, client, pkg)
 	result.Signals["staleness"] = collectPackageStalenessCLI(ctx, client, pkg)
 }
 
