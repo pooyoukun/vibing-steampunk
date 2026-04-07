@@ -51,12 +51,13 @@ SELECT DEVCLASS, PARENTCL FROM TDEVC WHERE PARENTCL = '$ZLLM'
 - LIKE `$ZLLM%` also matches `$ZLLM2` (unrelated package)
 - TDEVC PARENTCL gives real parent-child relationships
 
-### Phase 2: Object-Level "Unreachable from Outside" Analysis
+### Phase 2: Object-Level Dead Code Analysis
+
+**AMENDMENT (2026-04-07): Corrected after Codex review.**
 
 **Current V1 logic:** zero incoming refs = dead.
-**Problem:** an object can have refs — but ALL from within scope. It's still dead to the outside world.
 
-**V2 logic:**
+**V2 logic — three verdicts:**
 
 ```
 For each object in scope:
@@ -65,19 +66,41 @@ For each object in scope:
   3. Classify each caller:
      - caller is IN scope (same package set) → internal ref
      - caller is OUTSIDE scope → external ref
-  4. If external_refs == 0 → object is unreachable from outside scope
+  4. Assign verdict:
+     - external_refs > 0           → LIVE (directly used from outside)
+     - external_refs == 0 AND
+       total_refs == 0             → DEAD (zero refs anywhere, HIGH confidence)
+     - external_refs == 0 AND
+       total_refs > 0              → INTERNAL_ONLY (warning, not verdict)
 ```
 
 **Verdicts:**
-- `DEAD` — zero refs total (HIGH confidence)
-- `UNREACHABLE` — has refs, but all from within scope (HIGH confidence)
-- `LIVE` — has at least one external ref
+- `DEAD` — zero refs total (HIGH confidence). Definitely unused.
+- `INTERNAL_ONLY` — has refs, but all from within scope (WARNING, not assertion of dead).
+  This is **informational**, not a deletion recommendation. The object may be:
+  - A legitimate internal helper called from a live public entrypoint → LIVE in reality
+  - Part of a dead cluster where nothing in the cluster is called externally → truly dead
+  - **We cannot distinguish these cases without graph reachability analysis.**
+- `LIVE` — has at least one external ref. Definitely in use.
 
-**Why this matters:** a cluster of classes that only call each other but nobody outside uses them → all unreachable. V1 misses this because each has refs (from the others).
+**Key correction (from Codex review):** "no external refs" ≠ "not needed." A helper class
+called only by a live public class IS needed. INTERNAL_ONLY is a signal for human review,
+not an automated verdict. Asserting UNREACHABLE at per-object level would be semantically wrong.
 
-### Phase 3: Member-Level Dead Code (within LIVE classes)
+**Full graph reachability (V2.1, deferred):**
+To truly identify unreachable clusters, need:
+1. Find entry points: objects with at least one external ref
+2. Forward-traverse internal edges from entry points → mark reachable
+3. Objects not reached → truly unreachable as a cluster
+This is a graph-level property, not per-object. Deferred to V2.1.
 
-Only analyze classes that are LIVE (have external refs). Dead classes → all their members are dead by definition.
+### Phase 3: Member-Level Dead Code (within REACHABLE classes)
+
+**AMENDMENT:** Analyze classes that are LIVE or INTERNAL_ONLY (not just externally-referenced).
+A helper class with zero external refs but called from a live entrypoint still has meaningful
+methods. The criterion is "class exists and has code," not "class has external refs."
+
+For DEAD classes (zero refs total) → skip method analysis (whole object is dead).
 
 **Methods:**
 
@@ -145,9 +168,9 @@ Packages in scope:
   ❌ PROG ZTEST_ABANDONED [$ZLLM_TEST] — 0 refs, last transport 2023-06-01
   ...
 
-=== UNREACHABLE OBJECTS (5) — referenced only within scope ===
-  ⚠️ CLAS ZCL_INTERNAL_CACHE [$ZLLM_CORE] — 3 refs, all from $ZLLM_CORE
-  ⚠️ CLAS ZCL_INTERNAL_LOGGER [$ZLLM_CORE] — 2 refs, all from $ZLLM_*
+=== INTERNAL_ONLY OBJECTS (5) — referenced only within scope (review needed) ===
+  ℹ️ CLAS ZCL_INTERNAL_CACHE [$ZLLM_CORE] — 3 refs, all internal (may be legitimate helper)
+  ℹ️ CLAS ZCL_INTERNAL_LOGGER [$ZLLM_CORE] — 2 refs, all internal (may be legitimate helper)
   ...
 
 === DEAD METHODS (8) — in live classes, no external callers ===
@@ -176,9 +199,13 @@ Summary:
 | Object refs | WBCROSSGT | `SELECT INCLUDE, NAME FROM WBCROSSGT WHERE NAME LIKE 'obj%'` (reverse) |
 | Object refs | CROSS | `SELECT INCLUDE, NAME FROM CROSS WHERE NAME LIKE 'obj%'` (reverse) |
 | Methods | ADT | `GetClassObjectStructure` → elements with CLAS/OM type |
-| Method refs | WBCROSSGT | `WHERE NAME = 'method_name' AND OTYPE = 'ME'` |
+| Method refs | WBCROSSGT | `WHERE INCLUDE LIKE 'classname%' AND OTYPE = 'ME' AND NAME = 'method'` (owner-scoped to avoid name collision) |
 | Attributes | ADT | `GetClassObjectStructure` → elements with CLAS/OA type |
-| Attribute refs | WBCROSSGT | `WHERE NAME = 'attr_name' AND OTYPE IN ('DA','OA')` |
+| Attribute refs | WBCROSSGT | `WHERE INCLUDE LIKE 'classname%' AND OTYPE IN ('DA','OA') AND NAME = 'attr'` (owner-scoped) |
+
+**AMENDMENT:** Method/attribute queries MUST be scoped by owning class (via INCLUDE pattern)
+to avoid false matches from identically-named methods in different classes (e.g., GET_DATA
+exists in 100+ classes). Query `NAME = 'GET_DATA'` without class scope is useless.
 
 ---
 
@@ -211,14 +238,16 @@ Summary:
 
 ---
 
-## Open Questions for Peer Review
+## Open Questions — Status After Codex Review
 
-1. **Should UNREACHABLE be separate from DEAD in the output, or combined?** Dead = zero refs. Unreachable = refs only from within scope. Semantically different, but users may want one list.
+1. ~~Should UNREACHABLE be separate from DEAD?~~ **RESOLVED:** Renamed to INTERNAL_ONLY (warning, not verdict). Separate section in output with ℹ️ not ❌.
 
-2. **Should iterative unreachable analysis be in V2 or V2.1?** (If A calls B, B calls C, and only A has external refs — removing A makes B and C unreachable. One-pass misses this cascade.)
+2. ~~Should iterative unreachable analysis be in V2 or V2.1?~~ **RESOLVED:** Deferred to V2.1. Codex correctly identified that the cascade example was logically broken — it's impact simulation, not current-state analysis.
 
-3. **Is TDEVC always queryable via freestyle SQL?** If not, should we fallback to LIKE prefix silently?
+3. **Is TDEVC always queryable via freestyle SQL?** OPEN. Fallback to LIKE prefix if TDEVC query fails.
 
-4. **For method-level: should we analyze ALL live classes or only classes above a certain size?** Analyzing a 2-method class is low-value; analyzing a 50-method class is high-value.
+4. **For method-level: should we analyze ALL non-dead classes or only large ones?** OPEN. Codex noted Phase 3 should use "reachable" not "externally-referenced" as criterion. For V2: analyze all non-DEAD classes (both LIVE and INTERNAL_ONLY).
 
-5. **Attribute analysis: is it worth the effort for V2?** WBCROSSGT attribute tracking is even less reliable than method tracking. Maybe defer to V2.1?
+5. **Attribute analysis: V2 or V2.1?** OPEN. WBCROSSGT attribute tracking unreliable. Leaning V2.1.
+
+6. **(NEW from Codex)** Method/attribute name collisions must be resolved by scoping queries to owning class. `NAME = 'GET_DATA'` alone is useless. Query must include `INCLUDE LIKE 'classname%'`.
