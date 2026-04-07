@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.38.1] - 2026-04-07
+### Bug Fixes
+
+- Add progress indicators to package-level health command ([`8306218`](https://github.com/oisee/vibing-steampunk/commit/830621855e7998516905e31100d0ec38668045c5))
+
+
+
 ## [2.38.0] - 2026-04-07
 ### Bug Fixes
 
