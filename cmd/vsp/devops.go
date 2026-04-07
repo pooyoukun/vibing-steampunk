@@ -966,6 +966,19 @@ func collectPackageStalenessCLI(ctx context.Context, client *adt.Client, pkg str
 		checked++
 	}
 	if newest.IsZero() {
+		// Fallback: query latest transport date from E070/E071
+		transportQuery := fmt.Sprintf(
+			"SELECT MAX( AS4DATE ) AS LAST_DATE FROM E070 WHERE TRKORR IN ( SELECT TRKORR FROM E071 WHERE OBJ_NAME IN ( SELECT OBJ_NAME FROM TADIR WHERE DEVCLASS LIKE '%s%%' ) )", pkg)
+		tResult, tErr := client.RunQuery(ctx, transportQuery, 1)
+		if tErr == nil && tResult != nil && len(tResult.Rows) > 0 {
+			dateStr := strings.TrimSpace(fmt.Sprintf("%v", tResult.Rows[0]["LAST_DATE"]))
+			if dateStr != "" && dateStr != "00000000" && len(dateStr) == 8 {
+				tm, err := time.Parse("20060102", dateStr)
+				if err == nil {
+					return stalenessCLIFromTime(tm, 0)
+				}
+			}
+		}
 		return cliHealthSignal{Status: "UNKNOWN"}
 	}
 	return stalenessCLIFromTime(newest, checked)
