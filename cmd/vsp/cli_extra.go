@@ -266,6 +266,7 @@ func init() {
 	slimCmd.Flags().Bool("include-subpackages", true, "Include subpackages")
 	slimCmd.Flags().Bool("exact-package", false, "Analyze only the exact package, excluding subpackages")
 	slimCmd.Flags().String("format", "text", "Output format: text or json")
+	slimCmd.Flags().String("level", "objects", "Analysis depth: objects (fastest), methods (objects + dead methods), full (+ attributes)")
 	rootCmd.AddCommand(slimCmd)
 
 	// Graph flags
@@ -1320,6 +1321,7 @@ func runSlim(cmd *cobra.Command, args []string) error {
 	inclSub, _ := cmd.Flags().GetBool("include-subpackages")
 	exactPkg, _ := cmd.Flags().GetBool("exact-package")
 	format, _ := cmd.Flags().GetString("format")
+	level, _ := cmd.Flags().GetString("level")
 	ctx := context.Background()
 	if exactPkg {
 		inclSub = false
@@ -1437,6 +1439,42 @@ func runSlim(cmd *cobra.Command, args []string) error {
 	}
 	fmt.Fprintf(os.Stderr, "\r")
 	fmt.Fprintf(os.Stderr, "Collected %d reverse references.\n", len(allRefs))
+
+	// Step 2.5: Collect method info for non-dead classes (if --level methods or full)
+	if level == "methods" || level == "full" {
+		// Build set of class names
+		var classNames []string
+		for _, obj := range objects {
+			if obj.Type == "CLAS" {
+				classNames = append(classNames, obj.Name)
+			}
+		}
+		if len(classNames) > 0 {
+			fmt.Fprintf(os.Stderr, "Fetching class structures (%d classes)...\n", len(classNames))
+			for i, cls := range classNames {
+				fmt.Fprintf(os.Stderr, "\r  [%d/%d] %s", i+1, len(classNames), cls)
+				structure, err := client.GetClassObjectStructure(ctx, cls)
+				if err != nil {
+					continue // skip classes we can't inspect
+				}
+				methods := structure.GetMethods()
+				var methodNames []string
+				for _, m := range methods {
+					if m.Name != "" {
+						methodNames = append(methodNames, m.Name)
+					}
+				}
+				// Update the object with method info
+				for j := range objects {
+					if strings.EqualFold(objects[j].Name, cls) {
+						objects[j].Methods = methodNames
+						break
+					}
+				}
+			}
+			fmt.Fprintf(os.Stderr, "\r\n")
+		}
+	}
 
 	// Step 3: Compute slim report
 	result := graph.ComputeSlim(objects, allRefs, nil, objNames)
