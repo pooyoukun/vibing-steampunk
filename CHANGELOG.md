@@ -4,13 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.39.0] - 2026-04-07
+## [2.38.0] - 2026-04-07
 ### Bug Fixes
 
 - Detect dynamic PERFORM IN PROGRAM (variable) calls ([`1d88127`](https://github.com/oisee/vibing-steampunk/commit/1d88127d02c76949ce46c842079eefde01bef94a))
 - Preserve auth headers on redirects (#90) + stateful lock sessions (#88) ([`27f4d7c`](https://github.com/oisee/vibing-steampunk/commit/27f4d7c071883ac8d38c06a30a4f922009053262))
 - Slim reverse ref queries — ADT freestyle doesn't support OR with LIKE ([`f17cf04`](https://github.com/oisee/vibing-steampunk/commit/f17cf04b3cc7367ea3a839c990419d76f31c85b5))
 - Skip local-only JS and TS transpile fixtures in CI ([`b20293e`](https://github.com/oisee/vibing-steampunk/commit/b20293e641362dd424e9e4125c5000a826bd5f56))
+- GoReleaser v2.15 dropped changelog.use git-cliff ([`668b66a`](https://github.com/oisee/vibing-steampunk/commit/668b66adece571a37a73c58ea9432d831496f76c))
 
 
 ### Features
