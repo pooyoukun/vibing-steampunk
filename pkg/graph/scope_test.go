@@ -99,6 +99,36 @@ func TestResolvePackageScope_NoTDEVC_Fallback(t *testing.T) {
 	}
 }
 
+func TestResolvePackageScope_PrefixFallback(t *testing.T) {
+	// Root package doesn't exist in TDEVC, but children with similar prefix do
+	// This simulates $ZHIRTEST where packages are $ZHIRTEST_00, $ZHIRTEST_001, etc.
+	tdevc := []TDEVCRow{
+		{DevClass: "$ZHIRTEST_00", ParentCL: ""},
+		{DevClass: "$ZHIRTEST_001", ParentCL: ""},  // no PARENTCL set
+		{DevClass: "$ZHIRTEST_010", ParentCL: ""},
+		{DevClass: "$ZHIRTEST_101", ParentCL: ""},
+		{DevClass: "$ZOTHER", ParentCL: ""},
+	}
+
+	scope := ResolvePackageScope("$ZHIRTEST", false, tdevc)
+
+	if scope.Method != "prefix" {
+		t.Errorf("Method: got %q, want prefix (root not in TDEVC)", scope.Method)
+	}
+	// Should include all $ZHIRTEST* packages
+	if len(scope.Packages) != 4 {
+		t.Errorf("Prefix scope: got %d packages, want 4: %v", len(scope.Packages), scope.Packages)
+	}
+	if scope.InScope("$ZOTHER") {
+		t.Error("$ZOTHER should NOT be in scope")
+	}
+	for _, pkg := range []string{"$ZHIRTEST_00", "$ZHIRTEST_001", "$ZHIRTEST_010", "$ZHIRTEST_101"} {
+		if !scope.InScope(pkg) {
+			t.Errorf("%s should be in prefix scope", pkg)
+		}
+	}
+}
+
 func TestResolvePackageScope_DeepHierarchy(t *testing.T) {
 	// 4 levels deep
 	tdevc := []TDEVCRow{

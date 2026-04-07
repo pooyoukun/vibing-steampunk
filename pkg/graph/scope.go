@@ -105,7 +105,18 @@ func ResolvePackageScope(input string, exact bool, tdevcRows []TDEVCRow) *Packag
 		}
 	} else {
 		scope.Method = "hierarchy"
-		roots = []string{input}
+		if allPackages[input] {
+			// Root exists in TDEVC — walk children
+			roots = []string{input}
+		} else {
+			// Root not found — treat as prefix, include all packages starting with input
+			scope.Method = "prefix"
+			for pkg := range allPackages {
+				if strings.HasPrefix(pkg, input) {
+					roots = append(roots, pkg)
+				}
+			}
+		}
 	}
 
 	// BFS: expand each root through children hierarchy

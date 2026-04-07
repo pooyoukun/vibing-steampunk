@@ -1325,12 +1325,50 @@ func runSlim(cmd *cobra.Command, args []string) error {
 		inclSub = false
 	}
 
-	// Step 1: Get objects in package
-	fmt.Fprintf(os.Stderr, "Loading package %s...\n", pkg)
-	packWhere := fmt.Sprintf("DEVCLASS = '%s'", pkg)
-	if inclSub {
-		packWhere = fmt.Sprintf("DEVCLASS LIKE '%s%%'", pkg)
+	// Step 1: Resolve package scope via TDEVC hierarchy
+	fmt.Fprintf(os.Stderr, "Resolving package scope for %s...\n", pkg)
+
+	var scope *graph.PackageScope
+	if !inclSub {
+		scope = graph.ResolvePackageScope(pkg, true, nil) // exact package only
+	} else {
+		// Try TDEVC hierarchy first — fetch all potentially related packages
+		// We use broad LIKE on DEVCLASS to catch both direct children and
+		// packages linked via PARENTCL. The ResolvePackageScope function
+		// will then walk the hierarchy tree correctly.
+		tdevcResult, tdevcErr := client.RunQuery(ctx,
+			fmt.Sprintf("SELECT DEVCLASS, PARENTCL FROM TDEVC WHERE DEVCLASS LIKE '%s%%'", pkg), 500)
+		if tdevcErr == nil && tdevcResult != nil && len(tdevcResult.Rows) > 0 {
+			var tdevcRows []graph.TDEVCRow
+			for _, row := range tdevcResult.Rows {
+				tdevcRows = append(tdevcRows, graph.TDEVCRow{
+					DevClass: strings.TrimSpace(fmt.Sprintf("%v", row["DEVCLASS"])),
+					ParentCL: strings.TrimSpace(fmt.Sprintf("%v", row["PARENTCL"])),
+				})
+			}
+			scope = graph.ResolvePackageScope(pkg, false, tdevcRows)
+			fmt.Fprintf(os.Stderr, "Scope resolved via TDEVC hierarchy: %d packages (%s)\n",
+				len(scope.Packages), strings.Join(scope.Packages, ", "))
+		} else {
+			// Fallback to LIKE prefix if TDEVC not queryable
+			fmt.Fprintf(os.Stderr, "TDEVC not available, falling back to LIKE prefix\n")
+			scope = graph.ResolvePackageScope(pkg, false, nil)
+		}
 	}
+
+	// Query TADIR for objects in all scope packages
+	var packWhere string
+	if len(scope.Packages) == 1 {
+		packWhere = fmt.Sprintf("DEVCLASS = '%s'", scope.Packages[0])
+	} else {
+		quoted := make([]string, len(scope.Packages))
+		for i, p := range scope.Packages {
+			quoted[i] = fmt.Sprintf("'%s'", p)
+		}
+		packWhere = fmt.Sprintf("DEVCLASS IN (%s)", strings.Join(quoted, ","))
+	}
+
+	fmt.Fprintf(os.Stderr, "Loading objects...\n")
 	tadirResult, err := client.RunQuery(ctx,
 		fmt.Sprintf("SELECT OBJECT, OBJ_NAME, DEVCLASS FROM TADIR WHERE %s AND PGMID = 'R3TR'", packWhere), 1000)
 	if err != nil {
