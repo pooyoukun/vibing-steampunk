@@ -1367,22 +1367,13 @@ func runSlim(cmd *cobra.Command, args []string) error {
 		nameList = append(nameList, nm)
 	}
 
-	// Batch query WBCROSSGT: who references these objects?
-	batchSize := 50
-	for i := 0; i < len(nameList); i += batchSize {
-		end := i + batchSize
-		if end > len(nameList) {
-			end = len(nameList)
-		}
-		batch := nameList[i:end]
+	// Query reverse refs per object (ADT freestyle doesn't support OR with LIKE)
+	for idx, nm := range nameList {
+		fmt.Fprintf(os.Stderr, "\r  [%d/%d] %s", idx+1, len(nameList), nm)
 
-		var likeConds []string
-		for _, nm := range batch {
-			likeConds = append(likeConds, fmt.Sprintf("NAME LIKE '%s%%'", nm))
-		}
-
-		wbQuery := fmt.Sprintf("SELECT INCLUDE, NAME FROM WBCROSSGT WHERE (%s)", strings.Join(likeConds, " OR "))
-		wbResult, err := client.RunQuery(ctx, wbQuery, 5000)
+		// WBCROSSGT: OO references
+		wbQuery := fmt.Sprintf("SELECT INCLUDE, NAME FROM WBCROSSGT WHERE NAME LIKE '%s%%'", nm)
+		wbResult, err := client.RunQuery(ctx, wbQuery, 500)
 		if err == nil && wbResult != nil {
 			for _, row := range wbResult.Rows {
 				allRefs = append(allRefs, graph.SlimRefRow{
@@ -1393,14 +1384,9 @@ func runSlim(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		// Also CROSS for procedural refs
-		var crossConds []string
-		for _, nm := range batch {
-			crossConds = append(crossConds, fmt.Sprintf("NAME LIKE '%s%%'", nm))
-		}
-
-		crossQuery := fmt.Sprintf("SELECT INCLUDE, NAME FROM CROSS WHERE (%s)", strings.Join(crossConds, " OR "))
-		crossResult, err := client.RunQuery(ctx, crossQuery, 5000)
+		// CROSS: procedural references
+		crossQuery := fmt.Sprintf("SELECT INCLUDE, NAME FROM CROSS WHERE NAME LIKE '%s%%'", nm)
+		crossResult, err := client.RunQuery(ctx, crossQuery, 500)
 		if err == nil && crossResult != nil {
 			for _, row := range crossResult.Rows {
 				allRefs = append(allRefs, graph.SlimRefRow{
@@ -1411,6 +1397,7 @@ func runSlim(cmd *cobra.Command, args []string) error {
 			}
 		}
 	}
+	fmt.Fprintf(os.Stderr, "\r")
 	fmt.Fprintf(os.Stderr, "Collected %d reverse references.\n", len(allRefs))
 
 	// Step 3: Compute slim report
