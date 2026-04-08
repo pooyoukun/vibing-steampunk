@@ -268,8 +268,12 @@ func printCrossingsText(report *graph.CrossingReport) {
 		}
 		fmt.Printf("  %s  %-12s %d\n", marker, dir, len(entries))
 		for _, e := range entries {
-			fmt.Printf("         %s → %s  (%s → %s)\n",
-				e.SourcePackage, e.TargetPackage, e.SourceObject, e.TargetObject)
+			ref := e.EdgeKind
+			if e.RefDetail != "" {
+				ref += " " + e.RefDetail
+			}
+			fmt.Printf("         %s → %s  %s %s → %s %s  [%s]\n",
+				e.SourcePackage, e.TargetPackage, e.SourceType, e.SourceObject, e.TargetType, e.TargetObject, ref)
 		}
 		fmt.Println()
 	}
@@ -1427,8 +1431,12 @@ func printCLIHealth(result *cliHealthResult, details bool) {
 			}
 			fmt.Printf("  %s  %s (%d)\n", marker, dir, len(entries))
 			for _, e := range entries {
-				fmt.Printf("    %s → %s  (%s.%s → %s)\n",
-					e.SourcePackage, e.TargetPackage, e.SourcePackage, e.SourceObject, e.TargetObject)
+				ref := e.EdgeKind
+				if e.RefDetail != "" {
+					ref += " " + e.RefDetail
+				}
+				fmt.Printf("    %s → %s  %s %s → %s %s  [%s]\n",
+					e.SourcePackage, e.TargetPackage, e.SourceType, e.SourceObject, e.TargetType, e.TargetObject, ref)
 			}
 		}
 
@@ -1584,10 +1592,12 @@ func printCrossingsMD(report *graph.CrossingReport) {
 			verdict = "BAD"
 		}
 		fmt.Printf("### %s — %s (%d)\n\n", dir, verdict, len(entries))
-		fmt.Println("| Source Package | Target Package | Source Object | Target Object |")
-		fmt.Println("|---------------|----------------|---------------|---------------|")
+		fmt.Println("| Source | Target | Edge | Detail |")
+		fmt.Println("|--------|--------|------|--------|")
 		for _, e := range entries {
-			fmt.Printf("| %s | %s | %s | %s |\n", e.SourcePackage, e.TargetPackage, e.SourceObject, e.TargetObject)
+			src := fmt.Sprintf("%s %s (%s)", e.SourceType, e.SourceObject, e.SourcePackage)
+			tgt := fmt.Sprintf("%s %s (%s)", e.TargetType, e.TargetObject, e.TargetPackage)
+			fmt.Printf("| %s | %s | %s | %s |\n", src, tgt, e.EdgeKind, e.RefDetail)
 		}
 		fmt.Println()
 	}
@@ -1731,10 +1741,12 @@ func printCLIHealthHTML(result *cliHealthResult) {
 				cssClass = "FAIL"
 			}
 			fmt.Printf("<h3 class=%q>%s (%d)</h3>\n", cssClass, dir, len(entries))
-			fmt.Println("<table><tr><th>Source Pkg</th><th>Target Pkg</th><th>Source Object</th><th>Target Object</th></tr>")
+			fmt.Println("<table><tr><th>Source</th><th>Target</th><th>Edge</th><th>Detail</th></tr>")
 			for _, e := range entries {
+				src := fmt.Sprintf("%s %s<br><small>%s</small>", e.SourceType, e.SourceObject, e.SourcePackage)
+				tgt := fmt.Sprintf("%s %s<br><small>%s</small>", e.TargetType, e.TargetObject, e.TargetPackage)
 				fmt.Printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",
-					e.SourcePackage, e.TargetPackage, e.SourceObject, e.TargetObject)
+					src, tgt, e.EdgeKind, e.RefDetail)
 			}
 			fmt.Println("</table>")
 		}

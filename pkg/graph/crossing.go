@@ -20,11 +20,14 @@ const (
 // CrossingEntry represents a single directional crossing.
 type CrossingEntry struct {
 	SourceObject  string            `json:"sourceObject"`
+	SourceType    string            `json:"sourceType,omitempty"`
 	SourcePackage string            `json:"sourcePackage"`
 	TargetObject  string            `json:"targetObject"`
+	TargetType    string            `json:"targetType,omitempty"`
 	TargetPackage string            `json:"targetPackage"`
 	Direction     CrossingDirection `json:"direction"`
-	Detail        string            `json:"detail,omitempty"`
+	EdgeKind      string            `json:"edgeKind"`
+	RefDetail     string            `json:"refDetail,omitempty"`
 }
 
 // CrossingReport is the result of a directional boundary crossing analysis.
@@ -278,11 +281,14 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 					report.External++
 					report.Entries = append(report.Entries, CrossingEntry{
 						SourceObject:  fromNode.Name,
+						SourceType:    fromNode.Type,
 						SourcePackage: srcPkg,
 						TargetObject:  toNode.Name,
+						TargetType:    toNode.Type,
 						TargetPackage: "(unresolved)",
 						Direction:     CrossExternal,
-						Detail:        string(e.Kind),
+						EdgeKind:      string(e.Kind),
+						RefDetail:     e.RefDetail,
 					})
 				}
 				continue
@@ -303,11 +309,14 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 
 			entry := CrossingEntry{
 				SourceObject:  fromNode.Name,
+				SourceType:    fromNode.Type,
 				SourcePackage: srcPkg,
 				TargetObject:  toNode.Name,
+				TargetType:    toNode.Type,
 				TargetPackage: tgtPkg,
 				Direction:     direction,
-				Detail:        string(e.Kind),
+				EdgeKind:      string(e.Kind),
+				RefDetail:     e.RefDetail,
 			}
 			report.Entries = append(report.Entries, entry)
 
