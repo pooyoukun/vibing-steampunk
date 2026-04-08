@@ -722,7 +722,7 @@ func runHealth(cmd *cobra.Command, args []string) error {
 			if scopeName == "" {
 				scopeName = strings.ToUpper(args[0]) + "_" + strings.ToUpper(args[1])
 			}
-			fileName = strings.ReplaceAll(scopeName, "$", "") + "." + format
+			fileName = strings.ReplaceAll(scopeName, "$", "_") + "." + format
 		}
 		f, err := os.Create(fileName)
 		if err != nil {
