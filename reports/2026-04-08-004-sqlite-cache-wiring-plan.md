@@ -90,10 +90,27 @@ Flow:
 **Objective:** Enable `--cache` flag and compute source hashes for cache key validation.
 
 **Deliverables:**
-- `--cache` flag on `boundaries`, `health`, `slim`, `changelog`, `changes`
-- `--cache-path` flag (default: `.vsp-cache/analysis.db`)
+- Cache config in `.vsp.json` per system: `"cache": true`
+- Env var: `VSP_CACHE=true` (global) or `VSP_<SYSTEM>_CACHE=true` (per-system)
+- Cache path: `.vsp-cache/<system>.db` (auto-derived, or `"cache_path"` override)
+- Resolution order: flag → system config → system env → global env → default off
 - Source hash computation (SHA-256 of fetched source text)
 - Cache open/close lifecycle in command runner
+
+**Config example:**
+```json
+{
+  "systems": {
+    "dev": {
+      "url": "http://dev:50000",
+      "user": "DEVELOPER",
+      "cache": true
+    }
+  }
+}
+```
+
+**DONE:** Config fields added to `SystemConfig`, `systemParams`, env resolution wired.
 
 **Schema additions:**
 ```sql
