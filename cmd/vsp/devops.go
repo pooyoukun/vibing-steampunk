@@ -1774,7 +1774,7 @@ func resolvePackagesCLI(ctx context.Context, client *adt.Client, g *graph.Graph)
 			quoted[i] = "'" + strings.ToUpper(n) + "'"
 		}
 		query := fmt.Sprintf("SELECT obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", strings.Join(quoted, ","))
-		result, err := client.RunQuery(ctx, query, 0)
+		result, err := client.RunQuery(ctx, query, len(chunk)*3)
 		if err != nil || result == nil {
 			continue
 		}

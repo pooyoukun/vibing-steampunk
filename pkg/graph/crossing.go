@@ -239,6 +239,8 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 
 	// Track sibling direction pairs for circular detection
 	siblingPairs := make(map[string]map[string]bool) // srcPkg → set of tgtPkgs
+	// Deduplicate: same source→target pair only counted once
+	seenPairs := make(map[string]bool)
 
 	for nodeID := range scopeNodes {
 		edges := g.outEdges[nodeID]
@@ -270,7 +272,9 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 
 			// Unresolved package on a custom object → treat as EXTERNAL
 			if tgtPkg == "" {
-				if !IsStandardObject(toNode.Name) {
+				pairKey := fromNode.Name + "→" + toNode.Name
+				if !IsStandardObject(toNode.Name) && !seenPairs[pairKey] {
+					seenPairs[pairKey] = true
 					report.External++
 					report.Entries = append(report.Entries, CrossingEntry{
 						SourceObject:  fromNode.Name,
@@ -290,6 +294,12 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 			if direction == CrossSibling && isTestPackage(srcPkg, opts.TestPatterns) {
 				continue
 			}
+
+			pairKey := fromNode.Name + "→" + toNode.Name
+			if seenPairs[pairKey] {
+				continue
+			}
+			seenPairs[pairKey] = true
 
 			entry := CrossingEntry{
 				SourceObject:  fromNode.Name,
