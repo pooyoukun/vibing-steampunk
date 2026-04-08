@@ -177,3 +177,22 @@ func TestClassifyCrossing_PrefixFallback(t *testing.T) {
 		t.Fatalf("prefix sibling: got %s, want SIBLING", dir)
 	}
 }
+
+func TestGuessPackageFromName(t *testing.T) {
+	tests := []struct{ name, want string }{
+		{"ZCL_LLM_00_CACHE", "$ZLLM_00"},
+		{"ZIF_RAY_00_NODE", "$ZRAY_00"},
+		{"ZRAY_00_CCLM", "$ZRAY_00"},
+		{"ZCX_LLM_00_ERROR", "$ZLLM_00"},
+		{"ZCL_LLM_05_TRACE_WS", "$ZLLM_05"},
+		{"ZLLM_00_NODE", "$ZLLM_00"},
+		{"CL_ABAP_TYPEDESCR", ""},
+		{"", ""},
+	}
+	for _, tt := range tests {
+		got := GuessPackageFromName(tt.name)
+		if got != tt.want {
+			t.Errorf("GuessPackageFromName(%q) = %q, want %q", tt.name, got, tt.want)
+		}
+	}
+}

@@ -273,23 +273,46 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 				continue
 			}
 
-			// Unresolved package on a custom object → treat as EXTERNAL
+			// Unresolved package on a custom object → guess from name, classify
 			if tgtPkg == "" {
 				pairKey := fromNode.Name + "→" + toNode.Name
 				if !IsStandardObject(toNode.Name) && !seenPairs[pairKey] {
 					seenPairs[pairKey] = true
-					report.External++
+					guessed := GuessPackageFromName(toNode.Name)
+					direction := CrossExternal
+					if guessed != "" {
+						toNode.Package = guessed
+						tgtPkg = guessed
+						direction = ClassifyCrossing(srcPkg, tgtPkg, scope, opts)
+					}
+					if direction == CrossSame {
+						continue
+					}
 					report.Entries = append(report.Entries, CrossingEntry{
 						SourceObject:  fromNode.Name,
 						SourceType:    fromNode.Type,
 						SourcePackage: srcPkg,
 						TargetObject:  toNode.Name,
 						TargetType:    toNode.Type,
-						TargetPackage: "(unresolved)",
-						Direction:     CrossExternal,
+						TargetPackage: guessed,
+						Direction:     direction,
 						EdgeKind:      string(e.Kind),
 						RefDetail:     e.RefDetail,
 					})
+					switch direction {
+					case CrossUpward:
+						report.Upward++
+					case CrossCommon:
+						report.Common++
+					case CrossSibling:
+						report.Sibling++
+					case CrossDownward:
+						report.Downward++
+					case CrossCommonDown:
+						report.CommonDown++
+					default:
+						report.External++
+					}
 				}
 				continue
 			}
@@ -360,6 +383,35 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 	}
 
 	return report
+}
+
+// GuessPackageFromName infers a likely package name from an object name.
+// ZCL_LLM_00_CACHE → $ZLLM_00, ZIF_RAY_00_NODE → $ZRAY_00, ZRAY_00_CCLM → $ZRAY_00
+func GuessPackageFromName(objName string) string {
+	upper := strings.ToUpper(strings.TrimSpace(objName))
+	if upper == "" || !strings.HasPrefix(upper, "Z") {
+		return ""
+	}
+	// Strip type prefixes: ZCL_, ZIF_, ZCX_, ZTT_
+	core := upper
+	prefixes := []string{"ZCL_", "ZIF_", "ZCX_", "ZTT_"}
+	for _, p := range prefixes {
+		if strings.HasPrefix(core, p) {
+			core = core[len(p):]
+			break
+		}
+	}
+	// core is now e.g. "LLM_00_CACHE" or "RAY_00_CCLM"
+	// For names that didn't have a type prefix (ZRAY_00_CCLM), strip leading Z
+	if strings.HasPrefix(core, "Z") {
+		core = core[1:]
+	}
+	// Find project prefix + module: first two _-separated segments
+	parts := strings.SplitN(core, "_", 3)
+	if len(parts) < 2 {
+		return ""
+	}
+	return "$Z" + parts[0] + "_" + parts[1]
 }
 
 func isTestPackage(pkg string, patterns []string) bool {
