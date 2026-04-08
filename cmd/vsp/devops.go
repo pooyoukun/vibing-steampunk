@@ -201,18 +201,23 @@ func runBoundaries(cmd *cobra.Command, args []string) error {
 	// Handle --report flag
 	if report != "" {
 		baseName := strings.ReplaceAll(pkg, "$", "_") + "_boundaries"
-		if strings.HasSuffix(report, ".md") {
-			format = "md"
-		} else if strings.HasSuffix(report, ".html") {
-			format = "html"
-		} else if report == "md" {
-			format = "md"
-			report = baseName + ".md"
-		} else if report == "html" {
-			format = "html"
-			report = baseName + ".html"
-		} else {
-			return fmt.Errorf("unsupported report format %q (want md, html, or filename.md/.html)", report)
+		extMap := map[string]string{".md": "md", ".html": "html", ".dot": "dot", ".puml": "plantuml", ".graphml": "graphml"}
+		bareMap := map[string]string{"md": ".md", "html": ".html", "dot": ".dot", "plantuml": ".puml", "graphml": ".graphml"}
+		detected := false
+		for ext, fmt := range extMap {
+			if strings.HasSuffix(report, ext) {
+				format = fmt
+				detected = true
+				break
+			}
+		}
+		if !detected {
+			if extSuffix, ok := bareMap[report]; ok {
+				format = report
+				report = baseName + extSuffix
+			} else {
+				return fmt.Errorf("unsupported report format %q (want md, html, dot, plantuml, graphml)", report)
+			}
 		}
 		f, err := os.Create(report)
 		if err != nil {
@@ -228,6 +233,12 @@ func runBoundaries(cmd *cobra.Command, args []string) error {
 			mmd := graph.CrossingToMermaid(crossReport, scope)
 			title := fmt.Sprintf("Boundaries: %s", pkg)
 			fmt.Println(graph.WrapMermaidHTML(title, mmd))
+		case "dot":
+			fmt.Println(graph.ToDOT(g, pkg))
+		case "plantuml":
+			fmt.Println(graph.ToPlantUML(g, pkg))
+		case "graphml":
+			fmt.Println(graph.ToGraphML(g))
 		}
 		os.Stdout = origStdout
 		fmt.Fprintf(os.Stderr, "Report saved to %s\n", report)
@@ -249,6 +260,12 @@ func runBoundaries(cmd *cobra.Command, args []string) error {
 		mmd := graph.CrossingToMermaid(crossReport, scope)
 		title := fmt.Sprintf("Boundaries: %s", pkg)
 		fmt.Println(graph.WrapMermaidHTML(title, mmd))
+	case "dot":
+		fmt.Println(graph.ToDOT(g, pkg))
+	case "plantuml":
+		fmt.Println(graph.ToPlantUML(g, pkg))
+	case "graphml":
+		fmt.Println(graph.ToGraphML(g))
 	default:
 		printCrossingsText(crossReport)
 	}
@@ -513,7 +530,7 @@ func init() {
 	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(atcCmd)
 	rootCmd.AddCommand(healthCmd)
-	boundariesCmd.Flags().String("format", "text", "Output format: text, json, md, mermaid, or html")
+	boundariesCmd.Flags().String("format", "text", "Output format: text, json, md, mermaid, html, dot, plantuml, graphml")
 	boundariesCmd.Flags().String("report", "", "Save report to file: md or filename.md")
 	boundariesCmd.Flags().Bool("exact", false, "Check only the exact package, no subpackages")
 	rootCmd.AddCommand(boundariesCmd)
