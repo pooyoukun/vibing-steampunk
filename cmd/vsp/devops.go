@@ -752,26 +752,21 @@ func collectObjectTestsCLI(ctx context.Context, client *adt.Client, objType, obj
 }
 
 func collectPackageTestsCLI(ctx context.Context, client *adt.Client, pkg string) cliHealthSignal {
-	content, err := client.GetPackage(ctx, pkg)
+	// Resolve full package hierarchy (TDEVC + prefix fallback) — same as slim/changelog.
+	// SAP's test runner only covers the exact package, not subpackages.
+	scope, err := AcquirePackageScope(ctx, client, pkg, true)
 	if err != nil {
 		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}
 	}
-	var testClasses []adt.PackageObject
-	for _, obj := range content.Objects {
-		if strings.ToUpper(obj.Type) == "CLAS" && graph.IsTestCaller(obj.Name, "") {
-			testClasses = append(testClasses, obj)
-		}
+
+	packages := scope.Packages
+	if len(packages) == 0 {
+		packages = []string{strings.ToUpper(pkg)}
 	}
-	if len(testClasses) == 0 {
-		return cliHealthSignal{Status: "NONE"}
-	}
-	limit := 5
-	if len(testClasses) < limit {
-		limit = len(testClasses)
-	}
+
 	totalClasses, totalMethods, totalAlerts := 0, 0, 0
-	for _, obj := range testClasses[:limit] {
-		objectURL := buildObjectURL("CLAS", obj.Name)
+	for _, p := range packages {
+		objectURL := fmt.Sprintf("/sap/bc/adt/packages/%s", p)
 		result, err := client.RunUnitTests(ctx, objectURL, nil)
 		if err != nil {
 			continue
@@ -781,6 +776,7 @@ func collectPackageTestsCLI(ctx context.Context, client *adt.Client, pkg string)
 		totalMethods += m
 		totalAlerts += a
 	}
+
 	status := "PASS"
 	if totalClasses == 0 {
 		status = "NONE"
@@ -789,8 +785,7 @@ func collectPackageTestsCLI(ctx context.Context, client *adt.Client, pkg string)
 		status = "FAIL"
 	}
 	return cliHealthSignal{Status: status, Details: map[string]any{
-		"test_classes_found": len(testClasses),
-		"test_classes_run":   limit,
+		"packages_scanned":   len(packages),
 		"classes":            totalClasses,
 		"methods":            totalMethods,
 		"alerts":             totalAlerts,
