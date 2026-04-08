@@ -264,7 +264,23 @@ func AnalyzeCrossings(g *Graph, scope *PackageScope, opts *CrossingOptions) *Cro
 			srcPkg := strings.ToUpper(fromNode.Package)
 			tgtPkg := strings.ToUpper(toNode.Package)
 
-			if srcPkg == "" || tgtPkg == "" || srcPkg == tgtPkg {
+			if srcPkg == "" || srcPkg == tgtPkg {
+				continue
+			}
+
+			// Unresolved package on a custom object → treat as EXTERNAL
+			if tgtPkg == "" {
+				if !IsStandardObject(toNode.Name) {
+					report.External++
+					report.Entries = append(report.Entries, CrossingEntry{
+						SourceObject:  fromNode.Name,
+						SourcePackage: srcPkg,
+						TargetObject:  toNode.Name,
+						TargetPackage: "(unresolved)",
+						Direction:     CrossExternal,
+						Detail:        string(e.Kind),
+					})
+				}
 				continue
 			}
 

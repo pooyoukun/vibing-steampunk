@@ -1762,25 +1762,30 @@ func resolvePackagesCLI(ctx context.Context, client *adt.Client, g *graph.Graph)
 	if len(names) == 0 {
 		return
 	}
-	if len(names) > 100 {
-		names = names[:100]
-	}
-	quoted := make([]string, len(names))
-	for i, n := range names {
-		quoted[i] = "'" + strings.ToUpper(n) + "'"
-	}
-	query := fmt.Sprintf("SELECT obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", strings.Join(quoted, ","))
-	result, err := client.RunQuery(ctx, query, 0)
-	if err != nil || result == nil {
-		return
-	}
-	for _, row := range result.Rows {
-		objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
-		devclass := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["DEVCLASS"])))
-		if nodes, ok := nodesByName[objName]; ok {
-			for _, n := range nodes {
-				if n.Package == "" {
-					n.Package = devclass
+	// Batch TADIR lookups in chunks of 100 to avoid query size limits
+	for start := 0; start < len(names); start += 100 {
+		end := start + 100
+		if end > len(names) {
+			end = len(names)
+		}
+		chunk := names[start:end]
+		quoted := make([]string, len(chunk))
+		for i, n := range chunk {
+			quoted[i] = "'" + strings.ToUpper(n) + "'"
+		}
+		query := fmt.Sprintf("SELECT obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", strings.Join(quoted, ","))
+		result, err := client.RunQuery(ctx, query, 0)
+		if err != nil || result == nil {
+			continue
+		}
+		for _, row := range result.Rows {
+			objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
+			devclass := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["DEVCLASS"])))
+			if nodes, ok := nodesByName[objName]; ok {
+				for _, n := range nodes {
+					if n.Package == "" {
+						n.Package = devclass
+					}
 				}
 			}
 		}
