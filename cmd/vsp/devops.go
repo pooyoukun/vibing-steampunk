@@ -264,7 +264,7 @@ func printCrossingsText(report *graph.CrossingReport) {
 			marker = "BAD "
 		}
 		if dir == graph.CrossExternal {
-			marker = "INFO"
+			marker = "WARN"
 		}
 		fmt.Printf("  %s  %-12s %d\n", marker, dir, len(entries))
 		for _, e := range entries {
@@ -1429,6 +1429,9 @@ func printCLIHealth(result *cliHealthResult, details bool) {
 			if dir == graph.CrossSibling || dir == graph.CrossDownward || dir == graph.CrossCommonDown {
 				marker = "BAD"
 			}
+			if dir == graph.CrossExternal {
+				marker = "WARN"
+			}
 			fmt.Printf("  %s  %s (%d)\n", marker, dir, len(entries))
 			for _, e := range entries {
 				ref := e.EdgeKind
@@ -1591,6 +1594,9 @@ func printCrossingsMD(report *graph.CrossingReport) {
 		if dir == graph.CrossSibling || dir == graph.CrossDownward || dir == graph.CrossCommonDown {
 			verdict = "BAD"
 		}
+		if dir == graph.CrossExternal {
+			verdict = "WARN"
+		}
 		fmt.Printf("### %s — %s (%d)\n\n", dir, verdict, len(entries))
 		fmt.Println("| From Pkg | Source Object | To Pkg | Target Object | Edge | Detail |")
 		fmt.Println("|----------|---------------|--------|---------------|------|--------|")
@@ -1740,6 +1746,9 @@ func printCLIHealthHTML(result *cliHealthResult) {
 			cssClass := "PASS"
 			if dir == graph.CrossSibling || dir == graph.CrossDownward || dir == graph.CrossCommonDown {
 				cssClass = "FAIL"
+			}
+			if dir == graph.CrossExternal {
+				cssClass = "WARN"
 			}
 			fmt.Printf("<h3 class=%q>%s (%d)</h3>\n", cssClass, dir, len(entries))
 			fmt.Println("<table><tr><th>From Pkg</th><th>Source</th><th>To Pkg</th><th>Target</th><th>Edge</th><th>Detail</th></tr>")
