@@ -54,8 +54,19 @@ func resolveSystemParams(cmd *cobra.Command) (*systemParams, error) {
 		fmt.Fprintf(os.Stderr, "[DEBUG] resolveSystemParams: systemName=%q\n", systemName)
 	}
 
-	// If --system is specified, load from systems config
-	if systemName != "" {
+	// Resolve effective system name: --system flag > .vsp.json default
+	effectiveName := systemName
+	if effectiveName == "" {
+		if cfg, _, err := config.LoadSystems(); err == nil && cfg != nil && cfg.Default != "" {
+			effectiveName = cfg.Default
+			if verbose || os.Getenv("VSP_DEBUG") == "true" {
+				fmt.Fprintf(os.Stderr, "[DEBUG] No --system flag, using default '%s' from .vsp.json\n", effectiveName)
+			}
+		}
+	}
+
+	// If we have a system name (explicit or default), load from systems config
+	if effectiveName != "" {
 		cfg, path, err := config.LoadSystems()
 		if err != nil {
 			return nil, fmt.Errorf("failed to load systems config: %w", err)
@@ -64,7 +75,7 @@ func resolveSystemParams(cmd *cobra.Command) (*systemParams, error) {
 			return nil, fmt.Errorf("no systems config found. Create .vsp.json or ~/.vsp.json\n\nExample:\n%s", config.ExampleConfig())
 		}
 
-		sys, err := cfg.GetSystem(systemName)
+		sys, err := cfg.GetSystem(effectiveName)
 		if err != nil {
 			return nil, err
 		}
@@ -72,12 +83,12 @@ func resolveSystemParams(cmd *cobra.Command) (*systemParams, error) {
 		// Require either password or cookie auth
 		hasCookieAuth := sys.CookieFile != "" || sys.CookieString != ""
 		if sys.Password == "" && !hasCookieAuth {
-			return nil, fmt.Errorf("auth not found for system '%s'. Set VSP_%s_PASSWORD env var or use cookie_file/cookie_string", systemName, strings.ToUpper(systemName))
+			return nil, fmt.Errorf("auth not found for system '%s'. Set VSP_%s_PASSWORD env var or use cookie_file/cookie_string", effectiveName, strings.ToUpper(effectiveName))
 		}
 
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		if verbose || os.Getenv("VSP_VERBOSE") == "true" || os.Getenv("VSP_DEBUG") == "true" {
-			fmt.Fprintf(os.Stderr, "[INFO] Using system '%s' from %s\n", systemName, path)
+			fmt.Fprintf(os.Stderr, "[INFO] Using system '%s' from %s\n", effectiveName, path)
 			fmt.Fprintf(os.Stderr, "[DEBUG] URL: %s, User: %s\n", sys.URL, sys.User)
 		}
 
@@ -99,7 +110,7 @@ func resolveSystemParams(cmd *cobra.Command) (*systemParams, error) {
 	// Fall back to environment variables
 	url := os.Getenv("SAP_URL")
 	if url == "" {
-		return nil, fmt.Errorf("SAP_URL not set. Use --system flag or set SAP_* env vars")
+		return nil, fmt.Errorf("SAP_URL not set. Use --system flag, set \"default\" in .vsp.json, or set SAP_* env vars")
 	}
 
 	user := os.Getenv("SAP_USER")

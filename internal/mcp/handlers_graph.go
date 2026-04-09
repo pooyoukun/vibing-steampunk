@@ -377,6 +377,71 @@ func (s *Server) fetchTransportData(ctx context.Context, objType, objName string
 		}
 	}
 
+	// Step 2b: CR-level expansion via E070A attribute (if configured)
+	// When a transport attribute is set, find all TRs sharing the same
+	// attribute value (CR ID), expanding the co-change boundary beyond
+	// a single transport request to the full change request scope.
+	if attr := s.config.TransportAttribute; attr != "" && len(requestNums) > 0 {
+		reqList := quoteKeys(requestNums)
+		attrQuery := fmt.Sprintf(
+			"SELECT TRKORR, REFERENCE FROM E070A WHERE ATTRIBUTE = '%s' AND TRKORR IN (%s)",
+			attr, strings.Join(reqList, ","))
+		attrResult, err := s.adtClient.RunQuery(ctx, attrQuery, 500)
+		if err == nil && attrResult != nil {
+			// Collect all CR references for our transports
+			crRefs := make(map[string]bool)
+			for _, row := range attrResult.Rows {
+				ref := strings.TrimSpace(fmt.Sprintf("%v", row["REFERENCE"]))
+				if ref != "" {
+					crRefs[ref] = true
+				}
+			}
+			// Find sibling TRs that share the same CR references
+			if len(crRefs) > 0 {
+				refList := make([]string, 0, len(crRefs))
+				for ref := range crRefs {
+					refList = append(refList, "'"+ref+"'")
+				}
+				siblingAttrQuery := fmt.Sprintf(
+					"SELECT TRKORR FROM E070A WHERE ATTRIBUTE = '%s' AND REFERENCE IN (%s)",
+					attr, strings.Join(refList, ","))
+				siblingAttrResult, err := s.adtClient.RunQuery(ctx, siblingAttrQuery, 1000)
+				if err == nil && siblingAttrResult != nil {
+					// Resolve these new TRs through E070 to get headers + parent mapping
+					newTRs := make(map[string]bool)
+					for _, row := range siblingAttrResult.Rows {
+						tr := strings.TrimSpace(fmt.Sprintf("%v", row["TRKORR"]))
+						if tr != "" && !trNums[tr] {
+							newTRs[tr] = true
+						}
+					}
+					if len(newTRs) > 0 {
+						newTRList := quoteKeys(newTRs)
+						crE070Query := fmt.Sprintf(
+							"SELECT TRKORR, STRKORR, TRFUNCTION, TRSTATUS, AS4USER, AS4DATE FROM E070 WHERE TRKORR IN (%s)",
+							strings.Join(newTRList, ","))
+						crE070Result, err := s.adtClient.RunQuery(ctx, crE070Query, 500)
+						if err == nil && crE070Result != nil {
+							for _, row := range crE070Result.Rows {
+								h := parseTransportHeader(row)
+								if !headerSeen[h.TRKORR] {
+									headers = append(headers, h)
+									headerSeen[h.TRKORR] = true
+									trNums[h.TRKORR] = true
+								}
+								if h.IsRequest() {
+									requestNums[h.TRKORR] = true
+								} else if h.STRKORR != "" {
+									requestNums[h.STRKORR] = true
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// Step 3: Fetch missing parent request headers
 	var missingParents []string
 	for rn := range requestNums {
@@ -479,8 +544,9 @@ func quoteKeys(m map[string]bool) []string {
 // MCP: SAP(action="analyze", params={"type": "impact", "object_type": "CLAS", "object_name": "ZCL_FOO"})
 // Optional params:
 //   - "max_depth": int (default 3, max 5)
-//   - "edge_kinds": "CALLS,REFERENCES" (comma-separated filter)
+//   - "edge_kinds": "CALLS,REFERENCES,CO_TRANSPORTED" (comma-separated filter)
 //   - "include_source_analysis": bool (default false) — augment with parser edges
+//   - "include_co_change": bool (default false) — augment with transport co-change edges
 //
 // Data sources:
 //   - WBCROSSGT + CROSS tables: reverse cross-references (backbone, always used)
@@ -489,6 +555,10 @@ func quoteKeys(m map[string]bool) []string {
 //     miss (PERFORM IN PROGRAM, local include refs, static method calls within same include).
 //     Dynamic calls (CALL FUNCTION variable) are flagged as DYNAMIC_CALL but do NOT
 //     extend the frontier since targets are unresolved.
+//   - Transport co-change (when include_co_change=true): fetches transport history,
+//     materializes CO_TRANSPORTED edges between objects shipped together. Surfaces
+//     workbench↔customizing correlations invisible to cross-reference tables.
+//     When transport_attribute is configured, expands to CR-level correlation via E070A.
 func (s *Server) handleImpact(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args := request.GetArguments()
 	objType := strings.ToUpper(getStringParam(args, "object_type"))
@@ -503,6 +573,10 @@ func (s *Server) handleImpact(ctx context.Context, request mcp.CallToolRequest) 
 	includeSourceAnalysis := false
 	if v, ok := getBoolParam(args, "include_source_analysis"); ok {
 		includeSourceAnalysis = v
+	}
+	includeCoChange := false
+	if v, ok := getBoolParam(args, "include_co_change"); ok {
+		includeCoChange = v
 	}
 
 	if objType == "" || objName == "" {
@@ -532,6 +606,14 @@ func (s *Server) handleImpact(ctx context.Context, request mcp.CallToolRequest) 
 	// Optional: parser-based source augmentation
 	if includeSourceAnalysis {
 		s.augmentGraphWithParser(ctx, g)
+	}
+
+	// Optional: co-change augmentation via transport history
+	// Merges transport graph into the structural graph and materializes
+	// CO_TRANSPORTED edges — weaker than CALLS/REFERENCES but surfaces
+	// workbench↔customizing correlations that cross-reference tables miss.
+	if includeCoChange {
+		s.augmentGraphWithCoChange(ctx, g, objType, objName)
 	}
 
 	targetNodeID := graph.NodeID(objType, objName)
@@ -629,6 +711,53 @@ func (s *Server) augmentGraphWithParser(ctx context.Context, g *graph.Graph) {
 			})
 			g.AddEdge(e)
 		}
+	}
+}
+
+// augmentGraphWithCoChange merges transport-based co-change data into an existing
+// structural dependency graph. It fetches transport history for the target object,
+// builds the transport sub-graph, and materializes CO_TRANSPORTED edges between
+// objects that were shipped together (at TR or CR level when transport_attribute
+// is configured). These edges are weaker than structural CALLS/REFERENCES edges
+// but surface workbench↔customizing correlations invisible to cross-reference tables.
+func (s *Server) augmentGraphWithCoChange(ctx context.Context, g *graph.Graph, objType, objName string) {
+	headers, objects, err := s.fetchTransportData(ctx, objType, objName)
+	if err != nil || len(headers) == 0 {
+		return // best effort
+	}
+
+	tg := graph.BuildTransportGraph(headers, objects)
+
+	// Determine source based on whether CR-level expansion was used
+	source := graph.SourceE071
+	if s.config.TransportAttribute != "" {
+		source = graph.SourceE070A
+	}
+
+	// Materialize co-transported edges (min 1 shared TR)
+	graph.MaterializeCoTransported(tg, 1, source)
+
+	// Merge CO_TRANSPORTED edges into the structural graph
+	for _, e := range tg.Edges() {
+		if e.Kind != graph.EdgeCoTransported {
+			continue
+		}
+		// Ensure both nodes exist in the target graph
+		if fromNode := tg.GetNode(e.From); fromNode != nil {
+			g.AddNode(&graph.Node{
+				ID:   fromNode.ID,
+				Name: fromNode.Name,
+				Type: fromNode.Type,
+			})
+		}
+		if toNode := tg.GetNode(e.To); toNode != nil {
+			g.AddNode(&graph.Node{
+				ID:   toNode.ID,
+				Name: toNode.Name,
+				Type: toNode.Type,
+			})
+		}
+		g.AddEdge(e)
 	}
 }
 
