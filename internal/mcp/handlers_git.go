@@ -16,6 +16,21 @@ import (
 	"github.com/oisee/vibing-steampunk/pkg/adt"
 )
 
+// routeGitAction routes "system" with git-related types.
+func (s *Server) routeGitAction(ctx context.Context, action, objectType, objectName string, params map[string]any) (*mcp.CallToolResult, bool, error) {
+	if action != "system" {
+		return nil, false, nil
+	}
+	gitType := getStringParam(params, "type")
+	switch gitType {
+	case "git_types":
+		return s.callHandler(ctx, s.handleGitTypes, params)
+	case "git_export":
+		return s.callHandler(ctx, s.handleGitExport, params)
+	}
+	return nil, false, nil
+}
+
 // --- Git/abapGit Handlers ---
 
 func (s *Server) handleGitTypes(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -52,7 +67,7 @@ func (s *Server) handleGitExport(ctx context.Context, request mcp.CallToolReques
 	params := adt.GitExportParams{}
 
 	// Parse packages
-	if pkgStr, ok := request.Params.Arguments["packages"].(string); ok && pkgStr != "" {
+	if pkgStr, ok := request.GetArguments()["packages"].(string); ok && pkgStr != "" {
 		params.Packages = strings.Split(pkgStr, ",")
 		for i, p := range params.Packages {
 			params.Packages[i] = strings.TrimSpace(p)
@@ -60,7 +75,7 @@ func (s *Server) handleGitExport(ctx context.Context, request mcp.CallToolReques
 	}
 
 	// Parse objects
-	if objsStr, ok := request.Params.Arguments["objects"].(string); ok && objsStr != "" {
+	if objsStr, ok := request.GetArguments()["objects"].(string); ok && objsStr != "" {
 		var objs []adt.GitObjectRef
 		if err := json.Unmarshal([]byte(objsStr), &objs); err != nil {
 			return newToolResultError(fmt.Sprintf("Invalid objects JSON: %v", err)), nil
@@ -69,7 +84,7 @@ func (s *Server) handleGitExport(ctx context.Context, request mcp.CallToolReques
 	}
 
 	// Include subpackages
-	if inclSub, ok := request.Params.Arguments["include_subpackages"].(bool); ok {
+	if inclSub, ok := request.GetArguments()["include_subpackages"].(bool); ok {
 		params.IncludeSubpackages = inclSub
 	} else {
 		params.IncludeSubpackages = true // default
@@ -86,7 +101,7 @@ func (s *Server) handleGitExport(ctx context.Context, request mcp.CallToolReques
 
 	// Determine output directory (default: current directory)
 	outputDir := "."
-	if dir, ok := request.Params.Arguments["output_dir"].(string); ok && dir != "" {
+	if dir, ok := request.GetArguments()["output_dir"].(string); ok && dir != "" {
 		outputDir = dir
 	}
 

@@ -11,6 +11,30 @@ import (
 	"github.com/oisee/vibing-steampunk/pkg/adt"
 )
 
+// routeAMDPAction routes "debug" AMDP sub-actions.
+func (s *Server) routeAMDPAction(ctx context.Context, action, objectType, objectName string, params map[string]any) (*mcp.CallToolResult, bool, error) {
+	if action != "debug" {
+		return nil, false, nil
+	}
+	switch objectType {
+	case "AMDP_START":
+		return s.callHandler(ctx, s.handleAMDPDebuggerStart, params)
+	case "AMDP_RESUME":
+		return s.callHandler(ctx, s.handleAMDPDebuggerResume, params)
+	case "AMDP_STOP":
+		return s.callHandler(ctx, s.handleAMDPDebuggerStop, params)
+	case "AMDP_STEP":
+		return s.callHandler(ctx, s.handleAMDPDebuggerStep, params)
+	case "AMDP_GET_VARIABLES":
+		return s.callHandler(ctx, s.handleAMDPGetVariables, params)
+	case "AMDP_SET_BREAKPOINT":
+		return s.callHandler(ctx, s.handleAMDPSetBreakpoint, params)
+	case "AMDP_GET_BREAKPOINTS":
+		return s.callHandler(ctx, s.handleAMDPGetBreakpoints, params)
+	}
+	return nil, false, nil
+}
+
 // --- AMDP (HANA) Debugger Handlers ---
 
 func (s *Server) handleAMDPDebuggerStart(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -36,7 +60,7 @@ func (s *Server) handleAMDPDebuggerStart(ctx context.Context, request mcp.CallTo
 
 	// Start AMDP debug session
 	cascadeMode := "FULL"
-	if cm, ok := request.Params.Arguments["cascade_mode"].(string); ok && cm != "" {
+	if cm, ok := request.GetArguments()["cascade_mode"].(string); ok && cm != "" {
 		cascadeMode = cm
 	}
 
@@ -130,7 +154,7 @@ func (s *Server) handleAMDPDebuggerStep(ctx context.Context, request mcp.CallToo
 		return errResult, nil
 	}
 
-	stepType, ok := request.Params.Arguments["step_type"].(string)
+	stepType, ok := request.GetArguments()["step_type"].(string)
 	if !ok || stepType == "" {
 		return newToolResultError("step_type is required"), nil
 	}
@@ -180,12 +204,12 @@ func (s *Server) handleAMDPSetBreakpoint(ctx context.Context, request mcp.CallTo
 		return errResult, nil
 	}
 
-	procName, _ := request.Params.Arguments["proc_name"].(string)
+	procName, _ := request.GetArguments()["proc_name"].(string)
 	if procName == "" {
 		return newToolResultError("proc_name is required"), nil
 	}
 
-	lineFloat, ok := request.Params.Arguments["line"].(float64)
+	lineFloat, ok := request.GetArguments()["line"].(float64)
 	if !ok {
 		return newToolResultError("line is required"), nil
 	}

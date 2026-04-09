@@ -1,0 +1,2379 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"sort"
+	"strings"
+	"time"
+
+	embedded "github.com/oisee/vibing-steampunk/embedded/abap"
+	"github.com/oisee/vibing-steampunk/embedded/deps"
+	"github.com/oisee/vibing-steampunk/pkg/adt"
+	"github.com/oisee/vibing-steampunk/pkg/ctxcomp"
+	"github.com/oisee/vibing-steampunk/pkg/graph"
+	"github.com/spf13/cobra"
+)
+
+// --- source subcommands ---
+
+var sourceReadCmd = &cobra.Command{
+	Use:   "read <type> <name>",
+	Short: "Read ABAP source code",
+	Long: `Read source code for an ABAP object (same as 'vsp source <type> <name>').
+
+Examples:
+  vsp source read CLAS ZCL_MY_CLASS
+  vsp source read PROG ZTEST_PROGRAM`,
+	Args: cobra.ExactArgs(2),
+	RunE: runSource, // reuse existing handler
+}
+
+var sourceWriteCmd = &cobra.Command{
+	Use:   "write <type> <name>",
+	Short: "Write ABAP source code from stdin",
+	Long: `Write source code to an ABAP object. Reads source from stdin.
+
+Examples:
+  cat myclass.abap | vsp source write CLAS ZCL_MY_CLASS
+  echo "REPORT ztest." | vsp source write PROG ZTEST
+  vsp source write CLAS ZCL_FOO --transport A4HK900001 < source.abap`,
+	Args: cobra.ExactArgs(2),
+	RunE: runSourceWrite,
+}
+
+var sourceEditCmd = &cobra.Command{
+	Use:   "edit <type> <name>",
+	Short: "Edit ABAP source code (string replacement)",
+	Long: `Perform surgical string replacement on ABAP source code.
+
+Examples:
+  vsp source edit CLAS ZCL_FOO --old "rv_result = 1." --new "rv_result = 42."
+  vsp source edit PROG ZTEST --old "old code" --new "new code" --replace-all`,
+	Args: cobra.ExactArgs(2),
+	RunE: runSourceEdit,
+}
+
+var sourceContextCmd = &cobra.Command{
+	Use:   "context <type> <name>",
+	Short: "Get source with compressed dependency contracts",
+	Long: `Retrieve source code with auto-appended dependency contracts.
+Dependencies are extracted from the source and their public APIs are compressed.
+
+Examples:
+  vsp source context CLAS ZCL_MY_CLASS
+  vsp source context CLAS ZCL_FOO --max-deps 30`,
+	Args: cobra.ExactArgs(2),
+	RunE: runSourceContext,
+}
+
+// --- context top-level shortcut ---
+
+var contextCmd = &cobra.Command{
+	Use:   "context <type> <name>",
+	Short: "Get source with compressed dependency contracts",
+	Long: `Retrieve source code with auto-appended dependency contracts (shortcut for 'vsp source context').
+Use --depth 2 or 3 to expand transitive dependencies (deps of deps).
+
+Examples:
+  vsp context CLAS ZCL_MY_CLASS
+  vsp context CLAS ZCL_FOO --max-deps 30
+  vsp context CLAS ZCL_DEEP --depth 2   # deps of deps`,
+	Args: cobra.ExactArgs(2),
+	RunE: runSourceContext,
+}
+
+// --- test command ---
+
+var testCmd = &cobra.Command{
+	Use:   "test [type] [name]",
+	Short: "Run ABAP Unit tests",
+	Long: `Run ABAP Unit tests for an object or package.
+
+Examples:
+  vsp test CLAS ZCL_MY_CLASS
+  vsp test PROG ZTEST_PROGRAM
+  vsp test --package '$TMP'
+  vsp test --package '$ZADT'`,
+	RunE: runTest,
+}
+
+// --- atc command ---
+
+var atcCmd = &cobra.Command{
+	Use:   "atc <type> <name>",
+	Short: "Run ATC checks",
+	Long: `Run ABAP Test Cockpit (ATC) checks on an object.
+
+Examples:
+  vsp atc CLAS ZCL_MY_CLASS
+  vsp atc PROG ZTEST_REPORT
+  vsp atc CLAS ZCL_FOO --variant MY_VARIANT`,
+	Args: cobra.ExactArgs(2),
+	RunE: runATC,
+}
+
+// --- health command ---
+
+var healthCmd = &cobra.Command{
+	Use:   "health [type] [name]",
+	Short: "Show a compact health snapshot for a package or object",
+	Long: `Show a compact health snapshot composed from existing signals:
+unit tests, ATC findings, boundary analysis, and staleness.
+
+Examples:
+  vsp health --package '$ZDEV'
+  vsp health --package '$ZDEV' --fast
+  vsp health CLAS ZCL_ORDER_SERVICE
+  vsp health --package '$ZDEV' --format json`,
+	RunE: runHealth,
+}
+
+func runBoundaries(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	pkg := strings.ToUpper(strings.TrimSpace(args[0]))
+	format, _ := cmd.Flags().GetString("format")
+	report, _ := cmd.Flags().GetString("report")
+	exact, _ := cmd.Flags().GetBool("exact")
+	ctx := context.Background()
+
+	// Resolve scope
+	scope, err := AcquirePackageScope(ctx, client, pkg, !exact)
+	if err != nil {
+		return fmt.Errorf("scope resolution failed: %w", err)
+	}
+	fmt.Fprintf(os.Stderr, "Analyzing boundaries for %s (%d packages in scope)...\n", pkg, len(scope.Packages))
+
+	// Collect objects
+	objects, err := AcquirePackageObjects(ctx, client, ScopeToWhere(scope))
+	if err != nil {
+		return err
+	}
+	if len(objects) == 0 {
+		return fmt.Errorf("package %s is empty or not found", pkg)
+	}
+
+	// Build graph
+	g := graph.New()
+	count := 0
+	for _, obj := range objects {
+		if !IsSourceBearing(obj.Type) {
+			continue
+		}
+		fmt.Fprintf(os.Stderr, "\r  [%d] %s %-40s", count+1, obj.Type, obj.Name)
+		source, err := client.GetSource(ctx, obj.Type, obj.Name, nil)
+		if err != nil || source == "" {
+			continue
+		}
+		nodeID := graph.NodeID(obj.Type, obj.Name)
+		g.AddNode(&graph.Node{ID: nodeID, Name: obj.Name, Type: obj.Type, Package: obj.Package})
+		edges := graph.ExtractDepsFromSource(source, nodeID)
+		dynEdges := graph.ExtractDynamicCalls(source, nodeID)
+		for _, e := range append(edges, dynEdges...) {
+			g.AddEdge(e)
+			parts := strings.SplitN(e.To, ":", 2)
+			if len(parts) == 2 {
+				g.AddNode(&graph.Node{ID: e.To, Name: parts[1], Type: parts[0]})
+			}
+		}
+		count++
+	}
+	if count > 0 {
+		fmt.Fprintf(os.Stderr, "\n")
+	}
+	fmt.Fprintf(os.Stderr, "Resolving target packages...\n")
+	resolvePackagesCLI(ctx, client, g)
+
+	// Analyze crossings
+	crossReport := graph.AnalyzeCrossings(g, scope, nil)
+
+	// Handle --report flag
+	if report != "" {
+		baseName := strings.ReplaceAll(pkg, "$", "_") + "_boundaries"
+		extMap := map[string]string{".md": "md", ".html": "html", ".dot": "dot", ".puml": "plantuml", ".graphml": "graphml"}
+		bareMap := map[string]string{"md": ".md", "html": ".html", "dot": ".dot", "plantuml": ".puml", "graphml": ".graphml"}
+		detected := false
+		for ext, fmt := range extMap {
+			if strings.HasSuffix(report, ext) {
+				format = fmt
+				detected = true
+				break
+			}
+		}
+		if !detected {
+			if extSuffix, ok := bareMap[report]; ok {
+				format = report
+				report = baseName + extSuffix
+			} else {
+				return fmt.Errorf("unsupported report format %q (want md, html, dot, plantuml, graphml)", report)
+			}
+		}
+		f, err := os.Create(report)
+		if err != nil {
+			return fmt.Errorf("creating report file: %w", err)
+		}
+		defer f.Close()
+		origStdout := os.Stdout
+		os.Stdout = f
+		switch format {
+		case "md":
+			printCrossingsMD(crossReport)
+		case "html":
+			mmd := graph.CrossingToMermaid(crossReport, scope)
+			title := fmt.Sprintf("Boundaries: %s", pkg)
+			fmt.Println(graph.WrapMermaidHTML(title, mmd))
+		case "dot":
+			fmt.Println(graph.ToDOT(g, pkg))
+		case "plantuml":
+			fmt.Println(graph.ToPlantUML(g, pkg))
+		case "graphml":
+			fmt.Println(graph.ToGraphML(g))
+		}
+		os.Stdout = origStdout
+		fmt.Fprintf(os.Stderr, "Report saved to %s\n", report)
+		return nil
+	}
+
+	switch format {
+	case "json":
+		data, err := json.MarshalIndent(crossReport, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+	case "md":
+		printCrossingsMD(crossReport)
+	case "mermaid":
+		fmt.Println(graph.CrossingToMermaid(crossReport, scope))
+	case "html":
+		mmd := graph.CrossingToMermaid(crossReport, scope)
+		title := fmt.Sprintf("Boundaries: %s", pkg)
+		fmt.Println(graph.WrapMermaidHTML(title, mmd))
+	case "dot":
+		fmt.Println(graph.ToDOT(g, pkg))
+	case "plantuml":
+		fmt.Println(graph.ToPlantUML(g, pkg))
+	case "graphml":
+		fmt.Println(graph.ToGraphML(g))
+	default:
+		printCrossingsText(crossReport)
+	}
+	return nil
+}
+
+func printCrossingsText(report *graph.CrossingReport) {
+	fmt.Printf("Boundaries: %s (%d packages, %d objects scanned)\n\n",
+		report.RootPackage, report.PackagesScanned, report.ObjectsScanned)
+
+	if len(report.Entries) == 0 {
+		fmt.Println("No crossings found.")
+		return
+	}
+
+	dirOrder := []graph.CrossingDirection{
+		graph.CrossSibling, graph.CrossDownward, graph.CrossCommonDown,
+		graph.CrossExternal, graph.CrossUpward, graph.CrossUpwardSkip, graph.CrossCommon,
+	}
+	for _, dir := range dirOrder {
+		var entries []graph.CrossingEntry
+		for _, e := range report.Entries {
+			if e.Direction == dir {
+				entries = append(entries, e)
+			}
+		}
+		if len(entries) == 0 {
+			continue
+		}
+		marker := "OK  "
+		if dir == graph.CrossSibling || dir == graph.CrossDownward || dir == graph.CrossCommonDown {
+			marker = "BAD "
+		}
+		if dir == graph.CrossExternal {
+			marker = "WARN"
+		}
+		fmt.Printf("  %s  %-12s %d\n", marker, dir, len(entries))
+		for _, e := range entries {
+			ref := e.EdgeKind
+			if e.RefDetail != "" {
+				ref += " " + e.RefDetail
+			}
+			fmt.Printf("         %s → %s  %s %s → %s %s  [%s]\n",
+				e.SourcePackage, e.TargetPackage, e.SourceType, e.SourceObject, e.TargetType, e.TargetObject, ref)
+		}
+		fmt.Println()
+	}
+
+	if len(report.Circular) > 0 {
+		fmt.Println("  CIRCULAR:")
+		for _, c := range report.Circular {
+			fmt.Printf("    %s\n", c)
+		}
+		fmt.Println()
+	}
+
+	bad := report.Sibling + report.Downward + report.CommonDown
+	if bad == 0 && len(report.Circular) == 0 {
+		fmt.Println("CLEAN — no directional violations")
+	} else {
+		fmt.Printf("%d violations (sibling: %d, downward: %d, common_down: %d)\n",
+			bad, report.Sibling, report.Downward, report.CommonDown)
+	}
+}
+
+var boundariesCmd = &cobra.Command{
+	Use:   "boundaries <package>",
+	Short: "Analyze directional package boundary crossings",
+	Long: `Analyze cross-package dependencies with directional classification.
+
+Directions: UPWARD (ok), COMMON (ok), SIBLING (bad), DOWNWARD (bad),
+COMMON_DOWN (bad), EXTERNAL (info). Detects circular sibling dependencies.
+
+Examples:
+  vsp boundaries '$ZDEV'
+  vsp boundaries '$ZDEV' --format json
+  vsp boundaries '$ZDEV' --report md
+  vsp boundaries '$ZDEV' --exact`,
+	Args: cobra.ExactArgs(1),
+	RunE: runBoundaries,
+}
+
+// --- deploy command ---
+
+var deployCmd = &cobra.Command{
+	Use:   "deploy <file> <package>",
+	Short: "Deploy ABAP source file to SAP",
+	Long: `Deploy an ABAP source file to a SAP package.
+
+Supports abapGit-compatible file extensions:
+  .clas.abap, .prog.abap, .intf.abap, .ddls.asddls, etc.
+
+Examples:
+  vsp deploy zcl_test.clas.abap '$TMP'
+  vsp deploy zreport.prog.abap '$TMP' --transport A4HK900001`,
+	Args: cobra.ExactArgs(2),
+	RunE: runDeploy,
+}
+
+// --- transport command ---
+
+var transportCmd = &cobra.Command{
+	Use:   "transport",
+	Short: "Transport management",
+	Long: `Manage CTS transport requests.
+
+Examples:
+  vsp transport list
+  vsp transport get A4HK900094`,
+}
+
+var transportListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List transport requests",
+	Long: `List transport requests for the current user.
+
+Examples:
+  vsp transport list
+  vsp transport list --user DEVELOPER`,
+	RunE: runTransportList,
+}
+
+var transportGetCmd = &cobra.Command{
+	Use:   "get <number>",
+	Short: "Get transport details",
+	Long: `Get detailed information about a transport request.
+
+Examples:
+  vsp transport get A4HK900094`,
+	Args: cobra.ExactArgs(1),
+	RunE: runTransportGet,
+}
+
+// --- install command ---
+
+var installCmd = &cobra.Command{
+	Use:   "install",
+	Short: "Install components to SAP system",
+	Long: `Install software components to a SAP system.
+
+Subcommands:
+  zadt-vsp    Install ZADT_VSP WebSocket handler (9 ABAP objects)
+  abapgit     Install abapGit standalone or full edition
+  list        List available installable components
+
+Examples:
+  vsp -s a4h install zadt-vsp
+  vsp -s a4h install abapgit
+  vsp -s a4h install abapgit --edition full
+  vsp -s a4h install list
+  vsp -s a4h install zadt-vsp --dry-run`,
+}
+
+var installZadtVspCmd = &cobra.Command{
+	Use:   "zadt-vsp",
+	Short: "Install ZADT_VSP WebSocket handler",
+	Long: `Install the ZADT_VSP WebSocket handler to enable advanced features.
+
+Deploys 9 ABAP objects (1 interface, 8 classes) in dependency order:
+  ZIF_VSP_SERVICE, ZCL_VSP_UTILS, ZADT_CL_TADIR_MOVE, ZCL_VSP_RFC_SERVICE,
+  ZCL_VSP_DEBUG_SERVICE, ZCL_VSP_AMDP_SERVICE, ZCL_VSP_GIT_SERVICE,
+  ZCL_VSP_REPORT_SERVICE, ZCL_VSP_APC_HANDLER
+
+Features unlocked after install:
+  - WebSocket debugging (TPDAPI)
+  - RFC/BAPI execution
+  - AMDP debugging (experimental)
+  - abapGit export (158 object types, requires abapGit)
+
+Examples:
+  vsp -s a4h install zadt-vsp
+  vsp -s a4h install zadt-vsp --package '$ZADT_CUSTOM'
+  vsp -s a4h install zadt-vsp --dry-run`,
+	RunE: runInstallZadtVsp,
+}
+
+var installAbapGitCmd = &cobra.Command{
+	Use:   "abapgit",
+	Short: "Install abapGit from embedded ZIP",
+	Long: `Install abapGit to a SAP system from the embedded ZIP archive.
+
+Editions:
+  standalone  Single program ZABAPGIT (default)
+  full        Full $ZGIT + $ZGIT_DEV packages (576 objects)
+
+Examples:
+  vsp -s a4h install abapgit
+  vsp -s a4h install abapgit --edition full
+  vsp -s a4h install abapgit --edition full --package '$ZGIT_CUSTOM'
+  vsp -s a4h install abapgit --dry-run`,
+	RunE: runInstallAbapGit,
+}
+
+var installListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List available installable components",
+	Long: `List all components that can be installed to a SAP system.
+
+Shows embedded dependencies, their availability status, and target packages.`,
+	RunE: runInstallList,
+}
+
+func init() {
+	// Source subcommands
+	sourceCmd.AddCommand(sourceReadCmd)
+	sourceCmd.AddCommand(sourceWriteCmd)
+	sourceCmd.AddCommand(sourceEditCmd)
+	sourceCmd.AddCommand(sourceContextCmd)
+
+	// Source write flags
+	sourceWriteCmd.Flags().String("transport", "", "Transport request number")
+
+	// Source edit flags
+	sourceEditCmd.Flags().String("old", "", "String to find (required)")
+	sourceEditCmd.Flags().String("new", "", "Replacement string (required)")
+	sourceEditCmd.Flags().Bool("replace-all", false, "Replace all occurrences")
+	sourceEditCmd.Flags().String("transport", "", "Transport request number")
+	_ = sourceEditCmd.MarkFlagRequired("old")
+	_ = sourceEditCmd.MarkFlagRequired("new")
+
+	// Source context and context shortcut flags
+	sourceContextCmd.Flags().Int("max-deps", 20, "Maximum number of dependencies to resolve")
+	sourceContextCmd.Flags().Int("depth", 1, "Dependency expansion depth (1-3)")
+	contextCmd.Flags().Int("max-deps", 20, "Maximum number of dependencies to resolve")
+	contextCmd.Flags().Int("depth", 1, "Dependency expansion depth (1-3)")
+
+	// Test flags
+	testCmd.Flags().String("package", "", "Run tests for entire package")
+
+	// Health flags
+	healthCmd.Flags().String("package", "", "Analyze an entire package")
+	healthCmd.Flags().Bool("fast", false, "Faster package snapshot: skip expensive checks like tests and boundary scan")
+	healthCmd.Flags().Bool("details", false, "Show full details: failing test methods, ATC findings")
+	healthCmd.Flags().String("format", "text", "Output format: text, json, md, or html")
+	healthCmd.Flags().String("report", "", "Generate report file: md or html (writes to <package>.<ext>)")
+
+	// ATC flags
+	atcCmd.Flags().String("variant", "", "ATC check variant (empty for system default)")
+	atcCmd.Flags().Int("max-findings", 100, "Maximum number of findings")
+
+	// Deploy flags
+	deployCmd.Flags().String("transport", "", "Transport request number")
+
+	// Transport list flags
+	transportListCmd.Flags().String("user", "", "Filter by user (default: current user)")
+
+	// Install flags
+	installZadtVspCmd.Flags().String("package", "$ZADT_VSP", "Target package for ZADT_VSP objects")
+	installZadtVspCmd.Flags().Bool("dry-run", false, "Show what would be deployed without deploying")
+	installZadtVspCmd.Flags().Bool("skip-git-service", false, "Skip ZCL_VSP_GIT_SERVICE even if abapGit is detected")
+
+	installAbapGitCmd.Flags().String("edition", "standalone", "abapGit edition: standalone or full")
+	installAbapGitCmd.Flags().String("package", "", "Target package (default: $ABAPGIT for standalone, $ZGIT for full)")
+	installAbapGitCmd.Flags().Bool("dry-run", false, "Show what would be deployed without deploying")
+
+	// Install subcommands
+	installCmd.AddCommand(installZadtVspCmd)
+	installCmd.AddCommand(installAbapGitCmd)
+	installCmd.AddCommand(installListCmd)
+
+	// Register top-level commands
+	rootCmd.AddCommand(testCmd)
+	rootCmd.AddCommand(atcCmd)
+	rootCmd.AddCommand(healthCmd)
+	boundariesCmd.Flags().String("format", "text", "Output format: text, json, md, mermaid, html, dot, plantuml, graphml")
+	boundariesCmd.Flags().String("report", "", "Save report to file: md or filename.md")
+	boundariesCmd.Flags().Bool("exact", false, "Check only the exact package, no subpackages")
+	rootCmd.AddCommand(boundariesCmd)
+	rootCmd.AddCommand(deployCmd)
+	rootCmd.AddCommand(transportCmd)
+	rootCmd.AddCommand(contextCmd)
+	rootCmd.AddCommand(installCmd)
+
+	// Transport subcommands
+	transportCmd.AddCommand(transportListCmd)
+	transportCmd.AddCommand(transportGetCmd)
+}
+
+// --- handler implementations ---
+
+func runSourceWrite(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	objType := strings.ToUpper(args[0])
+	name := strings.ToUpper(args[1])
+	transport, _ := cmd.Flags().GetString("transport")
+
+	// Read source from stdin
+	source, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		return fmt.Errorf("failed to read stdin: %w", err)
+	}
+	if len(source) == 0 {
+		return fmt.Errorf("no source provided on stdin")
+	}
+
+	ctx := context.Background()
+	result, err := client.WriteSource(ctx, objType, name, string(source), &adt.WriteSourceOptions{
+		Transport: transport,
+	})
+	if err != nil {
+		return fmt.Errorf("write failed: %w", err)
+	}
+
+	if result.Success {
+		fmt.Fprintf(os.Stderr, "%s %s %s\n", result.Mode, result.ObjectType, result.ObjectName)
+		if result.ObjectURL != "" {
+			fmt.Fprintf(os.Stderr, "URL: %s\n", result.ObjectURL)
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "Write failed for %s %s\n", objType, name)
+		if result.Message != "" {
+			fmt.Fprintf(os.Stderr, "%s\n", result.Message)
+		}
+		if len(result.SyntaxErrors) > 0 {
+			fmt.Fprintf(os.Stderr, "Syntax errors:\n")
+			for _, se := range result.SyntaxErrors {
+				fmt.Fprintf(os.Stderr, "  Line %d: %s\n", se.Line, se.Text)
+			}
+		}
+		return fmt.Errorf("write failed")
+	}
+
+	return nil
+}
+
+func runSourceEdit(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	objType := strings.ToUpper(args[0])
+	name := strings.ToUpper(args[1])
+	oldStr, _ := cmd.Flags().GetString("old")
+	newStr, _ := cmd.Flags().GetString("new")
+	replaceAll, _ := cmd.Flags().GetBool("replace-all")
+	transport, _ := cmd.Flags().GetString("transport")
+
+	// Build object URL from type + name
+	objectURL := buildObjectURL(objType, name)
+	if objectURL == "" {
+		return fmt.Errorf("unsupported object type: %s (supported: CLAS, PROG, INTF)", objType)
+	}
+
+	ctx := context.Background()
+	result, err := client.EditSourceWithOptions(ctx, objectURL, oldStr, newStr, &adt.EditSourceOptions{
+		ReplaceAll:  replaceAll,
+		SyntaxCheck: true,
+		Transport:   transport,
+	})
+	if err != nil {
+		return fmt.Errorf("edit failed: %w", err)
+	}
+
+	if result.Success {
+		fmt.Fprintf(os.Stderr, "Edited %s (%d replacement(s))\n", result.ObjectName, result.MatchCount)
+		if result.Activation != nil && result.Activation.Success {
+			fmt.Fprintf(os.Stderr, "Activated successfully\n")
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "Edit failed for %s\n", result.ObjectName)
+		if result.Message != "" {
+			fmt.Fprintf(os.Stderr, "%s\n", result.Message)
+		}
+		if len(result.SyntaxErrors) > 0 {
+			fmt.Fprintf(os.Stderr, "Syntax errors:\n")
+			for _, se := range result.SyntaxErrors {
+				fmt.Fprintf(os.Stderr, "  %s\n", se)
+			}
+		}
+		return fmt.Errorf("edit failed")
+	}
+
+	return nil
+}
+
+// cliSourceAdapter adapts adt.Client to ctxcomp.ADTSourceFetcher interface.
+type cliSourceAdapter struct {
+	client *adt.Client
+}
+
+func (a *cliSourceAdapter) GetSource(ctx context.Context, objectType, name string, opts interface{}) (string, error) {
+	return a.client.GetSource(ctx, objectType, name, nil)
+}
+
+func runSourceContext(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	objType := strings.ToUpper(args[0])
+	name := strings.ToUpper(args[1])
+	maxDeps, _ := cmd.Flags().GetInt("max-deps")
+
+	ctx := context.Background()
+
+	// First get the source
+	source, err := client.GetSource(ctx, objType, name, nil)
+	if err != nil {
+		return fmt.Errorf("failed to get source: %w", err)
+	}
+
+	depth, _ := cmd.Flags().GetInt("depth")
+
+	// Create adapter and compress
+	provider := ctxcomp.NewMultiSourceProvider("", &cliSourceAdapter{client: client})
+	compressor := ctxcomp.NewCompressor(provider, maxDeps).WithDepth(depth)
+	result, err := compressor.Compress(ctx, source, name, objType)
+	if err != nil {
+		return fmt.Errorf("context compression failed: %w", err)
+	}
+
+	// Output: source with prologue
+	if result.Prologue != "" {
+		fmt.Print(result.Prologue)
+		fmt.Println()
+	}
+	fmt.Print(source)
+
+	// Stats to stderr
+	fmt.Fprintf(os.Stderr, "\n--- Context: %d deps found, %d resolved, %d failed, %d prologue lines ---\n",
+		result.Stats.DepsFound, result.Stats.DepsResolved, result.Stats.DepsFailed, result.Stats.TotalLines)
+
+	return nil
+}
+
+func runTest(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	packageName, _ := cmd.Flags().GetString("package")
+
+	var objectURL string
+	if packageName != "" {
+		// Package-level test
+		objectURL = fmt.Sprintf("/sap/bc/adt/packages/%s", strings.ToUpper(packageName))
+	} else {
+		// Object-level test
+		if len(args) != 2 {
+			return fmt.Errorf("usage: vsp test <type> <name> or vsp test --package <package>")
+		}
+		objType := strings.ToUpper(args[0])
+		name := strings.ToUpper(args[1])
+		objectURL = buildObjectURL(objType, name)
+		if objectURL == "" {
+			return fmt.Errorf("unsupported object type: %s (supported: CLAS, PROG, INTF)", objType)
+		}
+	}
+
+	ctx := context.Background()
+	result, err := client.RunUnitTests(ctx, objectURL, nil)
+	if err != nil {
+		return fmt.Errorf("test run failed: %w", err)
+	}
+
+	// Format output
+	if len(result.Classes) == 0 {
+		fmt.Println("No test classes found.")
+		return nil
+	}
+
+	totalPassed := 0
+	totalFailed := 0
+
+	for _, class := range result.Classes {
+		fmt.Printf("Test Class: %s\n", class.Name)
+		for _, method := range class.TestMethods {
+			status := "PASS"
+			if len(method.Alerts) > 0 {
+				hasFailure := false
+				for _, alert := range method.Alerts {
+					if alert.Kind == "failedAssertion" || alert.Kind == "exception" {
+						hasFailure = true
+						break
+					}
+				}
+				if hasFailure {
+					status = "FAIL"
+					totalFailed++
+				} else {
+					totalPassed++
+				}
+			} else {
+				totalPassed++
+			}
+			fmt.Printf("  %s  %s (%.3fs)\n", status, method.Name, method.ExecutionTime)
+			for _, alert := range method.Alerts {
+				fmt.Printf("         %s: %s\n", alert.Kind, alert.Title)
+				for _, detail := range alert.Details {
+					fmt.Printf("           %s\n", detail)
+				}
+			}
+		}
+		// Class-level alerts
+		for _, alert := range class.Alerts {
+			fmt.Printf("  %s: %s\n", alert.Kind, alert.Title)
+			totalFailed++
+		}
+	}
+
+	fmt.Printf("\nTotal: %d passed, %d failed\n", totalPassed, totalFailed)
+	if totalFailed > 0 {
+		return fmt.Errorf("%d test(s) failed", totalFailed)
+	}
+	return nil
+}
+
+func runATC(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	objType := strings.ToUpper(args[0])
+	name := strings.ToUpper(args[1])
+	variant, _ := cmd.Flags().GetString("variant")
+	maxFindings, _ := cmd.Flags().GetInt("max-findings")
+
+	objectURL := buildObjectURL(objType, name)
+	if objectURL == "" {
+		return fmt.Errorf("unsupported object type: %s (supported: CLAS, PROG, INTF)", objType)
+	}
+
+	ctx := context.Background()
+	worklist, err := client.RunATCCheck(ctx, objectURL, variant, maxFindings)
+	if err != nil {
+		return fmt.Errorf("ATC check failed: %w", err)
+	}
+
+	// Format output
+	totalFindings := 0
+	for _, obj := range worklist.Objects {
+		if len(obj.Findings) == 0 {
+			continue
+		}
+		fmt.Printf("%s %s (%s)\n", obj.Type, obj.Name, obj.PackageName)
+		for _, f := range obj.Findings {
+			priority := "INFO"
+			switch f.Priority {
+			case 1:
+				priority = "ERROR"
+			case 2:
+				priority = "WARN"
+			}
+			location := ""
+			if f.Line > 0 {
+				location = fmt.Sprintf(" [line %d]", f.Line)
+			}
+			fmt.Printf("  %s%s %s — %s\n", priority, location, f.CheckTitle, f.MessageTitle)
+			totalFindings++
+		}
+	}
+
+	if totalFindings == 0 {
+		fmt.Println("No findings.")
+	} else {
+		fmt.Printf("\nTotal: %d finding(s)\n", totalFindings)
+	}
+	return nil
+}
+
+type cliHealthScope struct {
+	Kind       string `json:"kind"`
+	Package    string `json:"package,omitempty"`
+	ObjectType string `json:"object_type,omitempty"`
+	ObjectName string `json:"object_name,omitempty"`
+}
+
+type cliHealthSummary struct {
+	Status   string `json:"status"`
+	Headline string `json:"headline"`
+}
+
+type cliHealthSignal struct {
+	Status  string         `json:"status"`
+	Details map[string]any `json:"details,omitempty"`
+}
+
+type cliHealthResult struct {
+	Scope            cliHealthScope              `json:"scope"`
+	Summary          cliHealthSummary            `json:"summary"`
+	Signals          map[string]cliHealthSignal  `json:"signals"`
+	TestDetails      *adt.UnitTestResult         `json:"testDetails,omitempty"`
+	ATCDetails       *adt.ATCWorklist            `json:"atcDetails,omitempty"`
+	CrossingDetails  *graph.CrossingReport       `json:"crossingDetails,omitempty"`
+}
+
+func runHealth(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	packageName, _ := cmd.Flags().GetString("package")
+	fast, _ := cmd.Flags().GetBool("fast")
+	details, _ := cmd.Flags().GetBool("details")
+	format, _ := cmd.Flags().GetString("format")
+	report, _ := cmd.Flags().GetString("report")
+	packageName = strings.ToUpper(strings.TrimSpace(packageName))
+
+	// --report: either bare format ("md"/"html") or a filename ("report.md"/"out.html")
+	var reportFile string
+	if report != "" {
+		if strings.HasSuffix(report, ".md") {
+			format = "md"
+			reportFile = report
+		} else if strings.HasSuffix(report, ".html") {
+			format = "html"
+			reportFile = report
+		} else if report == "md" || report == "html" {
+			format = report
+		} else {
+			return fmt.Errorf("unsupported report format %q (want md, html, or filename ending in .md/.html)", report)
+		}
+	}
+
+	result := &cliHealthResult{Signals: make(map[string]cliHealthSignal)}
+
+	if packageName != "" {
+		result.Scope = cliHealthScope{Kind: "package", Package: packageName}
+		populatePackageHealthCLI(context.Background(), client, packageName, fast, result)
+	} else {
+		if len(args) != 2 {
+			return fmt.Errorf("usage: vsp health <type> <name> or vsp health --package <package>")
+		}
+		objType := strings.ToUpper(args[0])
+		objName := strings.ToUpper(args[1])
+		result.Scope = cliHealthScope{Kind: "object", ObjectType: objType, ObjectName: objName}
+		populateObjectHealthCLI(context.Background(), client, objType, objName, result)
+	}
+
+	result.Summary = summarizeCLIHealth(result.Signals)
+
+	// --report: redirect output to file
+	if report != "" {
+		fileName := reportFile
+		if fileName == "" {
+			scopeName := packageName
+			if scopeName == "" {
+				scopeName = strings.ToUpper(args[0]) + "_" + strings.ToUpper(args[1])
+			}
+			fileName = strings.ReplaceAll(scopeName, "$", "_") + "." + format
+		}
+		f, err := os.Create(fileName)
+		if err != nil {
+			return fmt.Errorf("creating report file: %w", err)
+		}
+		defer f.Close()
+		// Redirect stdout to the file for the print functions
+		origStdout := os.Stdout
+		os.Stdout = f
+		defer func() { os.Stdout = origStdout }()
+
+		switch format {
+		case "md":
+			printCLIHealthMD(result)
+		case "html":
+			printCLIHealthHTML(result)
+		}
+
+		os.Stdout = origStdout
+		fmt.Fprintf(os.Stderr, "Report saved to %s\n", fileName)
+		return nil
+	}
+
+	switch format {
+	case "json":
+		data, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+	case "md":
+		printCLIHealthMD(result)
+	case "html":
+		printCLIHealthHTML(result)
+	default:
+		printCLIHealth(result, details)
+	}
+	return nil
+}
+
+func populatePackageHealthCLI(ctx context.Context, client *adt.Client, pkg string, fast bool, result *cliHealthResult) {
+	if fast {
+		result.Signals["tests"] = cliHealthSignal{Status: "SKIPPED", Details: map[string]any{"reason": "fast mode"}}
+		result.Signals["boundaries"] = cliHealthSignal{Status: "SKIPPED", Details: map[string]any{"reason": "fast mode"}}
+	} else {
+		fmt.Fprintf(os.Stderr, "  [1/4] Running tests...\n")
+		testSignal, testDetails := collectPackageTestsWithDetails(ctx, client, pkg)
+		result.Signals["tests"] = testSignal
+		result.TestDetails = testDetails
+		fmt.Fprintf(os.Stderr, "  [2/4] Checking boundaries...\n")
+		boundarySignal, crossingReport := collectPackageBoundariesWithDetails(ctx, client, pkg)
+		result.Signals["boundaries"] = boundarySignal
+		result.CrossingDetails = crossingReport
+	}
+	step := 3
+	if fast {
+		step = 1
+	}
+	fmt.Fprintf(os.Stderr, "  [%d/%d] Running ATC...\n", step, step+1)
+	atcSignal, atcDetails := collectPackageATCWithDetails(ctx, client, pkg)
+	result.Signals["atc"] = atcSignal
+	result.ATCDetails = atcDetails
+	fmt.Fprintf(os.Stderr, "  [%d/%d] Checking staleness...\n", step+1, step+1)
+	result.Signals["staleness"] = collectPackageStalenessCLI(ctx, client, pkg)
+}
+
+func populateObjectHealthCLI(ctx context.Context, client *adt.Client, objType, objName string, result *cliHealthResult) {
+	result.Signals["tests"] = collectObjectTestsCLI(ctx, client, objType, objName)
+	result.Signals["atc"] = collectObjectATCCLI(ctx, client, objType, objName)
+	result.Signals["boundaries"] = collectObjectBoundariesCLI(ctx, client, objType, objName)
+	result.Signals["staleness"] = collectObjectStalenessCLI(ctx, client, objType, objName)
+}
+
+func collectObjectTestsCLI(ctx context.Context, client *adt.Client, objType, objName string) cliHealthSignal {
+	objectURL := buildObjectURL(objType, objName)
+	if objectURL == "" {
+		return cliHealthSignal{Status: "UNKNOWN"}
+	}
+	result, err := client.RunUnitTests(ctx, objectURL, nil)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}
+	}
+	classes, methods, alerts := summarizeUnitTestsCLI(result)
+	status := "PASS"
+	if classes == 0 {
+		status = "NONE"
+	}
+	if alerts > 0 {
+		status = "FAIL"
+	}
+	return cliHealthSignal{Status: status, Details: map[string]any{"classes": classes, "methods": methods, "alerts": alerts}}
+}
+
+func collectPackageTestsWithDetails(ctx context.Context, client *adt.Client, pkg string) (cliHealthSignal, *adt.UnitTestResult) {
+	// Resolve full package hierarchy (TDEVC + prefix fallback) — same as slim/changelog.
+	// SAP's test runner only covers the exact package, not subpackages.
+	scope, err := AcquirePackageScope(ctx, client, pkg, true)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}, nil
+	}
+
+	packages := scope.Packages
+	if len(packages) == 0 {
+		packages = []string{strings.ToUpper(pkg)}
+	}
+
+	combined := &adt.UnitTestResult{}
+	totalClasses, totalMethods, totalAlerts := 0, 0, 0
+	for _, p := range packages {
+		objectURL := fmt.Sprintf("/sap/bc/adt/packages/%s", p)
+		result, err := client.RunUnitTests(ctx, objectURL, nil)
+		if err != nil {
+			continue
+		}
+		combined.Classes = append(combined.Classes, result.Classes...)
+		c, m, a := summarizeUnitTestsCLI(result)
+		totalClasses += c
+		totalMethods += m
+		totalAlerts += a
+	}
+
+	status := "PASS"
+	if totalClasses == 0 {
+		status = "NONE"
+	}
+	if totalAlerts > 0 {
+		status = "FAIL"
+	}
+	return cliHealthSignal{Status: status, Details: map[string]any{
+		"packages_scanned": len(packages),
+		"classes":          totalClasses,
+		"methods":          totalMethods,
+		"alerts":           totalAlerts,
+	}}, combined
+}
+
+func summarizeUnitTestsCLI(result *adt.UnitTestResult) (classCount, methodCount, alertCount int) {
+	if result == nil {
+		return 0, 0, 0
+	}
+	classCount = len(result.Classes)
+	for _, c := range result.Classes {
+		methodCount += len(c.TestMethods)
+		alertCount += len(c.Alerts)
+		for _, m := range c.TestMethods {
+			alertCount += len(m.Alerts)
+		}
+	}
+	return classCount, methodCount, alertCount
+}
+
+func collectObjectATCCLI(ctx context.Context, client *adt.Client, objType, objName string) cliHealthSignal {
+	objectURL := buildObjectURL(objType, objName)
+	if objectURL == "" {
+		return cliHealthSignal{Status: "UNKNOWN"}
+	}
+	result, err := client.RunATCCheck(ctx, objectURL, "", 100)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}
+	}
+	total, errors, warnings, infos := summarizeATCCLI(result)
+	status := "CLEAN"
+	if total > 0 {
+		status = "FINDINGS"
+	}
+	return cliHealthSignal{Status: status, Details: map[string]any{"findings": total, "errors": errors, "warnings": warnings, "infos": infos}}
+}
+
+func collectPackageATCWithDetails(ctx context.Context, client *adt.Client, pkg string) (cliHealthSignal, *adt.ATCWorklist) {
+	objectURL := fmt.Sprintf("/sap/bc/adt/packages/%s", strings.ToUpper(pkg))
+	result, err := client.RunATCCheck(ctx, objectURL, "", 200)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}, nil
+	}
+	total, errors, warnings, infos := summarizeATCCLI(result)
+	status := "CLEAN"
+	if total > 0 {
+		status = "FINDINGS"
+	}
+	return cliHealthSignal{Status: status, Details: map[string]any{"findings": total, "errors": errors, "warnings": warnings, "infos": infos}}, result
+}
+
+func summarizeATCCLI(result *adt.ATCWorklist) (total, errors, warnings, infos int) {
+	if result == nil {
+		return 0, 0, 0, 0
+	}
+	for _, obj := range result.Objects {
+		total += len(obj.Findings)
+		for _, f := range obj.Findings {
+			switch f.Priority {
+			case 1:
+				errors++
+			case 2:
+				warnings++
+			default:
+				infos++
+			}
+		}
+	}
+	return total, errors, warnings, infos
+}
+
+func collectObjectBoundariesCLI(ctx context.Context, client *adt.Client, objType, objName string) cliHealthSignal {
+	if objType != "CLAS" && objType != "PROG" && objType != "INTF" {
+		return cliHealthSignal{Status: "UNKNOWN"}
+	}
+	source, err := client.GetSource(ctx, objType, objName, nil)
+	if err != nil || source == "" {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": "failed to read source"}}
+	}
+	g := graph.New()
+	nodeID := graph.NodeID(objType, objName)
+	g.AddNode(&graph.Node{ID: nodeID, Name: objName, Type: objType})
+	edges := graph.ExtractDepsFromSource(source, nodeID)
+	dynEdges := graph.ExtractDynamicCalls(source, nodeID)
+	for _, e := range append(edges, dynEdges...) {
+		g.AddEdge(e)
+		parts := strings.SplitN(e.To, ":", 2)
+		if len(parts) == 2 {
+			g.AddNode(&graph.Node{ID: e.To, Name: parts[1], Type: parts[0]})
+		}
+	}
+	resolvePackagesCLI(ctx, client, g)
+	n := g.GetNode(nodeID)
+	if n == nil || n.Package == "" {
+		return cliHealthSignal{Status: "UNKNOWN"}
+	}
+	report := g.CheckBoundaries(n.Package, &graph.BoundaryOptions{IncludeDynamic: true})
+	status := "CLEAN"
+	if report.Violations > 0 {
+		status = "VIOLATIONS"
+	}
+	return cliHealthSignal{Status: status, Details: map[string]any{"violations": report.Violations, "crossed_packages": report.CrossedPackages, "dynamic": report.Dynamic}}
+}
+
+func collectPackageBoundariesWithDetails(ctx context.Context, client *adt.Client, pkg string) (cliHealthSignal, *graph.CrossingReport) {
+	// Resolve full package hierarchy
+	scope, err := AcquirePackageScope(ctx, client, pkg, true)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}, nil
+	}
+
+	// Collect objects from all packages in scope
+	objects, err := AcquirePackageObjects(ctx, client, ScopeToWhere(scope))
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}, nil
+	}
+
+	g := graph.New()
+	count := 0
+	for _, obj := range objects {
+		if !IsSourceBearing(obj.Type) {
+			continue
+		}
+		if count >= 50 {
+			break
+		}
+		fmt.Fprintf(os.Stderr, "\r    [%d] %s %-40s", count+1, obj.Type, obj.Name)
+		source, err := client.GetSource(ctx, obj.Type, obj.Name, nil)
+		if err != nil || source == "" {
+			continue
+		}
+		nodeID := graph.NodeID(obj.Type, obj.Name)
+		g.AddNode(&graph.Node{ID: nodeID, Name: obj.Name, Type: obj.Type, Package: obj.Package})
+		edges := graph.ExtractDepsFromSource(source, nodeID)
+		dynEdges := graph.ExtractDynamicCalls(source, nodeID)
+		for _, e := range append(edges, dynEdges...) {
+			g.AddEdge(e)
+			parts := strings.SplitN(e.To, ":", 2)
+			if len(parts) == 2 {
+				g.AddNode(&graph.Node{ID: e.To, Name: parts[1], Type: parts[0]})
+			}
+		}
+		count++
+	}
+	if count > 0 {
+		fmt.Fprintf(os.Stderr, "\r")
+	}
+
+	// Resolve packages for target nodes
+	resolvePackagesCLI(ctx, client, g)
+
+	// Directional crossing analysis
+	report := graph.AnalyzeCrossings(g, scope, nil)
+
+	status := "CLEAN"
+	if report.Sibling > 0 || report.Downward > 0 || report.CommonDown > 0 || len(report.Circular) > 0 {
+		status = "VIOLATIONS"
+	}
+
+	details := map[string]any{
+		"packages_scanned": report.PackagesScanned,
+		"objects_scanned":  count,
+	}
+	if report.Upward > 0 {
+		details["upward"] = report.Upward
+	}
+	if report.Common > 0 {
+		details["common"] = report.Common
+	}
+	if report.Sibling > 0 {
+		details["sibling"] = report.Sibling
+	}
+	if report.Downward > 0 {
+		details["downward"] = report.Downward
+	}
+	if report.CommonDown > 0 {
+		details["common_down"] = report.CommonDown
+	}
+	if report.External > 0 {
+		details["external"] = report.External
+	}
+	if report.Dynamic > 0 {
+		details["dynamic"] = report.Dynamic
+	}
+	if len(report.Circular) > 0 {
+		details["circular"] = report.Circular
+	}
+	return cliHealthSignal{Status: status, Details: details}, report
+}
+
+func collectObjectStalenessCLI(ctx context.Context, client *adt.Client, objType, objName string) cliHealthSignal {
+	revs, err := client.GetRevisions(ctx, objType, objName, nil)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}
+	}
+	return stalenessCLIFromRevisions(revs)
+}
+
+func collectPackageStalenessCLI(ctx context.Context, client *adt.Client, pkg string) cliHealthSignal {
+	content, err := client.GetPackage(ctx, pkg)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}
+	}
+	var newest time.Time
+	checked := 0
+	for _, obj := range content.Objects {
+		objType := strings.ToUpper(obj.Type)
+		if objType != "CLAS" && objType != "PROG" && objType != "INTF" {
+			continue
+		}
+		if checked >= 10 {
+			break
+		}
+		revs, err := client.GetRevisions(ctx, objType, obj.Name, nil)
+		if err != nil || len(revs) == 0 {
+			continue
+		}
+		tm, err := time.Parse(time.RFC3339, revs[0].Date)
+		if err != nil {
+			continue
+		}
+		if tm.After(newest) {
+			newest = tm
+		}
+		checked++
+	}
+	if newest.IsZero() {
+		// Fallback: query latest transport date from E070/E071
+		transportQuery := fmt.Sprintf(
+			"SELECT MAX( AS4DATE ) AS LAST_DATE FROM E070 WHERE TRKORR IN ( SELECT TRKORR FROM E071 WHERE OBJ_NAME IN ( SELECT OBJ_NAME FROM TADIR WHERE DEVCLASS LIKE '%s%%' ) )", pkg)
+		tResult, tErr := client.RunQuery(ctx, transportQuery, 1)
+		if tErr == nil && tResult != nil && len(tResult.Rows) > 0 {
+			dateStr := strings.TrimSpace(fmt.Sprintf("%v", tResult.Rows[0]["LAST_DATE"]))
+			if dateStr != "" && dateStr != "00000000" && len(dateStr) == 8 {
+				tm, err := time.Parse("20060102", dateStr)
+				if err == nil {
+					return stalenessCLIFromTime(tm, 0)
+				}
+			}
+		}
+		return cliHealthSignal{Status: "UNKNOWN"}
+	}
+	return stalenessCLIFromTime(newest, checked)
+}
+
+func stalenessCLIFromRevisions(revs []adt.Revision) cliHealthSignal {
+	if len(revs) == 0 {
+		return cliHealthSignal{Status: "UNKNOWN"}
+	}
+	tm, err := time.Parse(time.RFC3339, revs[0].Date)
+	if err != nil {
+		return cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": err.Error()}}
+	}
+	return stalenessCLIFromTime(tm, 1)
+}
+
+func stalenessCLIFromTime(tm time.Time, checked int) cliHealthSignal {
+	ageDays := int(time.Since(tm).Hours() / 24)
+	status := "ACTIVE"
+	switch {
+	case ageDays > 365:
+		status = "STALE"
+	case ageDays > 90:
+		status = "AGING"
+	}
+	return cliHealthSignal{Status: status, Details: map[string]any{"last_changed": tm.Format(time.RFC3339), "age_days": ageDays, "checked": checked}}
+}
+
+func summarizeCLIHealth(signals map[string]cliHealthSignal) cliHealthSummary {
+	if signals["tests"].Status == "FAIL" {
+		return cliHealthSummary{Status: "BAD", Headline: "Unit tests are failing"}
+	}
+	if signals["boundaries"].Status == "VIOLATIONS" {
+		return cliHealthSummary{Status: "WARN", Headline: "Boundary violations detected"}
+	}
+	if signals["atc"].Status == "FINDINGS" {
+		return cliHealthSummary{Status: "WARN", Headline: "ATC findings detected"}
+	}
+	if signals["staleness"].Status == "STALE" {
+		return cliHealthSummary{Status: "WARN", Headline: "Object or package appears stale"}
+	}
+	return cliHealthSummary{Status: "GOOD", Headline: "No major health issues detected"}
+}
+
+func printCLIHealth(result *cliHealthResult, details bool) {
+	switch result.Scope.Kind {
+	case "package":
+		fmt.Printf("Health: package %s\n", result.Scope.Package)
+	default:
+		fmt.Printf("Health: %s %s\n", result.Scope.ObjectType, result.Scope.ObjectName)
+	}
+	fmt.Printf("Summary: %s — %s\n\n", result.Summary.Status, result.Summary.Headline)
+	for _, key := range []string{"tests", "atc", "boundaries", "staleness"} {
+		sig, ok := result.Signals[key]
+		if !ok {
+			continue
+		}
+		fmt.Printf("%-11s %s", key+":", sig.Status)
+		if len(sig.Details) > 0 {
+			data, _ := json.Marshal(sig.Details)
+			fmt.Printf(" %s", string(data))
+		}
+		fmt.Println()
+	}
+
+	if !details {
+		return
+	}
+
+	// Detailed test results — grouped by parent object
+	if result.TestDetails != nil && len(result.TestDetails.Classes) > 0 {
+		fmt.Printf("\n--- Test Details ---\n\n")
+		groups := groupTestsByParent(result.TestDetails.Classes)
+		for _, g := range groups {
+			fmt.Printf("  %s\n", g.label)
+			for _, class := range g.classes {
+				className := class.Name
+				if className == "" {
+					className = "(anonymous)"
+				}
+				fmt.Printf("    %s\n", className)
+				for _, method := range class.TestMethods {
+					status := "PASS"
+					if len(method.Alerts) > 0 {
+						status = "FAIL"
+					}
+					fmt.Printf("      %-4s  %s (%.3fs)\n", status, method.Name, method.ExecutionTime)
+					for _, alert := range method.Alerts {
+						fmt.Printf("            %s: %s\n", alert.Kind, alert.Title)
+						for _, d := range alert.Details {
+							fmt.Printf("              %s\n", d)
+						}
+					}
+				}
+				for _, alert := range class.Alerts {
+					fmt.Printf("      ALERT %s: %s\n", alert.Kind, alert.Title)
+				}
+			}
+			fmt.Println()
+		}
+	}
+
+	// Detailed ATC findings
+	if result.ATCDetails != nil && len(result.ATCDetails.Objects) > 0 {
+		fmt.Printf("\n--- ATC Findings ---\n\n")
+		for _, obj := range result.ATCDetails.Objects {
+			if len(obj.Findings) == 0 {
+				continue
+			}
+			fmt.Printf("  %s %s (%d findings)\n", obj.Type, obj.Name, len(obj.Findings))
+			for _, f := range obj.Findings {
+				prio := "INFO"
+				switch f.Priority {
+				case 1:
+					prio = "ERROR"
+				case 2:
+					prio = "WARN"
+				}
+				loc := ""
+				if f.Location != "" {
+					loc = " @ " + f.Location
+				}
+				fmt.Printf("    %-5s  %s — %s%s\n", prio, f.CheckTitle, f.MessageTitle, loc)
+			}
+		}
+	}
+
+	// Detailed crossing entries
+	if result.CrossingDetails != nil && len(result.CrossingDetails.Entries) > 0 {
+		fmt.Printf("\n--- Boundary Crossings ---\n\n")
+
+		// Group by direction, show violations first
+		dirOrder := []graph.CrossingDirection{
+			graph.CrossSibling, graph.CrossDownward, graph.CrossCommonDown,
+			graph.CrossExternal, graph.CrossUpward, graph.CrossUpwardSkip, graph.CrossCommon,
+		}
+		for _, dir := range dirOrder {
+			var entries []graph.CrossingEntry
+			for _, e := range result.CrossingDetails.Entries {
+				if e.Direction == dir {
+					entries = append(entries, e)
+				}
+			}
+			if len(entries) == 0 {
+				continue
+			}
+			marker := "OK"
+			if dir == graph.CrossSibling || dir == graph.CrossDownward || dir == graph.CrossCommonDown {
+				marker = "BAD"
+			}
+			if dir == graph.CrossExternal {
+				marker = "WARN"
+			}
+			fmt.Printf("  %s  %s (%d)\n", marker, dir, len(entries))
+			for _, e := range entries {
+				ref := e.EdgeKind
+				if e.RefDetail != "" {
+					ref += " " + e.RefDetail
+				}
+				fmt.Printf("    %s → %s  %s %s → %s %s  [%s]\n",
+					e.SourcePackage, e.TargetPackage, e.SourceType, e.SourceObject, e.TargetType, e.TargetObject, ref)
+			}
+		}
+
+		if len(result.CrossingDetails.Circular) > 0 {
+			fmt.Printf("\n  CIRCULAR dependencies:\n")
+			for _, c := range result.CrossingDetails.Circular {
+				fmt.Printf("    %s\n", c)
+			}
+		}
+	}
+}
+
+type testGroup struct {
+	label   string
+	classes []adt.UnitTestClass
+}
+
+func groupTestsByParent(classes []adt.UnitTestClass) []testGroup {
+	order := []string{}
+	groups := map[string]*testGroup{}
+	for _, c := range classes {
+		key := c.ParentName
+		if key == "" {
+			key = "(unknown)"
+		}
+		g, ok := groups[key]
+		if !ok {
+			label := key
+			if c.ParentType != "" {
+				label = c.ParentType + " " + key
+			}
+			g = &testGroup{label: label}
+			groups[key] = g
+			order = append(order, key)
+		}
+		g.classes = append(g.classes, c)
+	}
+	result := make([]testGroup, 0, len(order))
+	for _, k := range order {
+		result = append(result, *groups[k])
+	}
+	return result
+}
+
+func printCLIHealthMD(result *cliHealthResult) {
+	scope := result.Scope.Package
+	if scope == "" {
+		scope = result.Scope.ObjectType + " " + result.Scope.ObjectName
+	}
+	fmt.Printf("# Health Report: %s\n\n", scope)
+	fmt.Printf("**%s** — %s\n\n", result.Summary.Status, result.Summary.Headline)
+
+	fmt.Print("## Signals\n\n")
+	fmt.Println("| Signal | Status | Details |")
+	fmt.Println("|--------|--------|---------|")
+	for _, key := range []string{"tests", "atc", "boundaries", "staleness"} {
+		sig, ok := result.Signals[key]
+		if !ok {
+			continue
+		}
+		detailStr := ""
+		if len(sig.Details) > 0 {
+			parts := make([]string, 0, len(sig.Details))
+			for k, v := range sig.Details {
+				parts = append(parts, fmt.Sprintf("%s: %v", k, v))
+			}
+			sort.Strings(parts)
+			detailStr = strings.Join(parts, ", ")
+		}
+		fmt.Printf("| %s | %s | %s |\n", key, sig.Status, detailStr)
+	}
+
+	if result.TestDetails != nil && len(result.TestDetails.Classes) > 0 {
+		fmt.Print("\n## Test Details\n\n")
+		groups := groupTestsByParent(result.TestDetails.Classes)
+		for _, g := range groups {
+			fmt.Printf("### %s\n\n", g.label)
+			for _, class := range g.classes {
+				className := class.Name
+				if className == "" {
+					className = "(anonymous)"
+				}
+				fmt.Printf("#### %s\n\n", className)
+				fmt.Println("| Method | Status | Time | Details |")
+				fmt.Println("|--------|--------|------|---------|")
+				for _, method := range class.TestMethods {
+					status := "PASS"
+					detail := ""
+					if len(method.Alerts) > 0 {
+						status = "FAIL"
+						parts := make([]string, 0)
+						for _, a := range method.Alerts {
+							parts = append(parts, fmt.Sprintf("%s: %s", a.Kind, a.Title))
+							parts = append(parts, a.Details...)
+						}
+						detail = strings.Join(parts, "; ")
+					}
+					fmt.Printf("| %s | %s | %.3fs | %s |\n", method.Name, status, method.ExecutionTime, detail)
+				}
+				fmt.Println()
+			}
+		}
+	}
+
+	if result.ATCDetails != nil && len(result.ATCDetails.Objects) > 0 {
+		fmt.Print("\n## ATC Findings\n\n")
+		for _, obj := range result.ATCDetails.Objects {
+			if len(obj.Findings) == 0 {
+				continue
+			}
+			fmt.Printf("### %s %s\n\n", obj.Type, obj.Name)
+			fmt.Println("| Priority | Check | Message | Location |")
+			fmt.Println("|----------|-------|---------|----------|")
+			for _, f := range obj.Findings {
+				prio := "Info"
+				switch f.Priority {
+				case 1:
+					prio = "Error"
+				case 2:
+					prio = "Warning"
+				}
+				fmt.Printf("| %s | %s | %s | %s |\n", prio, f.CheckTitle, f.MessageTitle, f.Location)
+			}
+			fmt.Println()
+		}
+	}
+
+	printCrossingsMD(result.CrossingDetails)
+}
+
+func printCrossingsMD(report *graph.CrossingReport) {
+	if report == nil || len(report.Entries) == 0 {
+		return
+	}
+	fmt.Print("\n## Boundary Crossings\n\n")
+
+	dirOrder := []graph.CrossingDirection{
+		graph.CrossSibling, graph.CrossDownward, graph.CrossCommonDown,
+		graph.CrossExternal, graph.CrossUpward, graph.CrossUpwardSkip, graph.CrossCommon,
+	}
+	for _, dir := range dirOrder {
+		var entries []graph.CrossingEntry
+		for _, e := range report.Entries {
+			if e.Direction == dir {
+				entries = append(entries, e)
+			}
+		}
+		if len(entries) == 0 {
+			continue
+		}
+		verdict := "OK"
+		if dir == graph.CrossSibling || dir == graph.CrossDownward || dir == graph.CrossCommonDown {
+			verdict = "BAD"
+		}
+		if dir == graph.CrossExternal {
+			verdict = "WARN"
+		}
+		fmt.Printf("### %s — %s (%d)\n\n", dir, verdict, len(entries))
+		fmt.Println("| From Pkg | Source Object | To Pkg | Target Object | Edge | Detail |")
+		fmt.Println("|----------|---------------|--------|---------------|------|--------|")
+		for _, e := range entries {
+			fmt.Printf("| %s | %s %s | %s | %s %s | %s | %s |\n",
+				e.SourcePackage, e.SourceType, e.SourceObject,
+				e.TargetPackage, e.TargetType, e.TargetObject,
+				e.EdgeKind, e.RefDetail)
+		}
+		fmt.Println()
+	}
+
+	if len(report.Circular) > 0 {
+		fmt.Print("### Circular Dependencies\n\n")
+		for _, c := range report.Circular {
+			fmt.Printf("- %s\n", c)
+		}
+		fmt.Println()
+	}
+}
+
+func printCLIHealthHTML(result *cliHealthResult) {
+	scope := result.Scope.Package
+	if scope == "" {
+		scope = result.Scope.ObjectType + " " + result.Scope.ObjectName
+	}
+
+	fmt.Println(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>Health Report</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 960px; margin: 2em auto; padding: 0 1em; color: #333; }
+  h1 { border-bottom: 2px solid #ddd; padding-bottom: 0.3em; }
+  h2 { margin-top: 1.5em; color: #555; }
+  h3 { color: #666; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  th { background: #f5f5f5; }
+  .PASS, .CLEAN, .GOOD { color: #2e7d32; }
+  .FAIL, .BAD, .ERROR { color: #c62828; }
+  .WARN, .FINDINGS { color: #ef6c00; }
+  .NONE, .UNKNOWN, .SKIPPED { color: #757575; }
+  .prio-error { color: #c62828; font-weight: bold; }
+  .prio-warn { color: #ef6c00; }
+  .prio-info { color: #1565c0; }
+</style>
+</head><body>`)
+
+	fmt.Printf("<h1>Health Report: %s</h1>\n", scope)
+	fmt.Printf("<p><strong class=%q>%s</strong> — %s</p>\n", result.Summary.Status, result.Summary.Status, result.Summary.Headline)
+
+	fmt.Println("<h2>Signals</h2>")
+	fmt.Println("<table><tr><th>Signal</th><th>Status</th><th>Details</th></tr>")
+	for _, key := range []string{"tests", "atc", "boundaries", "staleness"} {
+		sig, ok := result.Signals[key]
+		if !ok {
+			continue
+		}
+		detailStr := ""
+		if len(sig.Details) > 0 {
+			parts := make([]string, 0, len(sig.Details))
+			for k, v := range sig.Details {
+				parts = append(parts, fmt.Sprintf("%s: %v", k, v))
+			}
+			sort.Strings(parts)
+			detailStr = strings.Join(parts, ", ")
+		}
+		fmt.Printf("<tr><td>%s</td><td class=%q>%s</td><td>%s</td></tr>\n", key, sig.Status, sig.Status, detailStr)
+	}
+	fmt.Println("</table>")
+
+	if result.TestDetails != nil && len(result.TestDetails.Classes) > 0 {
+		fmt.Println("<h2>Test Details</h2>")
+		groups := groupTestsByParent(result.TestDetails.Classes)
+		for _, g := range groups {
+			fmt.Printf("<h3>%s</h3>\n", g.label)
+			for _, class := range g.classes {
+				className := class.Name
+				if className == "" {
+					className = "(anonymous)"
+				}
+				fmt.Printf("<h4>%s</h4>\n", className)
+				fmt.Println("<table><tr><th>Method</th><th>Status</th><th>Time</th><th>Details</th></tr>")
+				for _, method := range class.TestMethods {
+					status := "PASS"
+					detail := ""
+					if len(method.Alerts) > 0 {
+						status = "FAIL"
+						parts := make([]string, 0)
+						for _, a := range method.Alerts {
+							parts = append(parts, fmt.Sprintf("<strong>%s:</strong> %s", a.Kind, a.Title))
+							for _, d := range a.Details {
+								parts = append(parts, d)
+							}
+						}
+						detail = strings.Join(parts, "<br>")
+					}
+					fmt.Printf("<tr><td>%s</td><td class=%q>%s</td><td>%.3fs</td><td>%s</td></tr>\n", method.Name, status, status, method.ExecutionTime, detail)
+				}
+				fmt.Println("</table>")
+			}
+		}
+	}
+
+	if result.ATCDetails != nil && len(result.ATCDetails.Objects) > 0 {
+		fmt.Println("<h2>ATC Findings</h2>")
+		for _, obj := range result.ATCDetails.Objects {
+			if len(obj.Findings) == 0 {
+				continue
+			}
+			fmt.Printf("<h3>%s %s (%d findings)</h3>\n", obj.Type, obj.Name, len(obj.Findings))
+			fmt.Println("<table><tr><th>Priority</th><th>Check</th><th>Message</th><th>Location</th></tr>")
+			for _, f := range obj.Findings {
+				prio := "Info"
+				prioClass := "prio-info"
+				switch f.Priority {
+				case 1:
+					prio = "Error"
+					prioClass = "prio-error"
+				case 2:
+					prio = "Warning"
+					prioClass = "prio-warn"
+				}
+				fmt.Printf("<tr><td class=%q>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n", prioClass, prio, f.CheckTitle, f.MessageTitle, f.Location)
+			}
+			fmt.Println("</table>")
+		}
+	}
+
+	// Crossing details
+	if result.CrossingDetails != nil && len(result.CrossingDetails.Entries) > 0 {
+		fmt.Println("<h2>Boundary Crossings</h2>")
+		dirOrder := []graph.CrossingDirection{
+			graph.CrossSibling, graph.CrossDownward, graph.CrossCommonDown,
+			graph.CrossExternal, graph.CrossUpward, graph.CrossUpwardSkip, graph.CrossCommon,
+		}
+		for _, dir := range dirOrder {
+			var entries []graph.CrossingEntry
+			for _, e := range result.CrossingDetails.Entries {
+				if e.Direction == dir {
+					entries = append(entries, e)
+				}
+			}
+			if len(entries) == 0 {
+				continue
+			}
+			cssClass := "PASS"
+			if dir == graph.CrossSibling || dir == graph.CrossDownward || dir == graph.CrossCommonDown {
+				cssClass = "FAIL"
+			}
+			if dir == graph.CrossExternal {
+				cssClass = "WARN"
+			}
+			fmt.Printf("<h3 class=%q>%s (%d)</h3>\n", cssClass, dir, len(entries))
+			fmt.Println("<table><tr><th>From Pkg</th><th>Source</th><th>To Pkg</th><th>Target</th><th>Edge</th><th>Detail</th></tr>")
+			for _, e := range entries {
+				fmt.Printf("<tr><td>%s</td><td>%s %s</td><td>%s</td><td>%s %s</td><td>%s</td><td>%s</td></tr>\n",
+					e.SourcePackage, e.SourceType, e.SourceObject,
+					e.TargetPackage, e.TargetType, e.TargetObject,
+					e.EdgeKind, e.RefDetail)
+			}
+			fmt.Println("</table>")
+		}
+		if len(result.CrossingDetails.Circular) > 0 {
+			fmt.Println("<h3 class=\"FAIL\">Circular Dependencies</h3><ul>")
+			for _, c := range result.CrossingDetails.Circular {
+				fmt.Printf("<li>%s</li>\n", c)
+			}
+			fmt.Println("</ul>")
+		}
+	}
+
+	fmt.Println("</body></html>")
+}
+
+func resolvePackagesCLI(ctx context.Context, client *adt.Client, g *graph.Graph) {
+	var names []string
+	nodesByName := make(map[string][]*graph.Node)
+	for _, n := range g.Nodes() {
+		if n.Package == "" && !graph.IsStandardObject(n.Name) && !strings.HasPrefix(n.ID, "DYNAMIC:") {
+			names = append(names, n.Name)
+			nodesByName[strings.ToUpper(n.Name)] = append(nodesByName[strings.ToUpper(n.Name)], n)
+		}
+	}
+	if len(names) == 0 {
+		return
+	}
+	// Batch TADIR lookups in chunks of 100 to avoid query size limits
+	for start := 0; start < len(names); start += 100 {
+		end := start + 100
+		if end > len(names) {
+			end = len(names)
+		}
+		chunk := names[start:end]
+		quoted := make([]string, len(chunk))
+		for i, n := range chunk {
+			quoted[i] = "'" + strings.ToUpper(n) + "'"
+		}
+		query := fmt.Sprintf("SELECT obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", strings.Join(quoted, ","))
+		result, err := client.RunQuery(ctx, query, len(chunk)*3)
+		if err != nil || result == nil {
+			continue
+		}
+		for _, row := range result.Rows {
+			objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
+			devclass := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["DEVCLASS"])))
+			if nodes, ok := nodesByName[objName]; ok {
+				for _, n := range nodes {
+					if n.Package == "" {
+						n.Package = devclass
+					}
+				}
+			}
+		}
+	}
+}
+
+func runDeploy(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	filePath := args[0]
+	packageName := strings.ToUpper(args[1])
+	transport, _ := cmd.Flags().GetString("transport")
+
+	ctx := context.Background()
+	result, err := client.DeployFromFile(ctx, filePath, packageName, transport)
+	if err != nil {
+		return fmt.Errorf("deploy failed: %w", err)
+	}
+
+	if result.Success {
+		action := "Updated"
+		if result.Created {
+			action = "Created"
+		}
+		fmt.Fprintf(os.Stderr, "%s %s %s\n", action, result.ObjectType, result.ObjectName)
+		if result.ObjectURL != "" {
+			fmt.Fprintf(os.Stderr, "URL: %s\n", result.ObjectURL)
+		}
+		if result.Message != "" {
+			fmt.Fprintf(os.Stderr, "%s\n", result.Message)
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "Deploy failed for %s\n", filePath)
+		if result.Message != "" {
+			fmt.Fprintf(os.Stderr, "%s\n", result.Message)
+		}
+		for _, e := range result.Errors {
+			fmt.Fprintf(os.Stderr, "  %s\n", e)
+		}
+		if len(result.SyntaxErrors) > 0 {
+			fmt.Fprintf(os.Stderr, "Syntax errors:\n")
+			for _, se := range result.SyntaxErrors {
+				fmt.Fprintf(os.Stderr, "  %s\n", se)
+			}
+		}
+		return fmt.Errorf("deploy failed")
+	}
+
+	return nil
+}
+
+func runTransportList(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	user, _ := cmd.Flags().GetString("user")
+
+	ctx := context.Background()
+	transports, err := client.ListTransports(ctx, user)
+	if err != nil {
+		return fmt.Errorf("listing transports failed: %w", err)
+	}
+
+	if len(transports) == 0 {
+		fmt.Println("No transport requests found.")
+		return nil
+	}
+
+	fmt.Printf("%-12s %-12s %-8s %-10s %s\n", "NUMBER", "OWNER", "STATUS", "TYPE", "DESCRIPTION")
+	fmt.Println(strings.Repeat("-", 80))
+	for _, t := range transports {
+		status := t.Status
+		if t.StatusText != "" {
+			status = t.StatusText
+		}
+		fmt.Printf("%-12s %-12s %-8s %-10s %s\n", t.Number, t.Owner, status, t.Type, t.Description)
+	}
+	fmt.Printf("\n%d transport(s)\n", len(transports))
+	return nil
+}
+
+func runTransportGet(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	number := strings.ToUpper(args[0])
+
+	ctx := context.Background()
+	details, err := client.GetTransport(ctx, number)
+	if err != nil {
+		return fmt.Errorf("getting transport failed: %w", err)
+	}
+
+	fmt.Printf("Transport: %s\n", details.Number)
+	fmt.Printf("Owner:     %s\n", details.Owner)
+	fmt.Printf("Type:      %s\n", details.Type)
+	fmt.Printf("Status:    %s\n", details.StatusText)
+	if details.Target != "" {
+		fmt.Printf("Target:    %s\n", details.Target)
+	}
+	fmt.Printf("Desc:      %s\n", details.Description)
+
+	if len(details.Tasks) > 0 {
+		fmt.Printf("\nTasks (%d):\n", len(details.Tasks))
+		for _, task := range details.Tasks {
+			fmt.Printf("  %s  %-12s  %-8s  %s\n", task.Number, task.Owner, task.StatusText, task.Description)
+			for _, obj := range task.Objects {
+				fmt.Printf("    %s %s %s\n", obj.PgmID, obj.Type, obj.Name)
+			}
+		}
+	}
+
+	if len(details.Objects) > 0 {
+		fmt.Printf("\nObjects (%d):\n", len(details.Objects))
+		for _, obj := range details.Objects {
+			fmt.Printf("  %s %s %s\n", obj.PgmID, obj.Type, obj.Name)
+		}
+	}
+
+	return nil
+}
+
+// --- install handler implementations ---
+
+func runInstallZadtVsp(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	packageName, _ := cmd.Flags().GetString("package")
+	packageName = strings.ToUpper(packageName)
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
+	skipGitService, _ := cmd.Flags().GetBool("skip-git-service")
+
+	// Validate package name
+	if !strings.HasPrefix(packageName, "$") {
+		return fmt.Errorf("package name must start with $ (local package): %s", packageName)
+	}
+
+	ctx := context.Background()
+
+	fmt.Fprintf(os.Stderr, "ZADT_VSP Installation\n")
+	fmt.Fprintf(os.Stderr, "=====================\n\n")
+
+	// Phase 1: Check prerequisites
+	fmt.Fprintf(os.Stderr, "Checking prerequisites...\n")
+
+	// Check if package exists
+	packageExists := false
+	pkg, err := client.GetPackage(ctx, packageName)
+	if err == nil && pkg.URI != "" {
+		packageExists = true
+		fmt.Fprintf(os.Stderr, "  Package %s exists\n", packageName)
+	} else {
+		fmt.Fprintf(os.Stderr, "  Package %s will be created\n", packageName)
+	}
+
+	// Check for abapGit (for Git service)
+	hasAbapGit := false
+	if !skipGitService {
+		results, err := client.SearchObject(ctx, "ZCL_ABAPGIT_OBJECTS", 1)
+		if err == nil && len(results) > 0 {
+			hasAbapGit = true
+			fmt.Fprintf(os.Stderr, "  abapGit detected -> Git service will be deployed\n")
+		} else {
+			fmt.Fprintf(os.Stderr, "  abapGit not detected -> Git service will be skipped\n")
+			skipGitService = true
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "  Git service skipped (--skip-git-service)\n")
+	}
+
+	// Get objects to deploy
+	objects := embedded.GetObjects()
+
+	// Check existing objects
+	existingObjects := []string{}
+	for _, obj := range objects {
+		results, err := client.SearchObject(ctx, obj.Name, 1)
+		if err == nil && len(results) > 0 && results[0].Name == obj.Name {
+			existingObjects = append(existingObjects, obj.Name)
+		}
+	}
+	if len(existingObjects) > 0 {
+		fmt.Fprintf(os.Stderr, "  Existing objects will be updated: %s\n", strings.Join(existingObjects, ", "))
+	}
+
+	fmt.Fprintf(os.Stderr, "\n")
+
+	// Show deployment plan
+	fmt.Fprintf(os.Stderr, "Deployment Plan (%d objects):\n", len(objects))
+	fmt.Fprintf(os.Stderr, "%s\n", strings.Repeat("-", 60))
+	for i, obj := range objects {
+		if obj.Name == "ZCL_VSP_GIT_SERVICE" && skipGitService {
+			fmt.Fprintf(os.Stderr, "  [%d/%d] %-30s SKIP (no abapGit)\n", i+1, len(objects), obj.Name)
+		} else {
+			action := "CREATE"
+			for _, existing := range existingObjects {
+				if existing == obj.Name {
+					action = "UPDATE"
+					break
+				}
+			}
+			fmt.Fprintf(os.Stderr, "  [%d/%d] %-30s %s - %s\n", i+1, len(objects), obj.Name, action, obj.Description)
+		}
+	}
+	fmt.Fprintf(os.Stderr, "%s\n\n", strings.Repeat("-", 60))
+
+	if dryRun {
+		fmt.Fprintf(os.Stderr, "Dry run - no changes made.\n")
+		return nil
+	}
+
+	// Phase 2: Create package if needed
+	if !packageExists {
+		fmt.Fprintf(os.Stderr, "Creating package %s...\n", packageName)
+		err := client.CreateObject(ctx, adt.CreateObjectOptions{
+			ObjectType:  adt.ObjectTypePackage,
+			Name:        packageName,
+			Description: "VSP WebSocket Handler",
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create package %s: %w", packageName, err)
+		}
+		fmt.Fprintf(os.Stderr, "  Package created\n\n")
+	} else {
+		fmt.Fprintf(os.Stderr, "Using existing package %s\n\n", packageName)
+	}
+
+	// Phase 3: Deploy objects
+	fmt.Fprintf(os.Stderr, "Deploying ABAP objects...\n")
+
+	deployed := 0
+	skipped := 0
+	failed := 0
+
+	for i, obj := range objects {
+		// Skip Git service if no abapGit
+		if obj.Name == "ZCL_VSP_GIT_SERVICE" && skipGitService {
+			fmt.Fprintf(os.Stderr, "  [%d/%d] %s ... SKIPPED (no abapGit)\n", i+1, len(objects), obj.Name)
+			skipped++
+			continue
+		}
+
+		fmt.Fprintf(os.Stderr, "  [%d/%d] %s ... ", i+1, len(objects), obj.Name)
+
+		opts := &adt.WriteSourceOptions{
+			Package: packageName,
+			Mode:    adt.WriteModeUpsert,
+		}
+		_, err := client.WriteSource(ctx, obj.Type, obj.Name, obj.Source, opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "FAILED: %v\n", err)
+			failed++
+		} else {
+			fmt.Fprintf(os.Stderr, "OK\n")
+			deployed++
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "\n")
+
+	// Summary
+	if failed > 0 {
+		fmt.Fprintf(os.Stderr, "DEPLOYMENT PARTIALLY FAILED\n")
+		fmt.Fprintf(os.Stderr, "Deployed: %d, Skipped: %d, Failed: %d\n\n", deployed, skipped, failed)
+	} else {
+		fmt.Fprintf(os.Stderr, "DEPLOYMENT COMPLETE\n")
+		fmt.Fprintf(os.Stderr, "Deployed: %d, Skipped: %d\n\n", deployed, skipped)
+	}
+
+	// Post-deployment instructions
+	fmt.Fprint(os.Stderr, embedded.PostDeploymentInstructions())
+
+	// Features summary
+	fmt.Fprintf(os.Stderr, "\nFeatures unlocked:\n")
+	fmt.Fprintf(os.Stderr, "  WebSocket debugging (TPDAPI)\n")
+	fmt.Fprintf(os.Stderr, "  RFC/BAPI execution\n")
+	fmt.Fprintf(os.Stderr, "  AMDP debugging (experimental)\n")
+	if hasAbapGit && !skipGitService {
+		fmt.Fprintf(os.Stderr, "  abapGit export (158 object types)\n")
+	} else {
+		fmt.Fprintf(os.Stderr, "  abapGit export NOT available (install abapGit first)\n")
+	}
+
+	if failed > 0 {
+		return fmt.Errorf("%d object(s) failed to deploy", failed)
+	}
+	return nil
+}
+
+func runInstallAbapGit(cmd *cobra.Command, args []string) error {
+	params, err := resolveSystemParams(cmd)
+	if err != nil {
+		return err
+	}
+
+	client, err := getClient(params)
+	if err != nil {
+		return err
+	}
+
+	edition, _ := cmd.Flags().GetString("edition")
+	edition = strings.ToLower(edition)
+	packageName, _ := cmd.Flags().GetString("package")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
+
+	// Validate edition
+	if edition != "standalone" && edition != "full" {
+		return fmt.Errorf("invalid edition '%s'. Use 'standalone' or 'full'", edition)
+	}
+
+	// Map edition to dependency name
+	depName := "abapgit-standalone"
+	if edition == "full" {
+		depName = "abapgit-full"
+	}
+
+	// Set default package based on edition
+	if packageName == "" {
+		if edition == "standalone" {
+			packageName = "$ABAPGIT"
+		} else {
+			packageName = "$ZGIT"
+		}
+	}
+	packageName = strings.ToUpper(packageName)
+
+	// Validate package name
+	if !strings.HasPrefix(packageName, "$") {
+		return fmt.Errorf("package name must start with $ (local package): %s", packageName)
+	}
+
+	fmt.Fprintf(os.Stderr, "Install abapGit (%s edition)\n", edition)
+	fmt.Fprintf(os.Stderr, "============================\n\n")
+
+	// Get ZIP data
+	zipData := deps.GetDependencyZIP(depName)
+	if zipData == nil || len(zipData) == 0 {
+		fmt.Fprintf(os.Stderr, "ZIP not embedded for edition '%s'\n\n", edition)
+		fmt.Fprintf(os.Stderr, "To embed abapGit:\n")
+		fmt.Fprintf(os.Stderr, "1. On a system with abapGit installed, run:\n")
+		if edition == "standalone" {
+			fmt.Fprintf(os.Stderr, "   vsp export '$ABAPGIT' -o abapgit-standalone.zip\n")
+		} else {
+			fmt.Fprintf(os.Stderr, "   vsp export '$ZGIT' -o abapgit-full.zip\n")
+		}
+		fmt.Fprintf(os.Stderr, "\n2. Place ZIP in embedded/deps/\n")
+		fmt.Fprintf(os.Stderr, "3. Update embedded/deps/embed.go with go:embed directive\n")
+		fmt.Fprintf(os.Stderr, "4. Rebuild vsp\n\n")
+		fmt.Fprintf(os.Stderr, "Alternative: Download from https://github.com/abapGit/abapGit\n")
+		return fmt.Errorf("embedded ZIP not available for edition '%s'", edition)
+	}
+
+	fmt.Fprintf(os.Stderr, "Source: %s (embedded, %d bytes)\n", depName, len(zipData))
+	fmt.Fprintf(os.Stderr, "Target: %s\n\n", packageName)
+
+	// Parse ZIP
+	files, err := deps.UnzipInMemory(zipData)
+	if err != nil {
+		return fmt.Errorf("failed to parse ZIP: %w", err)
+	}
+
+	// Create deployment plan
+	plan := deps.CreateDeploymentPlan(depName, packageName, files)
+	fmt.Fprintf(os.Stderr, "Found %d objects in %d files\n\n", plan.TotalObjects, plan.TotalFiles)
+
+	// Show deployment plan
+	fmt.Fprintf(os.Stderr, "Deployment Plan (%d objects):\n", plan.TotalObjects)
+	fmt.Fprintf(os.Stderr, "%s\n", strings.Repeat("-", 60))
+	for i, obj := range plan.Objects {
+		includeInfo := ""
+		if len(obj.Includes) > 0 {
+			var incTypes []string
+			for t := range obj.Includes {
+				incTypes = append(incTypes, t)
+			}
+			includeInfo = fmt.Sprintf(" [+%s]", strings.Join(incTypes, ","))
+		}
+		fmt.Fprintf(os.Stderr, "  [%d/%d] %-6s %-40s%s\n", i+1, plan.TotalObjects, obj.Type, obj.Name, includeInfo)
+	}
+	fmt.Fprintf(os.Stderr, "%s\n\n", strings.Repeat("-", 60))
+
+	if dryRun {
+		fmt.Fprintf(os.Stderr, "Dry run - no changes made.\n")
+		return nil
+	}
+
+	ctx := context.Background()
+
+	// Ensure package exists
+	fmt.Fprintf(os.Stderr, "Checking package %s...\n", packageName)
+	pkg, pkgErr := client.GetPackage(ctx, packageName)
+	if pkgErr != nil || pkg.URI == "" {
+		fmt.Fprintf(os.Stderr, "Creating package %s...\n", packageName)
+		err = client.CreateObject(ctx, adt.CreateObjectOptions{
+			ObjectType:  adt.ObjectTypePackage,
+			Name:        packageName,
+			Description: fmt.Sprintf("abapGit %s edition", edition),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create package: %w", err)
+		}
+		fmt.Fprintf(os.Stderr, "  Package created\n")
+	} else {
+		fmt.Fprintf(os.Stderr, "  Package exists\n")
+	}
+
+	// Deploy objects
+	fmt.Fprintf(os.Stderr, "\nDeploying objects...\n")
+	success := 0
+	failCount := 0
+
+	for i, obj := range plan.Objects {
+		if obj.MainSource == "" {
+			continue // skip XML-only entries
+		}
+
+		fmt.Fprintf(os.Stderr, "  [%d/%d] %s %s ... ", i+1, plan.TotalObjects, obj.Type, obj.Name)
+
+		desc := obj.Description
+		if desc == "" {
+			desc = fmt.Sprintf("Deployed: %s", obj.Name)
+		}
+
+		wopts := &adt.WriteSourceOptions{
+			Package:     packageName,
+			Description: desc,
+			Mode:        adt.WriteModeUpsert,
+		}
+		_, err := client.WriteSource(ctx, obj.Type, obj.Name, obj.MainSource, wopts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "FAILED: %v\n", err)
+			failCount++
+		} else {
+			fmt.Fprintf(os.Stderr, "OK\n")
+			success++
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "\nDeployment complete: %d success, %d failed\n", success, failCount)
+
+	if failCount > 0 {
+		return fmt.Errorf("%d object(s) failed to deploy", failCount)
+	}
+	return nil
+}
+
+func runInstallList(_ *cobra.Command, _ []string) error {
+	fmt.Println("Available Installable Components")
+	fmt.Println("================================")
+	fmt.Println()
+
+	// ZADT_VSP
+	objects := embedded.GetObjects()
+	fmt.Printf("1. zadt-vsp\n")
+	fmt.Printf("   Description: ZADT_VSP WebSocket handler for advanced features\n")
+	fmt.Printf("   Default package: $ZADT_VSP\n")
+	fmt.Printf("   Objects: %d (1 interface, %d classes)\n", len(objects), len(objects)-1)
+	fmt.Printf("   Status: Embedded (always available)\n")
+	fmt.Printf("   Install: vsp install zadt-vsp\n")
+	fmt.Println()
+
+	// Embedded dependencies (abapGit editions)
+	dependencies := deps.GetAvailableDependencies()
+	for i, dep := range dependencies {
+		status := "Not embedded (placeholder)"
+		if dep.Available {
+			status = "Available"
+		}
+		fmt.Printf("%d. %s\n", i+2, dep.Name)
+		fmt.Printf("   Description: %s\n", dep.Description)
+		fmt.Printf("   Default package: %s\n", dep.Package)
+		fmt.Printf("   Status: %s\n", status)
+		if dep.Available {
+			edition := "standalone"
+			if strings.Contains(dep.Name, "full") {
+				edition = "full"
+			}
+			fmt.Printf("   Install: vsp install abapgit --edition %s\n", edition)
+		}
+		fmt.Println()
+	}
+
+	return nil
+}
+
+// buildObjectURL constructs an ADT object URL from type and name.
+func buildObjectURL(objType, name string) string {
+	name = strings.ToLower(name)
+	switch objType {
+	case "CLAS":
+		return fmt.Sprintf("/sap/bc/adt/oo/classes/%s", name)
+	case "PROG":
+		return fmt.Sprintf("/sap/bc/adt/programs/programs/%s", name)
+	case "INTF":
+		return fmt.Sprintf("/sap/bc/adt/oo/interfaces/%s", name)
+	case "FUGR":
+		return fmt.Sprintf("/sap/bc/adt/functions/groups/%s", name)
+	case "DDLS":
+		return fmt.Sprintf("/sap/bc/adt/ddic/ddl/sources/%s", name)
+	default:
+		return ""
+	}
+}

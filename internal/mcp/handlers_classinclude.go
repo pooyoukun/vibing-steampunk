@@ -10,15 +10,31 @@ import (
 	"github.com/oisee/vibing-steampunk/pkg/adt"
 )
 
+// routeClassIncludeAction routes class include operations.
+func (s *Server) routeClassIncludeAction(ctx context.Context, action, objectType, objectName string, params map[string]any) (*mcp.CallToolResult, bool, error) {
+	switch {
+	case action == "read" && objectType == "CLAS_INCLUDE":
+		return s.callHandler(ctx, s.handleGetClassInclude, map[string]any{
+			"class_name":   objectName,
+			"include_type": getStringParam(params, "include_type"),
+		})
+	case action == "create" && objectType == "CLAS_TEST_INCLUDE":
+		return s.callHandler(ctx, s.handleCreateTestInclude, params)
+	case action == "edit" && objectType == "CLAS_INCLUDE":
+		return s.callHandler(ctx, s.handleUpdateClassInclude, params)
+	}
+	return nil, false, nil
+}
+
 // --- Class Include Handlers ---
 
 func (s *Server) handleGetClassInclude(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	className, ok := request.Params.Arguments["class_name"].(string)
+	className, ok := request.GetArguments()["class_name"].(string)
 	if !ok || className == "" {
 		return newToolResultError("class_name is required"), nil
 	}
 
-	includeType, ok := request.Params.Arguments["include_type"].(string)
+	includeType, ok := request.GetArguments()["include_type"].(string)
 	if !ok || includeType == "" {
 		return newToolResultError("include_type is required"), nil
 	}
@@ -32,18 +48,18 @@ func (s *Server) handleGetClassInclude(ctx context.Context, request mcp.CallTool
 }
 
 func (s *Server) handleCreateTestInclude(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	className, ok := request.Params.Arguments["class_name"].(string)
+	className, ok := request.GetArguments()["class_name"].(string)
 	if !ok || className == "" {
 		return newToolResultError("class_name is required"), nil
 	}
 
-	lockHandle, ok := request.Params.Arguments["lock_handle"].(string)
+	lockHandle, ok := request.GetArguments()["lock_handle"].(string)
 	if !ok || lockHandle == "" {
 		return newToolResultError("lock_handle is required"), nil
 	}
 
 	transport := ""
-	if t, ok := request.Params.Arguments["transport"].(string); ok {
+	if t, ok := request.GetArguments()["transport"].(string); ok {
 		transport = t
 	}
 
@@ -56,28 +72,28 @@ func (s *Server) handleCreateTestInclude(ctx context.Context, request mcp.CallTo
 }
 
 func (s *Server) handleUpdateClassInclude(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	className, ok := request.Params.Arguments["class_name"].(string)
+	className, ok := request.GetArguments()["class_name"].(string)
 	if !ok || className == "" {
 		return newToolResultError("class_name is required"), nil
 	}
 
-	includeType, ok := request.Params.Arguments["include_type"].(string)
+	includeType, ok := request.GetArguments()["include_type"].(string)
 	if !ok || includeType == "" {
 		return newToolResultError("include_type is required"), nil
 	}
 
-	source, ok := request.Params.Arguments["source"].(string)
+	source, ok := request.GetArguments()["source"].(string)
 	if !ok || source == "" {
 		return newToolResultError("source is required"), nil
 	}
 
-	lockHandle, ok := request.Params.Arguments["lock_handle"].(string)
+	lockHandle, ok := request.GetArguments()["lock_handle"].(string)
 	if !ok || lockHandle == "" {
 		return newToolResultError("lock_handle is required"), nil
 	}
 
 	transport := ""
-	if t, ok := request.Params.Arguments["transport"].(string); ok {
+	if t, ok := request.GetArguments()["transport"].(string); ok {
 		transport = t
 	}
 

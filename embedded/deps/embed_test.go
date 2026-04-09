@@ -4,19 +4,25 @@ import "testing"
 
 func TestGetDependencyZIP(t *testing.T) {
 	tests := []struct {
-		name  string
-		input string
+		name     string
+		input    string
+		wantData bool
 	}{
-		{name: "standalone-lowercase", input: "abapgit-standalone"},
-		{name: "standalone-uppercase", input: "ABAPGIT-STANDALONE"},
-		{name: "dev-trimmed", input: "  abapgit-dev  "},
-		{name: "unknown", input: "does-not-exist"},
+		{name: "standalone-lowercase", input: "abapgit-standalone", wantData: true},
+		{name: "standalone-uppercase", input: "ABAPGIT-STANDALONE", wantData: true},
+		{name: "full", input: "abapgit-full", wantData: true},
+		{name: "dev-alias-trimmed", input: "  abapgit-dev  ", wantData: true},
+		{name: "unknown", input: "does-not-exist", wantData: false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetDependencyZIP(tt.input); got != nil {
-				t.Fatalf("expected nil ZIP for %q in placeholder build, got %d bytes", tt.input, len(got))
+			got := GetDependencyZIP(tt.input)
+			if tt.wantData && got == nil {
+				t.Fatalf("expected ZIP data for %q, got nil", tt.input)
+			}
+			if !tt.wantData && got != nil {
+				t.Fatalf("expected nil for %q, got %d bytes", tt.input, len(got))
 			}
 		})
 	}

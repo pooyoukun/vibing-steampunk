@@ -13,6 +13,12 @@ abap-adt-api/
 .mcp*.json
 ./claude/abap-adt-api-lib/
 
+# Codex MCP config (contains credentials)
+codex.toml
+.codex.toml
+codex*.toml
+agents.toml
+
 # Binaries
 /build/
 *.exe
@@ -63,3 +69,12 @@ abap-adt-api/
 
 # Session logs
 sessions/
+node_modules/
+
+# Transient files
+*.jsonl
+2026-*-last-login-*
+
+# GoReleaser artifacts
+RELEASE_NOTES.md
+dist/
