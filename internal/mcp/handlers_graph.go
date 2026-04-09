@@ -246,7 +246,8 @@ func (s *Server) resolvePackages(ctx context.Context, g *graph.Graph) {
 
 // resolveTADIR batch-queries TADIR for R3TR objects and updates node package/type.
 func resolveTADIR(ctx context.Context, client *adt.Client, names []string, nodesByName map[string][]*graph.Node) {
-	batchSize := 100
+	// Batch size 5: SAP freestyle query has a ~255 char literal limit for IN clauses
+	batchSize := 5
 	for i := 0; i < len(names); i += batchSize {
 		end := i + batchSize
 		if end > len(names) {

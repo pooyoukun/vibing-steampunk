@@ -2470,8 +2470,9 @@ func resolvePackagesCLI(ctx context.Context, client *adt.Client, g *graph.Graph)
 }
 
 func resolveTADIRcli(ctx context.Context, client *adt.Client, names []string, nodesByName map[string][]*graph.Node) {
-	for start := 0; start < len(names); start += 100 {
-		end := start + 100
+	// Batch size 5: SAP freestyle query has a ~255 char literal limit for IN clauses
+	for start := 0; start < len(names); start += 5 {
+		end := start + 5
 		if end > len(names) {
 			end = len(names)
 		}
