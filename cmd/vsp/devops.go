@@ -173,7 +173,11 @@ func runBoundaries(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Fprintf(os.Stderr, "\r  [%d] %s %-40s", count+1, obj.Type, obj.Name)
 		source, err := client.GetSource(ctx, obj.Type, obj.Name, nil)
-		if err != nil || source == "" {
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "\n  WARN: %s %s: %v\n", obj.Type, obj.Name, err)
+			continue
+		}
+		if source == "" {
 			continue
 		}
 		nodeID := graph.NodeID(obj.Type, obj.Name)
@@ -1014,6 +1018,7 @@ func analyzeTRBoundariesCLI(ctx context.Context, client *adt.Client, trList []st
 		fmt.Fprintf(os.Stderr, "  Analyzing %s %s...\n", obj.objType, obj.objName)
 		source, err := client.GetSource(ctx, obj.objType, obj.objName, nil)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "    WARN: %s %s: %v\n", obj.objType, obj.objName, err)
 			continue
 		}
 
@@ -1750,7 +1755,11 @@ func collectPackageBoundariesWithDetails(ctx context.Context, client *adt.Client
 		}
 		fmt.Fprintf(os.Stderr, "\r    [%d] %s %-40s", count+1, obj.Type, obj.Name)
 		source, err := client.GetSource(ctx, obj.Type, obj.Name, nil)
-		if err != nil || source == "" {
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "\n    WARN: %s %s: %v\n", obj.Type, obj.Name, err)
+			continue
+		}
+		if source == "" {
 			continue
 		}
 		nodeID := graph.NodeID(obj.Type, obj.Name)
@@ -2483,7 +2492,11 @@ func resolveTADIRcli(ctx context.Context, client *adt.Client, names []string, no
 		}
 		query := fmt.Sprintf("SELECT object, obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", strings.Join(quoted, ","))
 		result, err := client.RunQuery(ctx, query, len(chunk)*3)
-		if err != nil || result == nil {
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "    WARN: TADIR resolve batch failed: %v\n", err)
+			continue
+		}
+		if result == nil {
 			continue
 		}
 		for _, row := range result.Rows {
@@ -2509,7 +2522,11 @@ func resolveFMviaTFDIRcli(ctx context.Context, client *adt.Client, fmNames []str
 	}
 	query := fmt.Sprintf("SELECT FUNCNAME, PNAME FROM TFDIR WHERE FUNCNAME IN (%s)", strings.Join(quoted, ","))
 	result, err := client.RunQuery(ctx, query, len(fmNames)*2)
-	if err != nil || result == nil {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "    WARN: TFDIR resolve failed: %v\n", err)
+		return
+	}
+	if result == nil {
 		return
 	}
 
@@ -2539,7 +2556,11 @@ func resolveFMviaTFDIRcli(ctx context.Context, client *adt.Client, fmNames []str
 	}
 	fugrQuery := fmt.Sprintf("SELECT obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND object = 'FUGR' AND obj_name IN (%s)", strings.Join(fugrQuoted, ","))
 	fugrResult, err := client.RunQuery(ctx, fugrQuery, len(fugrSet)*2)
-	if err != nil || fugrResult == nil {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "    WARN: FUGR TADIR resolve failed: %v\n", err)
+		return
+	}
+	if fugrResult == nil {
 		return
 	}
 
