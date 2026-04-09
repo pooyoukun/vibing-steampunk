@@ -541,10 +541,12 @@ func init() {
 
 	trBoundariesCmd.Flags().String("format", "text", "Output format: text, json, or html")
 	trBoundariesCmd.Flags().String("report", "", "Generate report file: html or filename.html")
+	trBoundariesCmd.Flags().Bool("details", false, "Show cross-package dependencies within the transport scope")
 	rootCmd.AddCommand(trBoundariesCmd)
 
 	crBoundariesCmd.Flags().String("format", "text", "Output format: text, json, or html")
 	crBoundariesCmd.Flags().String("report", "", "Generate report file: html or filename.html")
+	crBoundariesCmd.Flags().Bool("details", false, "Show cross-package dependencies within the CR scope")
 	rootCmd.AddCommand(crBoundariesCmd)
 
 	crHistoryCmd.Flags().String("format", "text", "Output format: text or json")
@@ -1053,17 +1055,17 @@ func analyzeTRBoundariesCLI(ctx context.Context, client *adt.Client, trList []st
 	return graph.AnalyzeTransportBoundaries(g, scope), nil
 }
 
-func printTRBoundariesText(report *graph.TransportBoundaryReport) {
+func printTRBoundariesText(report *graph.TransportBoundaryReport, details bool) {
 	status := "SELF-CONSISTENT"
 	if !report.Summary.SelfConsistent {
 		status = "INCOMPLETE"
 	}
 	fmt.Printf("Transport Boundaries: %s\n", report.Scope)
 	fmt.Printf("Status: %s\n", status)
-	fmt.Printf("Objects: %d | Deps: %d (in-scope: %d, missing: %d, standard: %d, dynamic: %d)\n\n",
+	fmt.Printf("Objects: %d | Deps: %d (in-scope: %d [same-pkg: %d, cross-pkg: %d], missing: %d, standard: %d, dynamic: %d)\n\n",
 		report.ObjectCount, report.Summary.TotalDeps,
-		report.Summary.InScope, report.Summary.Missing,
-		report.Summary.Standard, report.Summary.Dynamic)
+		report.Summary.InScope, report.Summary.InScopeSamePkg, report.Summary.InScopeCrossPkg,
+		report.Summary.Missing, report.Summary.Standard, report.Summary.Dynamic)
 
 	if len(report.Missing) > 0 {
 		fmt.Println("MISSING (custom objects not in transport):")
@@ -1083,11 +1085,26 @@ func printTRBoundariesText(report *graph.TransportBoundaryReport) {
 		}
 		fmt.Println()
 	}
+
+	if details && len(report.CrossPackage) > 0 {
+		fmt.Println("CROSS-PACKAGE (in scope but different package):")
+		currentPkg := ""
+		for _, e := range report.CrossPackage {
+			if e.TargetPackage != currentPkg {
+				currentPkg = e.TargetPackage
+				fmt.Printf("\n  → %s\n", currentPkg)
+			}
+			fmt.Printf("    %-4s %-20s (%-12s) → %-4s %-20s  %s\n",
+				e.SourceType, e.SourceName, e.SourcePackage, e.TargetType, e.TargetName, e.EdgeKind)
+		}
+		fmt.Println()
+	}
 }
 
 func outputTRBoundaries(cmd *cobra.Command, report *graph.TransportBoundaryReport) error {
 	format, _ := cmd.Flags().GetString("format")
 	reportFlag, _ := cmd.Flags().GetString("report")
+	details, _ := cmd.Flags().GetBool("details")
 
 	// --report: resolve format and filename
 	if reportFlag != "" {
@@ -1116,9 +1133,9 @@ func outputTRBoundaries(cmd *cobra.Command, report *graph.TransportBoundaryRepor
 		data, _ := json.MarshalIndent(report, "", "  ")
 		fmt.Println(string(data))
 	case "html":
-		printTRBoundariesHTML(report)
+		printTRBoundariesHTML(report, details)
 	default:
-		printTRBoundariesText(report)
+		printTRBoundariesText(report, details)
 	}
 
 	if reportFlag != "" {
@@ -1127,7 +1144,7 @@ func outputTRBoundaries(cmd *cobra.Command, report *graph.TransportBoundaryRepor
 	return nil
 }
 
-func printTRBoundariesHTML(report *graph.TransportBoundaryReport) {
+func printTRBoundariesHTML(report *graph.TransportBoundaryReport, details bool) {
 	status := "SELF-CONSISTENT"
 	statusClass := "PASS"
 	if !report.Summary.SelfConsistent {
@@ -1173,6 +1190,9 @@ func printTRBoundariesHTML(report *graph.TransportBoundaryReport) {
 	if len(report.Dynamic) > 0 {
 		fmt.Println(`<li><a href="#dynamic">Dynamic Calls</a></li>`)
 	}
+	if details && len(report.CrossPackage) > 0 {
+		fmt.Println(`<li><a href="#crosspackage">Cross-Package within Scope</a></li>`)
+	}
 	fmt.Println(`</ul></details></nav>`)
 
 	// Summary
@@ -1216,6 +1236,27 @@ func printTRBoundariesHTML(report *graph.TransportBoundaryReport) {
 			fmt.Printf("<tr><td>%s %s</td><td>%s</td></tr>\n", e.SourceType, e.SourceName, e.RefDetail)
 		}
 		fmt.Println("</table>")
+	}
+
+	// Cross-package: in-scope deps that cross package boundaries (--details)
+	if details && len(report.CrossPackage) > 0 {
+		fmt.Printf("<h2 id=\"crosspackage\">Cross-Package within Scope (%d)</h2>\n", len(report.CrossPackage))
+		currentPkg := ""
+		for _, e := range report.CrossPackage {
+			if e.TargetPackage != currentPkg {
+				if currentPkg != "" {
+					fmt.Println("</table>")
+				}
+				currentPkg = e.TargetPackage
+				fmt.Printf("<h3>%s</h3>\n", currentPkg)
+				fmt.Println("<table><tr><th>Source Pkg</th><th>Source</th><th>Target</th><th>Edge</th></tr>")
+			}
+			fmt.Printf("<tr><td>%s</td><td>%s %s</td><td>%s %s</td><td>%s</td></tr>\n",
+				e.SourcePackage, e.SourceType, e.SourceName, e.TargetType, e.TargetName, e.EdgeKind)
+		}
+		if currentPkg != "" {
+			fmt.Println("</table>")
+		}
 	}
 
 	fmt.Println("</body></html>")

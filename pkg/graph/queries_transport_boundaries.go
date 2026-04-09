@@ -54,21 +54,24 @@ type TransportBoundaryEntry struct {
 
 // TransportBoundaryReport is the result of a transport boundary analysis.
 type TransportBoundaryReport struct {
-	Scope       string                    `json:"scope"`
-	ObjectCount int                       `json:"object_count"`
-	Missing     []TransportBoundaryEntry  `json:"missing"`     // Custom objects not in transport
-	Standard    []TransportBoundaryEntry  `json:"standard"`    // SAP standard refs (informational)
-	Dynamic     []TransportBoundaryEntry  `json:"dynamic"`     // Unresolved dynamic calls
-	Summary     TransportBoundarySummary  `json:"summary"`
+	Scope         string                    `json:"scope"`
+	ObjectCount   int                       `json:"object_count"`
+	Missing       []TransportBoundaryEntry  `json:"missing"`        // Custom objects not in transport
+	Standard      []TransportBoundaryEntry  `json:"standard"`       // SAP standard refs (informational)
+	Dynamic       []TransportBoundaryEntry  `json:"dynamic"`        // Unresolved dynamic calls
+	CrossPackage  []TransportBoundaryEntry  `json:"cross_package"`  // In-scope but different package
+	Summary       TransportBoundarySummary  `json:"summary"`
 }
 
 // TransportBoundarySummary provides counts for the boundary report.
 type TransportBoundarySummary struct {
-	TotalDeps       int `json:"total_deps"`
-	InScope         int `json:"in_scope"`
-	Missing         int `json:"missing"`
-	Standard        int `json:"standard"`
-	Dynamic         int `json:"dynamic"`
+	TotalDeps       int  `json:"total_deps"`
+	InScope         int  `json:"in_scope"`
+	InScopeSamePkg  int  `json:"in_scope_same_pkg"`
+	InScopeCrossPkg int  `json:"in_scope_cross_pkg"`
+	Missing         int  `json:"missing"`
+	Standard        int  `json:"standard"`
+	Dynamic         int  `json:"dynamic"`
 	SelfConsistent  bool `json:"self_consistent"` // true if Missing == 0
 }
 
@@ -111,9 +114,32 @@ func AnalyzeTransportBoundaries(g *Graph, scope *TransportScope) *TransportBound
 
 			report.Summary.TotalDeps++
 
-			// In scope? Skip — this dep is satisfied.
+			// In scope — classify as same-package or cross-package
 			if scope.InScope(e.To) {
 				report.Summary.InScope++
+
+				// Check if it crosses a package boundary within the scope
+				fromNode := g.GetNode(nodeID)
+				toNode := g.GetNode(e.To)
+				if fromNode != nil && toNode != nil && fromNode.Package != "" && toNode.Package != "" && fromNode.Package != toNode.Package {
+					report.Summary.InScopeCrossPkg++
+					entry := TransportBoundaryEntry{
+						SourceNodeID:  nodeID,
+						TargetNodeID:  e.To,
+						SourceName:    fromNode.Name,
+						SourceType:    fromNode.Type,
+						SourcePackage: fromNode.Package,
+						TargetName:    toNode.Name,
+						TargetType:    toNode.Type,
+						TargetPackage: toNode.Package,
+						EdgeKind:      string(e.Kind),
+						RefDetail:     e.RefDetail,
+						Status:        "CROSS_PACKAGE",
+					}
+					report.CrossPackage = append(report.CrossPackage, entry)
+				} else {
+					report.Summary.InScopeSamePkg++
+				}
 				continue
 			}
 
@@ -168,6 +194,16 @@ func AnalyzeTransportBoundaries(g *Graph, scope *TransportScope) *TransportBound
 	sortEntries(report.Missing)
 	sortEntries(report.Standard)
 	sortEntries(report.Dynamic)
+	// Sort cross-package by target package for clean grouping
+	sort.Slice(report.CrossPackage, func(i, j int) bool {
+		if report.CrossPackage[i].TargetPackage != report.CrossPackage[j].TargetPackage {
+			return report.CrossPackage[i].TargetPackage < report.CrossPackage[j].TargetPackage
+		}
+		if report.CrossPackage[i].SourcePackage != report.CrossPackage[j].SourcePackage {
+			return report.CrossPackage[i].SourcePackage < report.CrossPackage[j].SourcePackage
+		}
+		return report.CrossPackage[i].SourceNodeID < report.CrossPackage[j].SourceNodeID
+	})
 
 	return report
 }
