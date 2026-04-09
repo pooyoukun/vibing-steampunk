@@ -200,7 +200,9 @@ func (s *Server) handleCheckBoundaries(ctx context.Context, request mcp.CallTool
 	return newToolResultError("SAP connection required for online analysis. Provide 'source' for offline mode."), nil
 }
 
-// resolvePackages queries TADIR to fill in missing package info for nodes.
+// resolvePackages queries TADIR to fill in missing package info and correct
+// object types for nodes. The parser often guesses types (e.g., CLAS for an
+// INTF); TADIR is authoritative for both OBJECT type and DEVCLASS assignment.
 func (s *Server) resolvePackages(ctx context.Context, g *graph.Graph) {
 	// Collect nodes without packages
 	var names []string
@@ -233,7 +235,7 @@ func (s *Server) resolvePackages(ctx context.Context, g *graph.Graph) {
 		}
 		inClause := strings.Join(quoted, ",")
 
-		query := fmt.Sprintf("SELECT obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", inClause)
+		query := fmt.Sprintf("SELECT object, obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", inClause)
 
 		result, err := s.adtClient.RunQuery(ctx, query, 0)
 		if err != nil {
@@ -242,12 +244,15 @@ func (s *Server) resolvePackages(ctx context.Context, g *graph.Graph) {
 
 		// Parse result and update nodes
 		for _, row := range result.Rows {
+			objType := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJECT"])))
 			objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
 			devclass := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["DEVCLASS"])))
 			if nodes, ok := nodesByName[objName]; ok {
 				for _, n := range nodes {
-					if n.Package == "" {
-						n.Package = devclass
+					n.Package = devclass
+					// Correct type if TADIR disagrees with parser guess
+					if objType != "" && n.Type != objType {
+						n.Type = objType
 					}
 				}
 			}

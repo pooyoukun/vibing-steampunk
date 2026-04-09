@@ -1405,6 +1405,20 @@ func runHealth(cmd *cobra.Command, args []string) error {
 }
 
 func populatePackageHealthCLI(ctx context.Context, client *adt.Client, pkg string, fast bool, result *cliHealthResult) {
+	// Verify the package exists before running expensive checks
+	pkgContent, err := client.GetPackage(ctx, strings.ToUpper(pkg))
+	if err != nil || pkgContent == nil || (len(pkgContent.Objects) == 0 && len(pkgContent.SubPackages) == 0) {
+		errMsg := fmt.Sprintf("Package %s not found on this system", pkg)
+		if err != nil {
+			errMsg = fmt.Sprintf("Package %s: %v", pkg, err)
+		}
+		result.Signals["tests"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		result.Signals["atc"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		result.Signals["boundaries"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		result.Signals["staleness"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		return
+	}
+
 	if fast {
 		result.Signals["tests"] = cliHealthSignal{Status: "SKIPPED", Details: map[string]any{"reason": "fast mode"}}
 		result.Signals["boundaries"] = cliHealthSignal{Status: "SKIPPED", Details: map[string]any{"reason": "fast mode"}}
@@ -1431,6 +1445,17 @@ func populatePackageHealthCLI(ctx context.Context, client *adt.Client, pkg strin
 }
 
 func populateObjectHealthCLI(ctx context.Context, client *adt.Client, objType, objName string, result *cliHealthResult) {
+	// Verify the object exists before running expensive checks
+	_, err := client.GetSource(ctx, objType, objName, nil)
+	if err != nil {
+		errMsg := fmt.Sprintf("%s %s not found on this system: %v", objType, objName, err)
+		result.Signals["tests"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		result.Signals["atc"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		result.Signals["boundaries"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		result.Signals["staleness"] = cliHealthSignal{Status: "ERROR", Details: map[string]any{"message": errMsg}}
+		return
+	}
+
 	result.Signals["tests"] = collectObjectTestsCLI(ctx, client, objType, objName)
 	result.Signals["atc"] = collectObjectATCCLI(ctx, client, objType, objName)
 	result.Signals["boundaries"] = collectObjectBoundariesCLI(ctx, client, objType, objName)
@@ -1764,6 +1789,26 @@ func stalenessCLIFromTime(tm time.Time, checked int) cliHealthSignal {
 }
 
 func summarizeCLIHealth(signals map[string]cliHealthSignal) cliHealthSummary {
+	// Check for errors first
+	errorCount := 0
+	for _, sig := range signals {
+		if sig.Status == "ERROR" {
+			errorCount++
+		}
+	}
+	if errorCount > 0 {
+		return cliHealthSummary{Status: "ERROR", Headline: fmt.Sprintf("%d signal(s) failed — check connection/auth", errorCount)}
+	}
+
+	// Detect suspiciously empty results (likely wrong system or auth issue)
+	testClasses, _ := signals["tests"].Details["classes"].(int)
+	testNone := signals["tests"].Status == "NONE" || testClasses == 0
+	boundaryObjs, _ := signals["boundaries"].Details["objects_scanned"].(int)
+	boundaryNone := boundaryObjs == 0 && signals["boundaries"].Status != "SKIPPED" && signals["boundaries"].Status != "ERROR"
+	if testNone && boundaryNone && signals["staleness"].Status == "UNKNOWN" {
+		return cliHealthSummary{Status: "WARN", Headline: "All signals empty — verify correct system and package name"}
+	}
+
 	if signals["tests"].Status == "FAIL" {
 		return cliHealthSummary{Status: "BAD", Headline: "Unit tests are failing"}
 	}
@@ -2287,6 +2332,9 @@ func printCLIHealthHTML(result *cliHealthResult, details bool) {
 	fmt.Println("</body></html>")
 }
 
+// resolvePackagesCLI queries TADIR to fill in missing package info and correct
+// object types. The parser guesses types (e.g., CLAS for an INTF); TADIR is
+// authoritative for both OBJECT type and DEVCLASS assignment.
 func resolvePackagesCLI(ctx context.Context, client *adt.Client, g *graph.Graph) {
 	var names []string
 	nodesByName := make(map[string][]*graph.Node)
@@ -2310,18 +2358,21 @@ func resolvePackagesCLI(ctx context.Context, client *adt.Client, g *graph.Graph)
 		for i, n := range chunk {
 			quoted[i] = "'" + strings.ToUpper(n) + "'"
 		}
-		query := fmt.Sprintf("SELECT obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", strings.Join(quoted, ","))
+		query := fmt.Sprintf("SELECT object, obj_name, devclass FROM tadir WHERE pgmid = 'R3TR' AND obj_name IN (%s)", strings.Join(quoted, ","))
 		result, err := client.RunQuery(ctx, query, len(chunk)*3)
 		if err != nil || result == nil {
 			continue
 		}
 		for _, row := range result.Rows {
+			objType := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJECT"])))
 			objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
 			devclass := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["DEVCLASS"])))
 			if nodes, ok := nodesByName[objName]; ok {
 				for _, n := range nodes {
-					if n.Package == "" {
-						n.Package = devclass
+					n.Package = devclass
+					// Correct type if TADIR disagrees with parser guess
+					if objType != "" && n.Type != objType {
+						n.Type = objType
 					}
 				}
 			}
