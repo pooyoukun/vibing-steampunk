@@ -45,22 +45,35 @@ func (s *Server) handleCRHistory(ctx context.Context, request mcp.CallToolReques
 
 	attr := s.config.TransportAttribute
 
-	// Step 1: Find transports containing this object (R3TR + LIMU)
-	e071Query := fmt.Sprintf(
-		"SELECT TRKORR, PGMID, OBJECT, OBJ_NAME FROM E071 WHERE "+
-			"(PGMID = 'R3TR' AND OBJECT = '%s' AND OBJ_NAME = '%s') OR "+
-			"(PGMID = 'LIMU' AND OBJ_NAME LIKE '%s%%')",
-		objType, objName, objName)
-	e071Result, err := s.adtClient.RunQuery(ctx, e071Query, 500)
-	if err != nil {
-		return newToolResultError(fmt.Sprintf("E071 query failed: %v", err)), nil
-	}
-
+	// Step 1: Find transports containing this object
+	// Split into two queries — SAP freestyle doesn't support complex OR clauses
 	trSet := make(map[string]bool)
-	for _, row := range e071Result.Rows {
+
+	e071R3TR := fmt.Sprintf(
+		"SELECT TRKORR FROM E071 WHERE PGMID = 'R3TR' AND OBJECT = '%s' AND OBJ_NAME = '%s'",
+		objType, objName)
+	r3trResult, err := s.adtClient.RunQuery(ctx, e071R3TR, 500)
+	if err != nil {
+		return newToolResultError(fmt.Sprintf("E071 R3TR query failed: %v", err)), nil
+	}
+	for _, row := range r3trResult.Rows {
 		tr := strings.TrimSpace(fmt.Sprintf("%v", row["TRKORR"]))
 		if tr != "" {
 			trSet[tr] = true
+		}
+	}
+
+	// LIMU query — best effort (prefix match for sub-object entries)
+	e071LIMU := fmt.Sprintf(
+		"SELECT TRKORR FROM E071 WHERE PGMID = 'LIMU' AND OBJ_NAME LIKE '%s%%'",
+		objName)
+	limuResult, _ := s.adtClient.RunQuery(ctx, e071LIMU, 500)
+	if limuResult != nil {
+		for _, row := range limuResult.Rows {
+			tr := strings.TrimSpace(fmt.Sprintf("%v", row["TRKORR"]))
+			if tr != "" {
+				trSet[tr] = true
+			}
 		}
 	}
 

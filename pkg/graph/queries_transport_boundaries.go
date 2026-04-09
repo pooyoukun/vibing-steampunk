@@ -1,6 +1,9 @@
 package graph
 
-import "sort"
+import (
+	"sort"
+	"strings"
+)
 
 // TransportScope represents the set of objects contained in one or more transports.
 // Used by AnalyzeTransportBoundaries to determine what's "inside" vs "outside".
@@ -8,11 +11,30 @@ type TransportScope struct {
 	Label      string          // Display label (TR number, CR ID, etc.)
 	Transports map[string]bool // TR numbers in scope
 	Objects    map[string]bool // NodeIDs (TYPE:NAME) of objects in scope
+	names      map[string]bool // Object names only (for fuzzy type matching)
 }
 
 // InScope returns true if the given node ID is part of the transport scope.
+// Checks both full node ID (TYPE:NAME) and name-only, because the parser
+// may create nodes with guessed types (TYPE:ZCL_FOO) that differ from the
+// canonical TADIR type (CLAS:ZCL_FOO) used in the scope.
 func (s *TransportScope) InScope(nodeID string) bool {
-	return s.Objects[nodeID]
+	if s.Objects[nodeID] {
+		return true
+	}
+	// Lazy-build name index
+	if s.names == nil {
+		s.names = make(map[string]bool, len(s.Objects))
+		for id := range s.Objects {
+			if parts := strings.SplitN(id, ":", 2); len(parts) == 2 {
+				s.names[parts[1]] = true
+			}
+		}
+	}
+	if parts := strings.SplitN(nodeID, ":", 2); len(parts) == 2 {
+		return s.names[parts[1]]
+	}
+	return false
 }
 
 // TransportBoundaryEntry represents a dependency that crosses the transport boundary.

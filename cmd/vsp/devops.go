@@ -826,22 +826,36 @@ func runCRHistory(cmd *cobra.Command, args []string) error {
 	objName := strings.ToUpper(args[1])
 	attr := params.TransportAttribute
 
-	// Query E071 for R3TR + LIMU
-	e071Query := fmt.Sprintf(
-		"SELECT TRKORR, PGMID, OBJECT, OBJ_NAME FROM E071 WHERE "+
-			"(PGMID = 'R3TR' AND OBJECT = '%s' AND OBJ_NAME = '%s') OR "+
-			"(PGMID = 'LIMU' AND OBJ_NAME LIKE '%s%%')",
-		objType, objName, objName)
-	e071Result, err := client.RunQuery(context.Background(), e071Query, 500)
-	if err != nil {
-		return fmt.Errorf("E071 query failed: %v", err)
-	}
-
+	// Query E071 for R3TR (exact match) and LIMU (prefix match) separately
+	// SAP freestyle query API doesn't support complex OR clauses well
 	trSet := make(map[string]bool)
-	for _, row := range e071Result.Rows {
+
+	e071R3TR := fmt.Sprintf(
+		"SELECT TRKORR FROM E071 WHERE PGMID = 'R3TR' AND OBJECT = '%s' AND OBJ_NAME = '%s'",
+		objType, objName)
+	r3trResult, err := client.RunQuery(context.Background(), e071R3TR, 500)
+	if err != nil {
+		return fmt.Errorf("E071 R3TR query failed: %v", err)
+	}
+	for _, row := range r3trResult.Rows {
 		tr := strings.TrimSpace(fmt.Sprintf("%v", row["TRKORR"]))
 		if tr != "" {
 			trSet[tr] = true
+		}
+	}
+
+	e071LIMU := fmt.Sprintf(
+		"SELECT TRKORR FROM E071 WHERE PGMID = 'LIMU' AND OBJ_NAME LIKE '%s%%'",
+		objName)
+	limuResult, err := client.RunQuery(context.Background(), e071LIMU, 500)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "WARN: E071 LIMU query failed (continuing with R3TR only): %v\n", err)
+	} else {
+		for _, row := range limuResult.Rows {
+			tr := strings.TrimSpace(fmt.Sprintf("%v", row["TRKORR"]))
+			if tr != "" {
+				trSet[tr] = true
+			}
 		}
 	}
 
@@ -953,17 +967,35 @@ func runCRHistory(cmd *cobra.Command, args []string) error {
 }
 
 func analyzeTRBoundariesCLI(ctx context.Context, client *adt.Client, trList []string) (*graph.TransportBoundaryReport, error) {
-	// Step 1: Get objects
-	trQuoted := make([]string, len(trList))
-	for i, tr := range trList {
-		trQuoted[i] = "'" + strings.ToUpper(tr) + "'"
-	}
-	e071Query := fmt.Sprintf(
-		"SELECT TRKORR, PGMID, OBJECT, OBJ_NAME FROM E071 WHERE PGMID = 'R3TR' AND TRKORR IN (%s)",
-		strings.Join(trQuoted, ","))
-	e071Result, err := client.RunQuery(ctx, e071Query, 2000)
-	if err != nil {
-		return nil, fmt.Errorf("E071 query failed: %v", err)
+	// Step 1: Get objects — batch E071 queries (SAP 255-char IN clause limit)
+	type e071Row struct{ objType, objName string }
+	var allRows []e071Row
+
+	for start := 0; start < len(trList); start += 5 {
+		end := start + 5
+		if end > len(trList) {
+			end = len(trList)
+		}
+		batch := trList[start:end]
+		trQuoted := make([]string, len(batch))
+		for i, tr := range batch {
+			trQuoted[i] = "'" + strings.ToUpper(tr) + "'"
+		}
+		e071Query := fmt.Sprintf(
+			"SELECT TRKORR, PGMID, OBJECT, OBJ_NAME FROM E071 WHERE PGMID = 'R3TR' AND TRKORR IN (%s)",
+			strings.Join(trQuoted, ","))
+		e071Result, err := client.RunQuery(ctx, e071Query, 2000)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "    WARN: E071 batch query failed: %v\n", err)
+			continue
+		}
+		for _, row := range e071Result.Rows {
+			objType := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJECT"])))
+			objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
+			if objType != "" && objName != "" {
+				allRows = append(allRows, e071Row{objType, objName})
+			}
+		}
 	}
 
 	trSet := make(map[string]bool)
@@ -975,14 +1007,9 @@ func analyzeTRBoundariesCLI(ctx context.Context, client *adt.Client, trList []st
 	objectSet := make(map[objKey]bool)
 	scopeObjects := make(map[string]bool)
 
-	for _, row := range e071Result.Rows {
-		objType := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJECT"])))
-		objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
-		if objType == "" || objName == "" {
-			continue
-		}
-		objectSet[objKey{objType, objName}] = true
-		scopeObjects[graph.NodeID(objType, objName)] = true
+	for _, row := range allRows {
+		objectSet[objKey{row.objType, row.objName}] = true
+		scopeObjects[graph.NodeID(row.objType, row.objName)] = true
 	}
 
 	if len(objectSet) == 0 {
@@ -2516,34 +2543,42 @@ func resolveTADIRcli(ctx context.Context, client *adt.Client, names []string, no
 }
 
 func resolveFMviaTFDIRcli(ctx context.Context, client *adt.Client, fmNames []string, nodesByName map[string][]*graph.Node) {
-	quoted := make([]string, len(fmNames))
-	for i, n := range fmNames {
-		quoted[i] = "'" + n + "'"
-	}
-	query := fmt.Sprintf("SELECT FUNCNAME, PNAME FROM TFDIR WHERE FUNCNAME IN (%s)", strings.Join(quoted, ","))
-	result, err := client.RunQuery(ctx, query, len(fmNames)*2)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "    WARN: TFDIR resolve failed: %v\n", err)
-		return
-	}
-	if result == nil {
-		return
-	}
-
 	fugrSet := make(map[string]bool)
 	fmToFugr := make(map[string]string)
-	for _, row := range result.Rows {
-		funcName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["FUNCNAME"])))
-		pname := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["PNAME"])))
-		fugrName := ""
-		if strings.HasPrefix(pname, "SAPL") {
-			fugrName = pname[4:]
-		} else if pname != "" {
-			fugrName = pname
+
+	// Batch TFDIR queries (SAP 255-char IN clause limit)
+	for start := 0; start < len(fmNames); start += 5 {
+		end := start + 5
+		if end > len(fmNames) {
+			end = len(fmNames)
 		}
-		if fugrName != "" {
-			fmToFugr[funcName] = fugrName
-			fugrSet[fugrName] = true
+		batch := fmNames[start:end]
+		quoted := make([]string, len(batch))
+		for i, n := range batch {
+			quoted[i] = "'" + n + "'"
+		}
+		query := fmt.Sprintf("SELECT FUNCNAME, PNAME FROM TFDIR WHERE FUNCNAME IN (%s)", strings.Join(quoted, ","))
+		result, err := client.RunQuery(ctx, query, len(batch)*2)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "    WARN: TFDIR resolve batch failed: %v\n", err)
+			continue
+		}
+		if result == nil {
+			continue
+		}
+		for _, row := range result.Rows {
+			funcName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["FUNCNAME"])))
+			pname := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["PNAME"])))
+			fugrName := ""
+			if strings.HasPrefix(pname, "SAPL") {
+				fugrName = pname[4:]
+			} else if pname != "" {
+				fugrName = pname
+			}
+			if fugrName != "" {
+				fmToFugr[funcName] = fugrName
+				fugrSet[fugrName] = true
+			}
 		}
 	}
 	if len(fugrSet) == 0 {

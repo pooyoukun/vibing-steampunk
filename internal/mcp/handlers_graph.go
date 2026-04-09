@@ -283,32 +283,38 @@ func resolveTADIR(ctx context.Context, client *adt.Client, names []string, nodes
 // Strategy: TFDIR.FUNCNAME → TFDIR.PNAME (e.g., "SAPLZFUGR") → extract FUGR name
 // → TADIR lookup for the FUGR to get DEVCLASS.
 func resolveFMviaTFDIR(ctx context.Context, client *adt.Client, fmNames []string, nodesByName map[string][]*graph.Node) {
-	quoted := make([]string, len(fmNames))
-	for i, n := range fmNames {
-		quoted[i] = "'" + n + "'"
-	}
-	query := fmt.Sprintf("SELECT FUNCNAME, PNAME FROM TFDIR WHERE FUNCNAME IN (%s)", strings.Join(quoted, ","))
-	result, err := client.RunQuery(ctx, query, len(fmNames)*2)
-	if err != nil || result == nil {
-		return
-	}
-
-	// Collect unique FUGR names to look up in TADIR
 	fugrSet := make(map[string]bool)
-	fmToFugr := make(map[string]string) // FM name → FUGR name
-	for _, row := range result.Rows {
-		funcName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["FUNCNAME"])))
-		pname := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["PNAME"])))
-		// PNAME is the function pool program: SAPL<fugr_name>
-		fugrName := ""
-		if strings.HasPrefix(pname, "SAPL") {
-			fugrName = pname[4:]
-		} else if pname != "" {
-			fugrName = pname // fallback
+	fmToFugr := make(map[string]string)
+
+	// Batch TFDIR queries (SAP 255-char IN clause limit)
+	for start := 0; start < len(fmNames); start += 5 {
+		end := start + 5
+		if end > len(fmNames) {
+			end = len(fmNames)
 		}
-		if fugrName != "" {
-			fmToFugr[funcName] = fugrName
-			fugrSet[fugrName] = true
+		batch := fmNames[start:end]
+		quoted := make([]string, len(batch))
+		for i, n := range batch {
+			quoted[i] = "'" + n + "'"
+		}
+		query := fmt.Sprintf("SELECT FUNCNAME, PNAME FROM TFDIR WHERE FUNCNAME IN (%s)", strings.Join(quoted, ","))
+		result, err := client.RunQuery(ctx, query, len(batch)*2)
+		if err != nil || result == nil {
+			continue
+		}
+		for _, row := range result.Rows {
+			funcName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["FUNCNAME"])))
+			pname := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["PNAME"])))
+			fugrName := ""
+			if strings.HasPrefix(pname, "SAPL") {
+				fugrName = pname[4:]
+			} else if pname != "" {
+				fugrName = pname
+			}
+			if fugrName != "" {
+				fmToFugr[funcName] = fugrName
+				fugrSet[fugrName] = true
+			}
 		}
 	}
 
