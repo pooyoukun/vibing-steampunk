@@ -377,6 +377,71 @@ func (s *Server) fetchTransportData(ctx context.Context, objType, objName string
 		}
 	}
 
+	// Step 2b: CR-level expansion via E070A attribute (if configured)
+	// When a transport attribute is set, find all TRs sharing the same
+	// attribute value (CR ID), expanding the co-change boundary beyond
+	// a single transport request to the full change request scope.
+	if attr := s.config.TransportAttribute; attr != "" && len(requestNums) > 0 {
+		reqList := quoteKeys(requestNums)
+		attrQuery := fmt.Sprintf(
+			"SELECT TRKORR, REFERENCE FROM E070A WHERE ATTRIBUTE = '%s' AND TRKORR IN (%s)",
+			attr, strings.Join(reqList, ","))
+		attrResult, err := s.adtClient.RunQuery(ctx, attrQuery, 500)
+		if err == nil && attrResult != nil {
+			// Collect all CR references for our transports
+			crRefs := make(map[string]bool)
+			for _, row := range attrResult.Rows {
+				ref := strings.TrimSpace(fmt.Sprintf("%v", row["REFERENCE"]))
+				if ref != "" {
+					crRefs[ref] = true
+				}
+			}
+			// Find sibling TRs that share the same CR references
+			if len(crRefs) > 0 {
+				refList := make([]string, 0, len(crRefs))
+				for ref := range crRefs {
+					refList = append(refList, "'"+ref+"'")
+				}
+				siblingAttrQuery := fmt.Sprintf(
+					"SELECT TRKORR FROM E070A WHERE ATTRIBUTE = '%s' AND REFERENCE IN (%s)",
+					attr, strings.Join(refList, ","))
+				siblingAttrResult, err := s.adtClient.RunQuery(ctx, siblingAttrQuery, 1000)
+				if err == nil && siblingAttrResult != nil {
+					// Resolve these new TRs through E070 to get headers + parent mapping
+					newTRs := make(map[string]bool)
+					for _, row := range siblingAttrResult.Rows {
+						tr := strings.TrimSpace(fmt.Sprintf("%v", row["TRKORR"]))
+						if tr != "" && !trNums[tr] {
+							newTRs[tr] = true
+						}
+					}
+					if len(newTRs) > 0 {
+						newTRList := quoteKeys(newTRs)
+						crE070Query := fmt.Sprintf(
+							"SELECT TRKORR, STRKORR, TRFUNCTION, TRSTATUS, AS4USER, AS4DATE FROM E070 WHERE TRKORR IN (%s)",
+							strings.Join(newTRList, ","))
+						crE070Result, err := s.adtClient.RunQuery(ctx, crE070Query, 500)
+						if err == nil && crE070Result != nil {
+							for _, row := range crE070Result.Rows {
+								h := parseTransportHeader(row)
+								if !headerSeen[h.TRKORR] {
+									headers = append(headers, h)
+									headerSeen[h.TRKORR] = true
+									trNums[h.TRKORR] = true
+								}
+								if h.IsRequest() {
+									requestNums[h.TRKORR] = true
+								} else if h.STRKORR != "" {
+									requestNums[h.STRKORR] = true
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// Step 3: Fetch missing parent request headers
 	var missingParents []string
 	for rn := range requestNums {
