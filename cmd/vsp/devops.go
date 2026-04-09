@@ -608,7 +608,44 @@ func runWhatPackage(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Report not found
+	// Pass 2: TFDIR fallback for not-found names (function modules)
+	var notFound []string
+	for _, n := range names {
+		if !found[n] {
+			notFound = append(notFound, n)
+		}
+	}
+	if len(notFound) > 0 {
+		nfQuoted := make([]string, len(notFound))
+		for i, n := range notFound {
+			nfQuoted[i] = "'" + n + "'"
+		}
+		tfQuery := fmt.Sprintf("SELECT FUNCNAME, PNAME FROM TFDIR WHERE FUNCNAME IN (%s)", strings.Join(nfQuoted, ","))
+		tfResult, err := client.RunQuery(context.Background(), tfQuery, len(notFound)*2)
+		if err == nil && tfResult != nil {
+			for _, row := range tfResult.Rows {
+				funcName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["FUNCNAME"])))
+				pname := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["PNAME"])))
+				fugrName := ""
+				if strings.HasPrefix(pname, "SAPL") {
+					fugrName = pname[4:]
+				}
+				// Look up FUGR in TADIR
+				devclass := "?"
+				if fugrName != "" {
+					fugrQuery := fmt.Sprintf("SELECT DEVCLASS FROM TADIR WHERE PGMID = 'R3TR' AND OBJECT = 'FUGR' AND OBJ_NAME = '%s'", fugrName)
+					fugrResult, err := client.RunQuery(context.Background(), fugrQuery, 1)
+					if err == nil && fugrResult != nil && len(fugrResult.Rows) > 0 {
+						devclass = strings.TrimSpace(fmt.Sprintf("%v", fugrResult.Rows[0]["DEVCLASS"]))
+					}
+				}
+				fmt.Printf("%-5s %-4s %-40s → %s  (FUGR: %s, PNAME: %s)\n", "TFDIR", "FUNC", funcName, devclass, fugrName, pname)
+				found[funcName] = true
+			}
+		}
+	}
+
+	// Report truly not found
 	for _, n := range names {
 		if !found[n] {
 			fmt.Printf("%-5s %-4s %-40s → NOT FOUND\n", "?", "?", n)
