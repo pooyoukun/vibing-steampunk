@@ -954,35 +954,16 @@ func runCRHistory(cmd *cobra.Command, args []string) error {
 }
 
 func analyzeTRBoundariesCLI(ctx context.Context, client *adt.Client, trList []string) (*graph.TransportBoundaryReport, error) {
-	// Step 1: Get objects — batch E071 queries (SAP 255-char IN clause limit)
-	type e071Row struct{ objType, objName string }
-	var allRows []e071Row
-
-	for start := 0; start < len(trList); start += 5 {
-		end := start + 5
-		if end > len(trList) {
-			end = len(trList)
-		}
-		batch := trList[start:end]
-		trQuoted := make([]string, len(batch))
-		for i, tr := range batch {
-			trQuoted[i] = "'" + strings.ToUpper(tr) + "'"
-		}
-		e071Query := fmt.Sprintf(
-			"SELECT TRKORR, PGMID, OBJECT, OBJ_NAME FROM E071 WHERE PGMID = 'R3TR' AND TRKORR IN (%s)",
-			strings.Join(trQuoted, ","))
-		e071Result, err := client.RunQuery(ctx, e071Query, 2000)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "    WARN: E071 batch query failed: %v\n", err)
-			continue
-		}
-		for _, row := range e071Result.Rows {
-			objType := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJECT"])))
-			objName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["OBJ_NAME"])))
-			if objType != "" && objName != "" {
-				allRows = append(allRows, e071Row{objType, objName})
-			}
-		}
+	// Step 1: resolve parent dev objects for the TR list. The shared helper
+	// handles R3TR and LIMU uniformly, collapses LIMU subcomponents to their
+	// parent, and TADIR-filters deleted entries (so source-fetch does not
+	// 404 later on stale class references).
+	liveObjs, deletedRefs, err := collectCRDevObjects(ctx, client, trList)
+	if err != nil {
+		return nil, err
+	}
+	if len(deletedRefs) > 0 {
+		fmt.Fprintf(os.Stderr, "  (dropping %d deleted/stale object refs — see report)\n", len(deletedRefs))
 	}
 
 	trSet := make(map[string]bool)
@@ -994,9 +975,9 @@ func analyzeTRBoundariesCLI(ctx context.Context, client *adt.Client, trList []st
 	objectSet := make(map[objKey]bool)
 	scopeObjects := make(map[string]bool)
 
-	for _, row := range allRows {
-		objectSet[objKey{row.objType, row.objName}] = true
-		scopeObjects[graph.NodeID(row.objType, row.objName)] = true
+	for _, o := range liveObjs {
+		objectSet[objKey{o.ObjectType, o.ObjectName}] = true
+		scopeObjects[graph.NodeID(o.ObjectType, o.ObjectName)] = true
 	}
 
 	if len(objectSet) == 0 {
@@ -1030,7 +1011,16 @@ func analyzeTRBoundariesCLI(ctx context.Context, client *adt.Client, trList []st
 		}
 
 		fmt.Fprintf(os.Stderr, "  Analyzing %s %s...\n", obj.objType, obj.objName)
-		source, err := client.GetSource(ctx, obj.objType, obj.objName, nil)
+		var source string
+		var err error
+		if obj.objType == "FUGR" {
+			// GetSource for FUGR returns JSON metadata (function module list), which has
+			// no ABAP statements and yields zero dependencies. For accurate graph analysis
+			// we need the actual source: TOP include + all fmodules + all sub-includes.
+			source, err = client.GetFunctionGroupAllSources(ctx, obj.objName)
+		} else {
+			source, err = client.GetSource(ctx, obj.objType, obj.objName, nil)
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "    WARN: %s %s: %v\n", obj.objType, obj.objName, err)
 			continue
