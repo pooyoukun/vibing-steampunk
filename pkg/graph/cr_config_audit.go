@@ -49,6 +49,30 @@ type CoverageEntry struct {
 	CustRows      []TableCustRow `json:"cust_rows,omitempty"`
 }
 
+// ValueLevelFinding is one code-side literal lookup cross-checked against
+// the set of transported row keys for its target table. It is the output
+// unit of the v2a-min value-level audit: a single source statement that
+// supplied literal key values, plus a verdict on whether those exact
+// values are present in the CR's data side.
+//
+// IncompleteKey is sticky: when the code supplied fewer key fields than
+// the registered business key, the match runs in subset mode and this
+// flag lets the report explain that one code call may appear COVERED
+// because a broader transport tuple subsumes it, not because an exact
+// match exists.
+type ValueLevelFinding struct {
+	Table             string            `json:"table"`
+	SourceObject      string            `json:"source_object"`
+	Via               string            `json:"via"`  // "CALL_FUNCTION:APPL_LOG_INIT"
+	Kind              string            `json:"kind"` // "known_call" (v2a-min); "direct_select" later
+	Row               int               `json:"row"`
+	ExpectedKeys      map[string]string `json:"expected_keys"`
+	IncompleteKey     bool              `json:"incomplete_key,omitempty"`
+	Status            string            `json:"status"` // "COVERED" | "MISSING"
+	MatchedKeyDisplay string            `json:"matched_key,omitempty"`
+	Note              string            `json:"note,omitempty"`
+}
+
 // MetadataRef is a DDIC metadata object (data element, domain, check table,
 // search help) reached by walking the DD03L → DD04L → DD01L → DD07L chain
 // out of a table in scope. Every entry records the path that got us here,
@@ -88,6 +112,15 @@ type CRConfigAuditReport struct {
 	MetadataMissing   []MetadataRef          `json:"metadata_missing,omitempty"`
 	MetadataOrphan    []MetadataRef          `json:"metadata_orphan,omitempty"`
 
+	// Value-level findings (v2a-min). Only populated when the caller ran
+	// extractCodeLiterals and matchValueLevelFindings, which hinges on
+	// source-fetch per in-scope object. Missing entries are the primary
+	// alarm — they mean a CALL FUNCTION to a customizing FM expects a
+	// literal key whose exact value is not in any transported row.
+	ValueFindings []ValueLevelFinding `json:"value_findings,omitempty"`
+	ValueMissing  []ValueLevelFinding `json:"value_missing,omitempty"`
+	ValueCovered  []ValueLevelFinding `json:"value_covered,omitempty"`
+
 	Summary CRConfigAuditSummary `json:"summary"`
 }
 
@@ -112,7 +145,12 @@ type CRConfigAuditSummary struct {
 	MetadataMissing   int `json:"metadata_missing"`
 	MetadataOrphan    int `json:"metadata_orphan"`
 
-	Aligned bool `json:"aligned"` // Missing == 0 && Orphan == 0 && MetadataMissing == 0
+	// Value-level (v2a-min).
+	ValueFindings int `json:"value_findings"`
+	ValueMissing  int `json:"value_missing"`
+	ValueCovered  int `json:"value_covered"`
+
+	Aligned bool `json:"aligned"` // all Missing==0 AND MetadataMissing==0 AND ValueMissing==0
 }
 
 // FinalizeCRConfigAuditReport cross-matches CodeTables against CustTables and
@@ -206,6 +244,18 @@ func FinalizeCRConfigAuditReport(r *CRConfigAuditReport) {
 		}
 	}
 
+	// Value-level bucketing (v2a-min). Caller populates r.ValueFindings
+	// before calling us; we split into Covered/Missing based on the
+	// per-finding Status tag the matcher set.
+	for _, f := range r.ValueFindings {
+		switch f.Status {
+		case "COVERED":
+			r.ValueCovered = append(r.ValueCovered, f)
+		case "MISSING":
+			r.ValueMissing = append(r.ValueMissing, f)
+		}
+	}
+
 	r.Summary = CRConfigAuditSummary{
 		WorkbenchTRs:       len(r.Transports.WorkbenchTRs),
 		CustomizingTRs:     len(r.Transports.CustomizingTRs),
@@ -221,7 +271,13 @@ func FinalizeCRConfigAuditReport(r *CRConfigAuditReport) {
 		MetadataCovered:    len(r.MetadataCovered),
 		MetadataMissing:    len(r.MetadataMissing),
 		MetadataOrphan:     len(r.MetadataOrphan),
-		Aligned:            len(r.Missing) == 0 && len(r.Orphan) == 0 && len(r.MetadataMissing) == 0,
+		ValueFindings:      len(r.ValueFindings),
+		ValueCovered:       len(r.ValueCovered),
+		ValueMissing:       len(r.ValueMissing),
+		Aligned: len(r.Missing) == 0 &&
+			len(r.Orphan) == 0 &&
+			len(r.MetadataMissing) == 0 &&
+			len(r.ValueMissing) == 0,
 	}
 }
 

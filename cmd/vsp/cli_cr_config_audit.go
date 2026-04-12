@@ -17,6 +17,26 @@ import (
 
 func nowNano() int64 { return time.Now().UnixNano() }
 
+// renderFieldMap formats a map of field→value into a deterministic
+// "field=value field=value" string for text-output rendering. Used by
+// the value-level section so the same call site always prints the same
+// way regardless of Go's randomised map iteration.
+func renderFieldMap(m map[string]string) string {
+	if len(m) == 0 {
+		return ""
+	}
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	parts := make([]string, 0, len(keys))
+	for _, k := range keys {
+		parts = append(parts, k+"="+m[k])
+	}
+	return strings.Join(parts, " ")
+}
+
 var crConfigAuditCmd = &cobra.Command{
 	Use:   "cr-config-audit <cr-id>",
 	Short: "Audit alignment between code and customizing data within a CR",
@@ -46,6 +66,7 @@ func init() {
 	crConfigAuditCmd.Flags().String("report", "", "Write report to file: html, md, json, or filename.{html,md,json}")
 	crConfigAuditCmd.Flags().String("cache", "", "Path to sqlite cache file (default: /tmp/vsp-audit-cache-<system>.db)")
 	crConfigAuditCmd.Flags().Bool("no-cache", false, "Disable the persistent DDIC cache for this run")
+	crConfigAuditCmd.Flags().Bool("value-level", false, "Run the v2a-min value-level analyser (source fetch + literal extractor + TABKEY cross-match)")
 	rootCmd.AddCommand(crConfigAuditCmd)
 }
 
@@ -147,6 +168,18 @@ func runCRConfigAudit(cmd *cobra.Command, args []string) error {
 		CustTables:        custTables,
 		MetadataReachable: reachable,
 		MetadataInCR:      inCR,
+	}
+
+	// v2a-min value-level analysis — opt-in behind --value-level because
+	// it fetches per-object source and costs extra round-trips. When on,
+	// we walk every in-scope code object's source through the literal
+	// extractor, then cross-match against the CR's E071K TABKEYs.
+	if valueLevel, _ := cmd.Flags().GetBool("value-level"); valueLevel {
+		findings, err := runValueLevelAudit(ctx, client, codeTables, custTables, cache)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "  [value-level warn] %v\n", err)
+		}
+		report.ValueFindings = findings
 	}
 
 	graph.FinalizeCRConfigAuditReport(report)
@@ -559,6 +592,172 @@ func walkDDICMetadata(ctx context.Context, client *adt.Client, tables map[string
 		cache.putJSON(cacheKey, result)
 	}
 	return result, nil
+}
+
+// runValueLevelAudit is the v2a-min driver. It narrows the set of source
+// objects we must fetch to just those that actually call a known
+// customizing FM — via a single CROSS TYPE='FU' query across the whole
+// known-call registry — then fetches source for each caller, runs the
+// literal extractor, and cross-matches against the transported TABKEYs.
+//
+// The CROSS pre-filter matters: without it we would need to fetch source
+// for every in-scope CLAS/PROG/FUGR/INTF (200+ objects on a real CR),
+// which is ~100 HTTP calls at ~500ms each. With it the source-fetch set
+// is usually single digits to low double digits.
+func runValueLevelAudit(
+	ctx context.Context,
+	client *adt.Client,
+	codeTables map[string][]graph.TableCodeRef,
+	custTables map[string][]graph.TableCustRow,
+	cache *auditCache,
+) ([]graph.ValueLevelFinding, error) {
+	if len(knownCustCalls) == 0 {
+		return nil, nil
+	}
+
+	// Collect the set of in-scope object identifiers from codeTables.
+	// Each TableCodeRef carries its source "CLAS:ZCL_FOO" — union the
+	// set across all tables so we know which objects cross-ref analysis
+	// already validated as in-scope.
+	inScope := make(map[string]bool)
+	for _, refs := range codeTables {
+		for _, r := range refs {
+			if r.FromObject != "" {
+				inScope[r.FromObject] = true
+			}
+		}
+	}
+	if len(inScope) == 0 {
+		return nil, nil
+	}
+
+	// Step 1: find code includes that reference any registered FM by
+	// querying CROSS TYPE='FU' NAME IN (<batch>). INCLUDE column is where
+	// the caller lives — we then map INCLUDE → parent object.
+	fmNames := make([]string, 0, len(knownCustCalls))
+	for name := range knownCustCalls {
+		fmNames = append(fmNames, name)
+	}
+	sort.Strings(fmNames)
+
+	includesByFM := make(map[string][]string) // FM name → list of caller INCLUDEs
+	for i := 0; i < len(fmNames); i += 5 {
+		end := i + 5
+		if end > len(fmNames) {
+			end = len(fmNames)
+		}
+		batch := fmNames[i:end]
+		quoted := make([]string, len(batch))
+		for j, n := range batch {
+			quoted[j] = "'" + n + "'"
+		}
+		q := fmt.Sprintf(
+			"SELECT INCLUDE, NAME FROM CROSS WHERE TYPE = 'F' AND NAME IN (%s)",
+			strings.Join(quoted, ","))
+		res, err := client.RunQuery(ctx, q, 2000)
+		if err != nil || res == nil {
+			continue
+		}
+		for _, row := range res.Rows {
+			inc := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["INCLUDE"])))
+			fm := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["NAME"])))
+			if inc == "" || fm == "" {
+				continue
+			}
+			includesByFM[fm] = append(includesByFM[fm], inc)
+		}
+	}
+
+	// Step 2: match each INCLUDE back to an in-scope parent object by
+	// longest name-prefix match.  `inScope` holds IDs like "CLAS:ZCL_FOO"
+	// or "FUGR:ZDEMO_117"; the INCLUDE column holds "ZCL_FOO========CP",
+	// "LZDEMO_117TOP", etc. For each caller we keep the parent ID plus
+	// the object type, which tells us which source-fetch helper to use.
+	type callSite struct {
+		objType string
+		objName string
+	}
+	callers := make(map[callSite]bool)
+
+	// Build a sorted list of (prefix, id) pairs once — longest prefixes
+	// first so "LZDEMO_117" wins over "ZDEMO_117" for FUGR sub-includes.
+	type prefixEntry struct {
+		prefix  string
+		objType string
+		objName string
+	}
+	var prefixes []prefixEntry
+	for id := range inScope {
+		parts := strings.SplitN(id, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		objType, objName := parts[0], parts[1]
+		prefixes = append(prefixes, prefixEntry{prefix: objName, objType: objType, objName: objName})
+		if objType == "FUGR" {
+			prefixes = append(prefixes, prefixEntry{prefix: "L" + objName, objType: objType, objName: objName})
+		}
+	}
+	sort.Slice(prefixes, func(i, j int) bool {
+		return len(prefixes[i].prefix) > len(prefixes[j].prefix)
+	})
+
+	for _, includes := range includesByFM {
+		for _, inc := range includes {
+			for _, p := range prefixes {
+				if strings.HasPrefix(inc, p.prefix) {
+					callers[callSite{p.objType, p.objName}] = true
+					break
+				}
+			}
+		}
+	}
+
+	if len(callers) == 0 {
+		fmt.Fprintf(os.Stderr, "Value-level: no in-scope callers of registered customizing FMs found.\n")
+		return nil, nil
+	}
+	fmt.Fprintf(os.Stderr, "Value-level: fetching source for %d callers of known customizing FMs...\n", len(callers))
+
+	// Step 3: fetch source and run the extractor. Sort for stable output.
+	callerList := make([]callSite, 0, len(callers))
+	for c := range callers {
+		callerList = append(callerList, c)
+	}
+	sort.Slice(callerList, func(i, j int) bool {
+		if callerList[i].objType != callerList[j].objType {
+			return callerList[i].objType < callerList[j].objType
+		}
+		return callerList[i].objName < callerList[j].objName
+	})
+
+	var allLiterals []CodeLiteralCall
+	prog := newProgress(len(callerList), 2)
+	for i, c := range callerList {
+		prog.tick(i, c.objName)
+		var source string
+		var err error
+		if c.objType == "FUGR" {
+			source, err = client.GetFunctionGroupAllSources(ctx, c.objName)
+		} else {
+			source, err = client.GetSource(ctx, c.objType, c.objName, nil)
+		}
+		if err != nil || source == "" {
+			continue
+		}
+		sourceID := c.objType + ":" + c.objName
+		lits := extractCodeLiterals(sourceID, source)
+		allLiterals = append(allLiterals, lits...)
+	}
+	prog.done(len(callerList))
+
+	if len(allLiterals) == 0 {
+		fmt.Fprintf(os.Stderr, "Value-level: extractor found 0 literal call sites.\n")
+		return nil, nil
+	}
+	fmt.Fprintf(os.Stderr, "Value-level: extracted %d literal call sites; cross-matching against transported keys...\n", len(allLiterals))
+
+	return matchValueLevelFindings(ctx, client, allLiterals, custTables, cache)
 }
 
 // collectMetadataFromCR scans E071 for DDIC metadata object types the CR is
@@ -1270,6 +1469,10 @@ func printCRConfigAuditText(r *graph.CRConfigAuditReport, details bool) {
 			r.Summary.MetadataCovered, r.Summary.MetadataMissing, r.Summary.MetadataOrphan,
 			r.Summary.MetadataReachable, r.Summary.MetadataInCR)
 	}
+	if r.Summary.ValueFindings > 0 {
+		fmt.Printf("  Values:   Covered: %d   Missing: %d   (findings: %d)\n",
+			r.Summary.ValueCovered, r.Summary.ValueMissing, r.Summary.ValueFindings)
+	}
 	fmt.Printf("  →  %s\n\n", status)
 
 	if len(r.Missing) > 0 {
@@ -1337,6 +1540,35 @@ func printCRConfigAuditText(r *graph.CRConfigAuditReport, details bool) {
 		fmt.Printf("METADATA COVERED (%d):\n", len(r.MetadataCovered))
 		for _, m := range r.MetadataCovered {
 			fmt.Printf("  %-6s %-30s  path: %s\n", m.Kind, m.Name, strings.Join(m.Path, " → "))
+		}
+		fmt.Println()
+	}
+
+	if len(r.ValueMissing) > 0 {
+		fmt.Println("VALUE MISSING — code supplies literal key not present in any transported row:")
+		for _, f := range r.ValueMissing {
+			flag := ""
+			if f.IncompleteKey {
+				flag = " [partial-key]"
+			}
+			fmt.Printf("  %-10s %-30s  ← %s  (%s, line %d)%s\n",
+				f.Table, renderFieldMap(f.ExpectedKeys), f.SourceObject, f.Via, f.Row, flag)
+			if details && f.Note != "" {
+				fmt.Printf("             note: %s\n", f.Note)
+			}
+		}
+		fmt.Println()
+	}
+
+	if details && len(r.ValueCovered) > 0 {
+		fmt.Printf("VALUE COVERED (%d):\n", len(r.ValueCovered))
+		for _, f := range r.ValueCovered {
+			flag := ""
+			if f.IncompleteKey {
+				flag = " [partial-key]"
+			}
+			fmt.Printf("  %-10s %-30s  ← %s  (%s, line %d)  matched %s%s\n",
+				f.Table, renderFieldMap(f.ExpectedKeys), f.SourceObject, f.Via, f.Row, f.MatchedKeyDisplay, flag)
 		}
 		fmt.Println()
 	}
