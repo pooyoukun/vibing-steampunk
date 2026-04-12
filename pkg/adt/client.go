@@ -117,9 +117,88 @@ func (c *Client) checkPackageSafety(pkg string) error {
 	return c.config.Safety.CheckPackage(pkg)
 }
 
+// checkObjectPackageSafety resolves the package for an existing object and
+// validates it against the configured package whitelist.
+func (c *Client) checkObjectPackageSafety(ctx context.Context, objectURL string) error {
+	if len(c.config.Safety.AllowedPackages) == 0 {
+		return nil
+	}
+
+	pkg, err := c.getObjectPackage(ctx, objectURL)
+	if err != nil {
+		return fmt.Errorf("resolving package for %s: %w", normalizeObjectURLForPackageCheck(objectURL), err)
+	}
+
+	return c.checkPackageSafety(pkg)
+}
+
 // checkTransportableEdit checks if editing objects that require transports is allowed.
 func (c *Client) checkTransportableEdit(transport, opName string) error {
 	return c.config.Safety.CheckTransportableEdit(transport, opName)
+}
+
+func (c *Client) getObjectPackage(ctx context.Context, objectURL string) (string, error) {
+	normalized := normalizeObjectURLForPackageCheck(objectURL)
+	objectName, err := objectNameFromURL(normalized)
+	if err != nil {
+		return "", err
+	}
+
+	results, err := c.SearchObject(ctx, objectName, 20)
+	if err != nil {
+		return "", err
+	}
+
+	canonicalURL := canonicalizeObjectURL(normalized)
+	for _, result := range results {
+		if result.PackageName == "" {
+			continue
+		}
+		if canonicalizeObjectURL(result.URI) == canonicalURL {
+			return result.PackageName, nil
+		}
+	}
+
+	return "", fmt.Errorf("package metadata not found")
+}
+
+func normalizeObjectURLForPackageCheck(objectURL string) string {
+	normalized := strings.TrimSuffix(objectURL, "/")
+
+	if idx := strings.Index(normalized, "/includes/"); idx >= 0 {
+		return normalized[:idx]
+	}
+	if strings.HasSuffix(normalized, "/source/main") {
+		return strings.TrimSuffix(normalized, "/source/main")
+	}
+
+	return normalized
+}
+
+func canonicalizeObjectURL(objectURL string) string {
+	normalized := normalizeObjectURLForPackageCheck(objectURL)
+	if decoded, err := url.PathUnescape(normalized); err == nil {
+		normalized = decoded
+	}
+	return strings.ToLower(strings.TrimSuffix(normalized, "/"))
+}
+
+func objectNameFromURL(objectURL string) (string, error) {
+	normalized := normalizeObjectURLForPackageCheck(objectURL)
+	parts := strings.Split(strings.Trim(normalized, "/"), "/")
+	if len(parts) == 0 {
+		return "", fmt.Errorf("invalid object URL")
+	}
+
+	name, err := url.PathUnescape(parts[len(parts)-1])
+	if err != nil {
+		return "", fmt.Errorf("decoding object name: %w", err)
+	}
+	if name == "" {
+		return "", fmt.Errorf("invalid object URL")
+	}
+
+	return strings.ToUpper(name), nil
 }
 
 // Safety returns the safety configuration for checking transport operations.
@@ -2283,4 +2362,3 @@ func (c *Client) GetAPIReleaseState(ctx context.Context, objectURI string) (*API
 
 	return &state, nil
 }
-
