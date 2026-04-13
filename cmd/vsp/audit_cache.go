@@ -36,6 +36,13 @@ type auditCache struct {
 // delete the file at any time — it is a cache, not a source of truth.
 const cacheTTL = 24 * time.Hour
 
+// shortCacheTTL applies to entries that can change more often than DDIC:
+// per-object CROSS/WBCROSSGT symbol scans depend on ABAP source, which an
+// active developer may edit multiple times a day. One hour is short
+// enough to stay fresh through most dev cycles while still collapsing
+// the "same CR, three re-runs in a minute" loop to a single SAP pass.
+const shortCacheTTL = 1 * time.Hour
+
 // openAuditCache opens (creating if needed) a sqlite cache file for the
 // given SAP system identifier. Path resolution:
 //
@@ -94,10 +101,17 @@ func sanitizeSystemName(s string) string {
 	return out
 }
 
-// get looks up a fresh (not expired) payload. Returns (payload, true) on
-// hit, (nil, false) on miss or expiry. A miss on cache means the caller
-// should fetch from SAP and put the result back.
+// get looks up a fresh (not expired) payload using the default cacheTTL.
+// Returns (payload, true) on hit, (nil, false) on miss or expiry. A miss
+// means the caller should fetch from SAP and put the result back.
 func (c *auditCache) get(key string) ([]byte, bool) {
+	return c.getTTL(key, cacheTTL)
+}
+
+// getTTL is the TTL-parameterised form of get. Call it directly when a
+// cached entry has a freshness window different from the default — e.g.
+// shortCacheTTL for CROSS/WBCROSSGT per-object scans.
+func (c *auditCache) getTTL(key string, ttl time.Duration) ([]byte, bool) {
 	if c == nil || c.db == nil {
 		return nil, false
 	}
@@ -111,7 +125,7 @@ func (c *auditCache) get(key string) ([]byte, bool) {
 	if err != nil {
 		return nil, false
 	}
-	if time.Since(time.Unix(createdAt, 0)) > cacheTTL {
+	if time.Since(time.Unix(createdAt, 0)) > ttl {
 		return nil, false
 	}
 	return payload, true
@@ -135,9 +149,14 @@ func (c *auditCache) put(key string, payload []byte) {
 }
 
 // getJSON is a convenience wrapper around get that unmarshals into v and
-// returns whether the cache had a hit.
+// returns whether the cache had a hit. Uses the default cacheTTL.
 func (c *auditCache) getJSON(key string, v any) bool {
-	data, ok := c.get(key)
+	return c.getJSONTTL(key, cacheTTL, v)
+}
+
+// getJSONTTL is the TTL-parameterised form of getJSON.
+func (c *auditCache) getJSONTTL(key string, ttl time.Duration, v any) bool {
+	data, ok := c.getTTL(key, ttl)
 	if !ok {
 		return false
 	}

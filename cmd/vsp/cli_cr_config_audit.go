@@ -361,7 +361,7 @@ func collectCodeTables(ctx context.Context, client *adt.Client, wbTRs []string, 
 			defer wg.Done()
 			for obj := range jobCh {
 				fromObject := obj.objType + ":" + obj.objName
-				refs := queryCodeRefsForObject(ctx, client, obj.objName, obj.objType)
+				refs := queryCodeRefsCached(ctx, client, obj.objName, obj.objType, cache)
 				for _, r := range refs {
 					if !plausibleTableName(r.Table) {
 						continue
@@ -1255,6 +1255,37 @@ func (p *progress) done(current int) {
 type devObj struct {
 	objType string
 	objName string
+}
+
+// queryCodeRefsFunc is the signature of the "fetch CROSS/WBCROSSGT refs
+// for one dev object" operation. It is declared as a package-level
+// variable pointing at queryCodeRefsForObject so unit tests can swap in
+// a deterministic fake to exercise the cache wrapper without needing a
+// live SAP client.
+var queryCodeRefsFunc = queryCodeRefsForObject
+
+// queryCodeRefsCached wraps the per-object cross-ref fetch in a short-TTL
+// L2 sqlite cache keyed by (objType, objName). A re-run of the same CR
+// hits the cache for every scope object and skips all WBCROSSGT/CROSS
+// traffic entirely. Source code changes relatively often, so the TTL is
+// 1 hour — shorter than the DDIC cache window.
+//
+// When cache is nil (--no-cache or cache open failure) this degenerates
+// to a direct call to queryCodeRefsFunc, making cache-on and cache-off
+// behaviour trivially equivalent by construction (and directly tested).
+func queryCodeRefsCached(ctx context.Context, client *adt.Client, name, objType string, cache *auditCache) []graph.TableCodeRef {
+	key := "crossrefs:" + objType + ":" + strings.ToUpper(name)
+	if cache != nil {
+		var cached []graph.TableCodeRef
+		if cache.getJSONTTL(key, shortCacheTTL, &cached) {
+			return cached
+		}
+	}
+	refs := queryCodeRefsFunc(ctx, client, name, objType)
+	if cache != nil {
+		cache.putJSON(key, refs)
+	}
+	return refs
 }
 
 // queryCodeRefsForObject pulls symbol references from WBCROSSGT (OO code)
