@@ -341,6 +341,106 @@ func (h *headerCaptureMock) Do(req *http.Request) (*http.Response, error) {
 	return h.inner.Do(req)
 }
 
+// TestRecoverFailedCreate_ObjectDoesNotExist covers the idempotent
+// no-op case: the operator invokes recovery on an object that is
+// already gone (either never persisted, or cleaned up already). The
+// call must return CleanupOK=true with an explanatory note, NEVER
+// error out. This is what makes the action safe to retry.
+func TestRecoverFailedCreate_ObjectDoesNotExist(t *testing.T) {
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodGet, "/programs/programs/ZTEST", 404, "not found"),
+		},
+	}
+	client := newReconcileClient(t, mock)
+
+	pce := client.RecoverFailedCreate(context.Background(), CreateObjectOptions{
+		ObjectType:  ObjectTypeProgram,
+		Name:        "ZTEST",
+		PackageName: "$TMP",
+	})
+	if pce == nil {
+		t.Fatal("expected PartialCreateError shell, got nil")
+	}
+	if !pce.CleanupOK {
+		t.Errorf("CleanupOK = false, want true for idempotent no-op; actions: %v", pce.CleanupActions)
+	}
+	if len(pce.CleanupActions) != 1 || !strings.Contains(pce.CleanupActions[0], "nothing to recover") {
+		t.Errorf("expected 'nothing to recover' action, got %v", pce.CleanupActions)
+	}
+}
+
+// TestRecoverFailedCreate_CleansExistingZombie covers the main happy
+// path of the operator-driven recovery: the object exists, lock is
+// acquired, delete succeeds → CleanupOK=true, no manual steps.
+func TestRecoverFailedCreate_CleansExistingZombie(t *testing.T) {
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp("", "informationsystem/search", 200, searchZTESTInTmpXML),
+			resp(http.MethodGet, "/programs/programs/ZTEST", 200, "<p/>"),
+			resp(http.MethodPost, "/programs/programs/ZTEST", 200, lockResponseXML),
+			resp(http.MethodDelete, "/programs/programs/ZTEST", 200, ""),
+		},
+	}
+	client := newReconcileClient(t, mock)
+
+	pce := client.RecoverFailedCreate(context.Background(), CreateObjectOptions{
+		ObjectType:  ObjectTypeProgram,
+		Name:        "ZTEST",
+		PackageName: "$TMP",
+	})
+	if pce == nil {
+		t.Fatal("expected PartialCreateError, got nil")
+	}
+	if !pce.CleanupOK {
+		t.Errorf("CleanupOK = false, want true; actions: %v", pce.CleanupActions)
+	}
+	foundDelete := false
+	for _, action := range pce.CleanupActions {
+		if strings.Contains(action, "deleted partially-created object") {
+			foundDelete = true
+			break
+		}
+	}
+	if !foundDelete {
+		t.Errorf("expected 'deleted partially-created object' in actions, got %v", pce.CleanupActions)
+	}
+	if len(pce.ManualSteps) != 0 {
+		t.Errorf("ManualSteps should be empty when cleanup succeeded, got %v", pce.ManualSteps)
+	}
+}
+
+// TestRecoverFailedCreate_LockHeldByAnother covers the realistic
+// "another user is editing the zombie" case: probe says it exists,
+// lock acquisition fails → return ManualSteps instead of CleanupOK.
+func TestRecoverFailedCreate_LockHeldByAnother(t *testing.T) {
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodGet, "/programs/programs/ZTEST", 200, "<p/>"),
+			resp(http.MethodPost, "/programs/programs/ZTEST", 403, "locked by another user"),
+		},
+	}
+	client := newReconcileClient(t, mock)
+
+	pce := client.RecoverFailedCreate(context.Background(), CreateObjectOptions{
+		ObjectType:  ObjectTypeProgram,
+		Name:        "ZTEST",
+		PackageName: "$TMP",
+	})
+	if pce == nil {
+		t.Fatal("expected PartialCreateError, got nil")
+	}
+	if pce.CleanupOK {
+		t.Error("CleanupOK = true, want false — lock acquisition failed")
+	}
+	if len(pce.ManualSteps) == 0 {
+		t.Error("ManualSteps should be populated when cleanup could not finish")
+	}
+}
+
 // TestPartialCreateError_UnwrapsToOriginal verifies that errors.Is
 // against the original wrapped error keeps working — important so
 // existing callers' error-classification logic does not break.

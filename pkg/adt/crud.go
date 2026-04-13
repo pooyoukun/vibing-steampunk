@@ -382,11 +382,28 @@ func (c *Client) reconcileFailedCreate(ctx context.Context, opts CreateObjectOpt
 		return createErr
 	}
 
+	pce := c.cleanupPartialObject(ctx, objectURL, opts.PackageName, opts.Transport)
+	pce.OriginalErr = createErr
+	return pce
+}
+
+// cleanupPartialObject runs the best-effort compensating cleanup for a
+// zombie object: orphan-lock release, then acquire a fresh session-
+// scoped lock and delete. The result is a *PartialCreateError that
+// records what was attempted and whether the object is now gone.
+// Callers that invoke it from an explicit recovery path — e.g. the
+// MCP `recover_failed_create` tool — leave OriginalErr nil; callers
+// that invoke it after a failed CreateObject attach the original
+// transport error on top.
+//
+// Factored out of reconcileFailedCreate so the same cleanup sequence
+// serves both the automatic post-failure path and the explicit
+// operator-driven recovery path.
+func (c *Client) cleanupPartialObject(ctx context.Context, objectURL, pkg, transport string) *PartialCreateError {
 	pce := &PartialCreateError{
-		ObjectURL:   objectURL,
-		Package:     opts.PackageName,
-		Transport:   opts.Transport,
-		OriginalErr: createErr,
+		ObjectURL: objectURL,
+		Package:   pkg,
+		Transport: transport,
 	}
 
 	// Step 1: orphan lock cleanup (cheap; reuses the existing helper).
@@ -409,7 +426,7 @@ func (c *Client) reconcileFailedCreate(ctx context.Context, opts CreateObjectOpt
 		return pce
 	}
 
-	delErr := c.DeleteObject(ctx, objectURL, lock.LockHandle, opts.Transport)
+	delErr := c.DeleteObject(ctx, objectURL, lock.LockHandle, transport)
 	if delErr != nil {
 		// Delete failed despite holding a lock — release the lock
 		// so we do not add to the leak, then surface manual steps.
@@ -426,6 +443,68 @@ func (c *Client) reconcileFailedCreate(ctx context.Context, opts CreateObjectOpt
 	pce.CleanupActions = append(pce.CleanupActions, "deleted partially-created object")
 	pce.CleanupOK = true
 	return pce
+}
+
+// RecoverFailedCreate is the operator-facing recovery primitive. It
+// lets the caller clean up a zombie object left behind by an earlier
+// failed CreateObject without needing a lock handle from the original
+// (now-lost) session. The caller passes the object identity — type,
+// name, parent for nested FMs, and optionally the transport it was
+// attached to — and we probe whether SAP currently thinks the object
+// exists:
+//
+//   - if the object does not exist, we return a PartialCreateError
+//     with CleanupOK=true and a "nothing to clean" note. This is the
+//     happy idempotent case: re-running recovery on an already-clean
+//     object is a no-op.
+//   - if the object exists, we run the same best-effort compensating
+//     cleanup used by reconcileFailedCreate after a failed create:
+//     orphan-lock release, fresh lock acquisition, DeleteObject,
+//     structured result with ManualSteps on partial success.
+//
+// Callers MUST validate object ownership themselves before invoking
+// this. The reconcile path is safe because the object was just created
+// by the current user; the operator-driven path must not nuke an
+// object that another user is legitimately editing. The MCP handler
+// enforces this by gating behind SAP_ENABLE_LOCK_ADMIN and by
+// refusing to touch objects whose package is not in the allowed list.
+func (c *Client) RecoverFailedCreate(ctx context.Context, opts CreateObjectOptions) *PartialCreateError {
+	objectURL := GetObjectURL(opts.ObjectType, opts.Name, opts.ParentName)
+	if objectURL == "" {
+		return &PartialCreateError{
+			OriginalErr:    fmt.Errorf("unsupported object type %q for recovery", opts.ObjectType),
+			CleanupActions: []string{"could not derive object URL"},
+		}
+	}
+
+	exists, probeErr := c.objectExistsByURL(ctx, objectURL)
+	if probeErr != nil {
+		return &PartialCreateError{
+			ObjectURL:      objectURL,
+			Package:        opts.PackageName,
+			Transport:      opts.Transport,
+			OriginalErr:    fmt.Errorf("existence probe failed: %w", probeErr),
+			CleanupActions: []string{"existence probe inconclusive — aborted without cleanup"},
+			ManualSteps: []string{
+				"retry the recovery once network / auth is stable",
+				"check SM12 and SE09 manually if the retry also fails",
+			},
+		}
+	}
+	if !exists {
+		// Idempotent no-op: nothing to clean. Return CleanupOK=true
+		// with an explanatory note so the operator knows the action
+		// was acknowledged and is safe to retry.
+		return &PartialCreateError{
+			ObjectURL:      objectURL,
+			Package:        opts.PackageName,
+			Transport:      opts.Transport,
+			CleanupActions: []string{"object does not exist — nothing to recover"},
+			CleanupOK:      true,
+		}
+	}
+
+	return c.cleanupPartialObject(ctx, objectURL, opts.PackageName, opts.Transport)
 }
 
 // packageExists checks if a package exists in the system.
