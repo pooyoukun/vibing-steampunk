@@ -571,7 +571,7 @@ or more ABAP objects. Useful for debugging boundary analysis results.
 Examples:
   vsp what-package ZCL_MY_CLASS
   vsp what-package ZIF_LOGGER ZCX_S ZCL_BLOG
-  vsp what-package ZSCR_117_MIN_ALERT_CREATE_LOC`,
+  vsp what-package ZDEMO_117_MIN_ALERT_CREATE_LOC`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: runWhatPackage,
 }
