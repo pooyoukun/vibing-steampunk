@@ -135,6 +135,82 @@ func TestFinalizeCRConfigAuditReport_MetadataBuckets(t *testing.T) {
 	}
 }
 
+func TestFinalizeCRConfigAuditReport_TransactionalGoesToApplicationReads(t *testing.T) {
+	// Fixture matches the live d15 observation: three Z-tables, same
+	// custom namespace, different DD02L delivery classes. The audit
+	// should route them to DIFFERENT buckets based on CONTFLAG:
+	//   - C (customising) + not in CR → Missing
+	//   - A (transactional) + not in CR → ApplicationReads
+	//   - C + in CR → Covered
+	r := &CRConfigAuditReport{
+		CRID: "JIRA-TEST",
+		CodeTables: map[string][]TableCodeRef{
+			"ZTEST_CUST_MISSING":   {{Table: "ZTEST_CUST_MISSING", FromObject: "CLAS:ZCL_A"}},
+			"ZTEST_CUST_COVERED":   {{Table: "ZTEST_CUST_COVERED", FromObject: "CLAS:ZCL_B"}},
+			"ZTEST_APP_RUNTIME":    {{Table: "ZTEST_APP_RUNTIME", FromObject: "CLAS:ZCL_C"}},
+			"ZTEST_SYSTEM":         {{Table: "ZTEST_SYSTEM", FromObject: "CLAS:ZCL_D"}},
+			"ZTEST_TEMP":           {{Table: "ZTEST_TEMP", FromObject: "CLAS:ZCL_E"}},
+		},
+		CustTables: map[string][]TableCustRow{
+			"ZTEST_CUST_COVERED": {{Table: "ZTEST_CUST_COVERED", TRKORR: "DEVK900001"}},
+		},
+		DeliveryClasses: map[string]string{
+			"ZTEST_CUST_MISSING": "C",
+			"ZTEST_CUST_COVERED": "C",
+			"ZTEST_APP_RUNTIME":  "A",
+			"ZTEST_SYSTEM":       "S",
+			"ZTEST_TEMP":         "L",
+		},
+	}
+	FinalizeCRConfigAuditReport(r)
+
+	if len(r.Missing) != 1 || r.Missing[0].Table != "ZTEST_CUST_MISSING" {
+		t.Errorf("Missing = %+v, want [ZTEST_CUST_MISSING]", r.Missing)
+	}
+	if len(r.Covered) != 1 || r.Covered[0].Table != "ZTEST_CUST_COVERED" {
+		t.Errorf("Covered = %+v, want [ZTEST_CUST_COVERED]", r.Covered)
+	}
+	if len(r.ApplicationReads) != 3 {
+		t.Fatalf("ApplicationReads count = %d, want 3", len(r.ApplicationReads))
+	}
+	// Check delivery class propagated to the entries so the report
+	// renderer can show [A] / [S] / [L].
+	classFor := map[string]string{}
+	for _, e := range r.ApplicationReads {
+		classFor[e.Table] = e.DeliveryClass
+	}
+	if classFor["ZTEST_APP_RUNTIME"] != "A" {
+		t.Errorf("ZTEST_APP_RUNTIME class = %q, want A", classFor["ZTEST_APP_RUNTIME"])
+	}
+	if classFor["ZTEST_SYSTEM"] != "S" {
+		t.Errorf("ZTEST_SYSTEM class = %q, want S", classFor["ZTEST_SYSTEM"])
+	}
+	if classFor["ZTEST_TEMP"] != "L" {
+		t.Errorf("ZTEST_TEMP class = %q, want L", classFor["ZTEST_TEMP"])
+	}
+	if got, want := r.Summary.TablesApplicationRead, 3; got != want {
+		t.Errorf("Summary.TablesApplicationRead = %d, want %d", got, want)
+	}
+}
+
+func TestFinalizeCRConfigAuditReport_UnknownDeliveryClassDefaultsToTransportable(t *testing.T) {
+	// Defensive: if DD02L lookup failed and we have no CONTFLAG for
+	// a custom table, it still participates in the Missing check —
+	// the audit should not silently drop it. This preserves the
+	// "unknown means flag for review" semantics.
+	r := &CRConfigAuditReport{
+		CRID: "JIRA-UNKNOWN",
+		CodeTables: map[string][]TableCodeRef{
+			"ZTEST_UNKNOWN_CLASS": {{Table: "ZTEST_UNKNOWN_CLASS", FromObject: "CLAS:ZCL_A"}},
+		},
+		// No DeliveryClasses entry → empty string → treated as transportable
+	}
+	FinalizeCRConfigAuditReport(r)
+	if len(r.Missing) != 1 {
+		t.Errorf("Missing count = %d, want 1 — unknown class should still flag", len(r.Missing))
+	}
+}
+
 func TestFinalizeCRConfigAuditReport_CustomIgnoredWhenOnlyStandardRead(t *testing.T) {
 	// Edge case: code only reads SAP standard, no custom reads, no transports.
 	// Must report aligned with zero Missing even though Covered is zero.

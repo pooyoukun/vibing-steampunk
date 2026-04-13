@@ -1,6 +1,9 @@
 package graph
 
-import "sort"
+import (
+	"sort"
+	"strings"
+)
 
 // CRTransportSplit partitions the TRs of a single Change Request by their
 // E070.TRFUNCTION code. Workbench holds K/S/T, Customizing holds W/Q, and
@@ -129,8 +132,21 @@ type CRConfigAuditReport struct {
 	// StandardReads: SAP-standard table read by code; listed for transparency
 	// but never flagged as a gap, since SAP standard doesn't travel in CRs.
 	StandardReads []CoverageEntry `json:"standard_reads,omitempty"`
+	// ApplicationReads: custom table read by code whose DDIC delivery class
+	// says its rows are runtime / per-system state (CONTFLAG A / L / S),
+	// not customising data expected to ride in the CR. Listed so the user
+	// can see the dependency without the audit flagging it as MISSING.
+	ApplicationReads []CoverageEntry `json:"application_reads,omitempty"`
 	// Orphan: table has rows in a CR transport but no code in the CR reads it.
 	Orphan []CoverageEntry `json:"orphan"`
+
+	// DeliveryClasses: table → DD02L CONTFLAG (A/C/E/G/L/S/W). Used by
+	// FinalizeCRConfigAuditReport to distinguish customising tables
+	// whose rows are expected to travel with the CR (C/E/G/W) from
+	// application/runtime tables whose rows are per-system state
+	// (A/L/S). Missing delivery class defaults to blank — treated as
+	// unknown, still participates in the custom-namespace check.
+	DeliveryClasses map[string]string `json:"delivery_classes,omitempty"`
 
 	// DDIC metadata chain findings (v1.2a+). Collected by walking every table
 	// in code scope through DD03L/DD04L/DD01L/DD07L. Missing = reachable from
@@ -156,15 +172,16 @@ type CRConfigAuditReport struct {
 
 // CRConfigAuditSummary provides top-line numbers for the report.
 type CRConfigAuditSummary struct {
-	WorkbenchTRs       int `json:"workbench_trs"`
-	CustomizingTRs     int `json:"customizing_trs"`
-	TablesReadByCode   int `json:"tables_read_by_code"`
-	TablesCustomRead   int `json:"tables_custom_read"`
-	TablesStandardRead int `json:"tables_standard_read"`
-	TablesInCustTRs    int `json:"tables_in_cust_trs"`
-	Covered            int `json:"covered"`
-	Missing            int `json:"missing"`
-	Orphan             int `json:"orphan"`
+	WorkbenchTRs          int `json:"workbench_trs"`
+	CustomizingTRs        int `json:"customizing_trs"`
+	TablesReadByCode      int `json:"tables_read_by_code"`
+	TablesCustomRead      int `json:"tables_custom_read"`
+	TablesStandardRead    int `json:"tables_standard_read"`
+	TablesApplicationRead int `json:"tables_application_read"`
+	TablesInCustTRs       int `json:"tables_in_cust_trs"`
+	Covered               int `json:"covered"`
+	Missing               int `json:"missing"`
+	Orphan                int `json:"orphan"`
 
 	// DDIC metadata chain (v1.2a). Counts mirror the table buckets but live
 	// on the metadata plane: data elements, domains, check tables, search
@@ -209,11 +226,53 @@ func FinalizeCRConfigAuditReport(r *CRConfigAuditReport) {
 
 	customRead := 0
 	standardRead := 0
+	applicationRead := 0
+
+	// The DeliveryClasses map is packed "CONTFLAG|TABCLASS" — parse
+	// it once per table. A view or pool cannot own row data itself
+	// (their rows live under base tables or the storage pool), so we
+	// must not flag them as MISSING even if their CONTFLAG is C.
+	parseFlag := func(packed string) (contflag, tabclass string) {
+		if i := strings.IndexByte(packed, '|'); i >= 0 {
+			return packed[:i], packed[i+1:]
+		}
+		return packed, ""
+	}
+
+	// carriesOwnRowData says "this table class actually stores row
+	// data that can end up in E071K". Only transparent tables and
+	// cluster tables do; views, pools and projection views do not.
+	carriesOwnRowData := func(tabclass string) bool {
+		switch tabclass {
+		case "TRANSP", "CLUSTER", "":
+			return true
+		default:
+			return false
+		}
+	}
+
+	// isTransportableClass reports whether a DDIC delivery class
+	// (DD02L.CONTFLAG) means "row data is expected to ship with a
+	// customising transport". C/E/G/W are the transportable classes;
+	// A/L/S are runtime / system / temporary state that should NOT
+	// be flagged as MISSING when the CR carries no rows for them.
+	// An empty class (unknown) defaults to transportable so we stay
+	// on the safe side — an unknown table still gets the standard
+	// check and can be flagged.
+	isTransportableClass := func(cls string) bool {
+		switch cls {
+		case "A", "L", "S":
+			return false
+		default:
+			return true
+		}
+	}
 
 	for _, t := range codeTables {
+		contflag, tabclass := parseFlag(r.DeliveryClasses[t])
 		entry := CoverageEntry{
 			Table:         t,
-			DeliveryClass: deliveryClass[t],
+			DeliveryClass: contflag,
 			CodeRefs:      r.CodeTables[t],
 		}
 		if custSet[t] {
@@ -229,10 +288,28 @@ func FinalizeCRConfigAuditReport(r *CRConfigAuditReport) {
 		if IsStandardObject(t) {
 			r.StandardReads = append(r.StandardReads, entry)
 			standardRead++
-		} else {
-			r.Missing = append(r.Missing, entry)
-			customRead++
+			continue
 		}
+		if !carriesOwnRowData(tabclass) {
+			// Views, pools, projection views — no E071K rows of
+			// their own. Bucket them with application reads so
+			// the dependency is visible without a false alarm.
+			r.ApplicationReads = append(r.ApplicationReads, entry)
+			applicationRead++
+			continue
+		}
+		if !isTransportableClass(contflag) {
+			// Custom table, but its DDIC delivery class says the
+			// data is runtime / per-system state — not a
+			// customising artefact. Surface it as an Application
+			// read so the user sees the dependency exists, but
+			// do not raise it as a MISSING alarm.
+			r.ApplicationReads = append(r.ApplicationReads, entry)
+			applicationRead++
+			continue
+		}
+		r.Missing = append(r.Missing, entry)
+		customRead++
 	}
 
 	for _, t := range custTables {
@@ -287,12 +364,13 @@ func FinalizeCRConfigAuditReport(r *CRConfigAuditReport) {
 	}
 
 	r.Summary = CRConfigAuditSummary{
-		WorkbenchTRs:       len(r.Transports.WorkbenchTRs),
-		CustomizingTRs:     len(r.Transports.CustomizingTRs),
-		TablesReadByCode:   len(codeTables),
-		TablesCustomRead:   customRead,
-		TablesStandardRead: standardRead,
-		TablesInCustTRs:    len(custTables),
+		WorkbenchTRs:          len(r.Transports.WorkbenchTRs),
+		CustomizingTRs:        len(r.Transports.CustomizingTRs),
+		TablesReadByCode:      len(codeTables),
+		TablesCustomRead:      customRead,
+		TablesStandardRead:    standardRead,
+		TablesApplicationRead: applicationRead,
+		TablesInCustTRs:       len(custTables),
 		Covered:            len(r.Covered),
 		Missing:            len(r.Missing),
 		Orphan:             len(r.Orphan),

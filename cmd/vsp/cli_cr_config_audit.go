@@ -155,7 +155,7 @@ func runCRConfigAudit(cmd *cobra.Command, args []string) error {
 		fullScope[o.ObjectType+":"+o.ObjectName] = true
 	}
 
-	codeTables, err := collectCodeTablesFromScope(ctx, client, liveScopeObjs, cache)
+	codeTables, deliveryClasses, err := collectCodeTablesFromScope(ctx, client, liveScopeObjs, cache)
 	if err != nil {
 		return err
 	}
@@ -200,6 +200,7 @@ func runCRConfigAudit(cmd *cobra.Command, args []string) error {
 		CustTables:        custTables,
 		MetadataReachable: reachable,
 		MetadataInCR:      inCR,
+		DeliveryClasses:   deliveryClasses,
 	}
 
 	// v2a-min value-level analysis — opt-in behind --value-level because
@@ -334,10 +335,14 @@ func resolveCRTransports(ctx context.Context, client *adt.Client, crID, attr str
 // set of dev objects via collectCRDevObjects — now runs one level up
 // in runCRConfigAudit so the transitive-reach walker can share the
 // full scope set without rebuilding it.
-func collectCodeTablesFromScope(ctx context.Context, client *adt.Client, liveObjs []CRDevObject, cache *auditCache) (map[string][]graph.TableCodeRef, error) {
+//
+// Returns the table → code-refs map plus a parallel table → CONTFLAG
+// map (DDIC delivery class) so downstream classification can tell
+// customising tables apart from transactional/system tables.
+func collectCodeTablesFromScope(ctx context.Context, client *adt.Client, liveObjs []CRDevObject, cache *auditCache) (map[string][]graph.TableCodeRef, map[string]string, error) {
 	result := make(map[string][]graph.TableCodeRef)
 	if len(liveObjs) == 0 {
-		return result, nil
+		return result, map[string]string{}, nil
 	}
 
 	objSet := map[devObj]bool{}
@@ -351,7 +356,7 @@ func collectCodeTablesFromScope(ctx context.Context, client *adt.Client, liveObj
 	}
 
 	if len(objSet) == 0 {
-		return result, nil
+		return result, map[string]string{}, nil
 	}
 	total := len(objSet)
 	fmt.Fprintf(os.Stderr, "Scanning %d code objects for symbol references...\n", total)
@@ -438,16 +443,16 @@ func collectCodeTablesFromScope(ctx context.Context, client *adt.Client, liveObj
 	for s := range rawRefs {
 		symbols = append(symbols, s)
 	}
-	tableSet, err := filterDDICTables(ctx, client, symbols, cache)
+	tableFlags, err := filterDDICTables(ctx, client, symbols, cache)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	for t, refs := range rawRefs {
-		if tableSet[t] {
+		if _, ok := tableFlags[t]; ok {
 			result[t] = refs
 		}
 	}
-	return result, nil
+	return result, tableFlags, nil
 }
 
 // walkDDICMetadata expands the DDIC dependency chain for every table in
@@ -912,9 +917,42 @@ func collectCustTables(ctx context.Context, client *adt.Client, allTRs []string)
 // ship tables while we run), so in-memory caching is always correct here.
 // Persistent cross-invocation caching is the user's --cache-dd02l flag path
 // (v1.1 TODO).
+// ddicTableCache holds the in-memory DD02L snapshot for one vsp run.
+// Each entry combines the DDIC delivery class (CONTFLAG) and the
+// table class (TABCLASS), packed together into a single small string
+// of the shape "<CONTFLAG>|<TABCLASS>". Examples:
+//
+//	"C|TRANSP" — customising transparent table, row data transported
+//	"A|TRANSP" — application transparent table, runtime data only
+//	"|VIEW"    — database/projection view, no row-level data of its own
+//	"|POOL"    — pooled table, data rides under the pool
+//
+// CONTFLAG values:
+//
+//	A — application / transactional data (rows NOT transported at release)
+//	C — customer customising (rows transported)
+//	E — SAP+customer control
+//	G — customer customising with SAP lock
+//	L — temporary / scratch
+//	S — system table
+//	W — system, customer transport
+//
+// The audit's MISSING/ORPHAN/COVERED logic uses both halves to
+// distinguish "row data is expected to ship with the CR" (TRANSP with
+// CONTFLAG C/E/G/W) from runtime state (A/L/S) and from views/pools
+// that do not own row data at all.
 var ddicTableCache struct {
 	loaded bool
-	set    map[string]bool
+	flags  map[string]string // name → "CONTFLAG|TABCLASS"
+}
+
+// splitTableFlag pulls the (CONTFLAG, TABCLASS) pair back out of the
+// packed cache value.
+func splitTableFlag(packed string) (contflag, tabclass string) {
+	if i := strings.IndexByte(packed, '|'); i >= 0 {
+		return packed[:i], packed[i+1:]
+	}
+	return packed, ""
 }
 
 // filterDDICTables keeps only names that correspond to real DDIC tables or
@@ -926,8 +964,12 @@ var ddicTableCache struct {
 // The bulk query is split by namespace prefix (Z/Y for custom, everything
 // else for SAP standard) so each response stays comfortably within ADT
 // transfer limits while the IN clause stays empty (literal length is zero).
-func filterDDICTables(ctx context.Context, client *adt.Client, names []string, cache *auditCache) (map[string]bool, error) {
-	out := make(map[string]bool)
+// filterDDICTables keeps only names that correspond to real DDIC
+// tables or views and annotates each with its delivery class. The
+// returned map is `name → CONTFLAG`; names that are not in DD02L
+// at all are dropped entirely.
+func filterDDICTables(ctx context.Context, client *adt.Client, names []string, cache *auditCache) (map[string]string, error) {
+	out := make(map[string]string)
 	if len(names) == 0 {
 		return out, nil
 	}
@@ -938,8 +980,8 @@ func filterDDICTables(ctx context.Context, client *adt.Client, names []string, c
 	}
 	for _, n := range names {
 		u := strings.ToUpper(n)
-		if ddicTableCache.set[u] {
-			out[u] = true
+		if flag, ok := ddicTableCache.flags[u]; ok {
+			out[u] = flag
 		}
 	}
 	return out, nil
@@ -953,18 +995,19 @@ func hydrateDDICTableCache(ctx context.Context, client *adt.Client, cache *audit
 	if ddicTableCache.loaded {
 		return nil
 	}
-	ddicTableCache.set = make(map[string]bool, 50000)
+	ddicTableCache.flags = make(map[string]string, 50000)
 
 	// Try the L2 (sqlite) cache first — one TTL-protected blob holds the
 	// entire DD02L snapshot. A warm hit skips every partition query below.
+	// The persisted payload is a flat map name→CONTFLAG so consumers get
+	// both "does this table exist" and "is its data transported" from a
+	// single lookup.
 	if cache != nil {
-		var names []string
-		if cache.getJSON("dd02l:all", &names) {
-			for _, n := range names {
-				ddicTableCache.set[n] = true
-			}
+		var flags map[string]string
+		if cache.getJSON("dd02l:v2:all", &flags) {
+			ddicTableCache.flags = flags
 			ddicTableCache.loaded = true
-			fmt.Fprintf(os.Stderr, "DD02L cache: %d tables/views (from L2 sqlite)\n", len(ddicTableCache.set))
+			fmt.Fprintf(os.Stderr, "DD02L cache: %d tables/views (from L2 sqlite)\n", len(ddicTableCache.flags))
 			return nil
 		}
 	}
@@ -992,7 +1035,7 @@ func hydrateDDICTableCache(ctx context.Context, client *adt.Client, cache *audit
 	for i, where := range partitions {
 		prog.tick(i, "DD02L partition")
 		query := fmt.Sprintf(
-			"SELECT TABNAME FROM DD02L WHERE AS4LOCAL = 'A' AND TABCLASS IN ('TRANSP','VIEW','POOL','CLUSTER') AND %s",
+			"SELECT TABNAME, CONTFLAG, TABCLASS FROM DD02L WHERE AS4LOCAL = 'A' AND TABCLASS IN ('TRANSP','VIEW','POOL','CLUSTER') AND %s",
 			where)
 		res, err := client.RunQuery(ctx, query, 200000)
 		if err != nil {
@@ -1003,24 +1046,23 @@ func hydrateDDICTableCache(ctx context.Context, client *adt.Client, cache *audit
 		}
 		for _, row := range res.Rows {
 			tab := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["TABNAME"])))
+			flag := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["CONTFLAG"])))
+			class := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", row["TABCLASS"])))
 			if tab != "" {
-				ddicTableCache.set[tab] = true
+				ddicTableCache.flags[tab] = flag + "|" + class
 			}
 		}
 	}
 	prog.done(len(partitions))
 	ddicTableCache.loaded = true
-	fmt.Fprintf(os.Stderr, "DD02L cache: %d tables/views loaded\n", len(ddicTableCache.set))
+	fmt.Fprintf(os.Stderr, "DD02L cache: %d tables/views loaded\n", len(ddicTableCache.flags))
 
-	// Persist the universe to L2 sqlite so a warm re-run skips the seven
-	// partition queries entirely.
+	// Persist to L2 sqlite so a warm re-run skips the partition queries.
+	// Keyed `dd02l:v2:all` — the v2 prefix versions the payload shape so
+	// an upgrade that adds CONTFLAG does not read back pre-v2 name-only
+	// blobs as a broken map.
 	if cache != nil {
-		names := make([]string, 0, len(ddicTableCache.set))
-		for n := range ddicTableCache.set {
-			names = append(names, n)
-		}
-		sort.Strings(names)
-		cache.putJSON("dd02l:all", names)
+		cache.putJSON("dd02l:v2:all", ddicTableCache.flags)
 	}
 	return nil
 }
@@ -1548,9 +1590,27 @@ func printCRConfigAuditText(r *graph.CRConfigAuditReport, details bool) {
 	fmt.Printf("  →  %s\n\n", status)
 
 	if len(r.Missing) > 0 {
-		fmt.Println("MISSING — custom tables read by code, not in any CR transport:")
+		fmt.Println("MISSING — customising tables read by code whose row data is not carried by any CR transport:")
+		fmt.Println("  (the table definition may still travel as R3TR TABL — this flag is about E071K row content)")
 		for _, e := range r.Missing {
-			fmt.Printf("  %s\n", e.Table)
+			if e.DeliveryClass != "" {
+				fmt.Printf("  %-30s  [%s]\n", e.Table, e.DeliveryClass)
+			} else {
+				fmt.Printf("  %s\n", e.Table)
+			}
+			if details {
+				for _, ref := range e.CodeRefs {
+					fmt.Printf("    ← %s  (%s, %s)\n", ref.FromObject, ref.FromInclude, ref.Source)
+				}
+			}
+		}
+		fmt.Println()
+	}
+
+	if len(r.ApplicationReads) > 0 {
+		fmt.Printf("APPLICATION READS — custom tables with transactional/runtime delivery class (CONTFLAG A/L/S), NOT expected to carry row data in transports (%d):\n", len(r.ApplicationReads))
+		for _, e := range r.ApplicationReads {
+			fmt.Printf("  %-30s  [%s]\n", e.Table, e.DeliveryClass)
 			if details {
 				for _, ref := range e.CodeRefs {
 					fmt.Printf("    ← %s  (%s, %s)\n", ref.FromObject, ref.FromInclude, ref.Source)
