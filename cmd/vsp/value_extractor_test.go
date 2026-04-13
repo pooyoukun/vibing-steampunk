@@ -322,6 +322,73 @@ DELETE FROM ztest_t WHERE object = 'OLD'.
 	}
 }
 
+// TestExtractCodeLiterals_MixedKeyAndNonKeyWHERE covers the case that
+// caused the false-negative matcher bug: a SELECT whose WHERE mixes a
+// genuine key predicate with one on a non-key status field. The
+// extractor captures both; the matcher must filter to the key-only
+// subset and match THAT, not the original mixed map, or it flips a
+// correctly-covered call into a MISSING.
+//
+// This test only covers the extractor side — it asserts both fields
+// are captured as a starting point. The matcher-side behaviour is
+// exercised by the reconcile_test / match_test fixtures.
+func TestExtractCodeLiterals_MixedKeyAndNonKeyWHERE(t *testing.T) {
+	source := `
+SELECT * FROM ztest_t WHERE object = 'ZTEST' AND status = 'A'.
+`
+	got := extractCodeLiterals("PROG:ZTEST", source)
+	if len(got) != 1 {
+		t.Fatalf("expected 1 finding, got %d", len(got))
+	}
+	if got[0].Fields["OBJECT"] != "ZTEST" {
+		t.Errorf("OBJECT = %q, want ZTEST", got[0].Fields["OBJECT"])
+	}
+	if got[0].Fields["STATUS"] != "A" {
+		t.Errorf("STATUS = %q, want A", got[0].Fields["STATUS"])
+	}
+}
+
+// TestExtractCodeLiterals_OrderInsensitiveUseBeforeDefine covers the
+// false-positive case a second reviewer flagged: a SELECT whose WHERE
+// references a variable that only gets its literal value on a LATER
+// line must NOT be resolved. Pre-v2a.1 the collector was one big
+// last-write-wins pass over the whole file, so future assignments
+// leaked into earlier usages.
+func TestExtractCodeLiterals_OrderInsensitiveUseBeforeDefine(t *testing.T) {
+	source := `
+SELECT * FROM ztest_t WHERE object = lv_obj.
+lv_obj = 'ZTEST'.
+`
+	got := extractCodeLiterals("PROG:ZTEST", source)
+	if len(got) != 0 {
+		t.Errorf("expected 0 findings — lv_obj is assigned AFTER the SELECT, so its value is unknown at the call site; got %d: %+v", len(got), got)
+	}
+}
+
+// TestExtractCodeLiterals_OrderAwareResolutionOnlyBeforeSite verifies
+// the positive counterpart: a variable that was pinned to a literal
+// BEFORE the SELECT resolves, while a subsequent reassignment does not
+// retroactively flip the earlier finding.
+func TestExtractCodeLiterals_OrderAwareResolutionOnlyBeforeSite(t *testing.T) {
+	source := `
+DATA lv_obj TYPE string.
+lv_obj = 'FIRST'.
+SELECT * FROM ztest_t WHERE object = lv_obj.
+lv_obj = 'SECOND'.
+SELECT * FROM ztest_t WHERE object = lv_obj.
+`
+	got := extractCodeLiterals("PROG:ZTEST", source)
+	if len(got) != 2 {
+		t.Fatalf("expected 2 findings, got %d: %+v", len(got), got)
+	}
+	if got[0].Fields["OBJECT"] != "FIRST" {
+		t.Errorf("first SELECT: OBJECT = %q, want FIRST", got[0].Fields["OBJECT"])
+	}
+	if got[1].Fields["OBJECT"] != "SECOND" {
+		t.Errorf("second SELECT: OBJECT = %q, want SECOND", got[1].Fields["OBJECT"])
+	}
+}
+
 // TestExtractCodeLiterals_ModifyWithoutWhereSkipped covers the very
 // common `MODIFY itab` pattern that has no WHERE — it must not become
 // a finding (not interesting for value-level audit).

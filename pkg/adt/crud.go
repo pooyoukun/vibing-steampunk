@@ -766,8 +766,9 @@ func (c *Client) DeleteObject(ctx context.Context, objectURL string, lockHandle 
 	}
 
 	_, err := c.transport.Request(ctx, objectURL, &RequestOptions{
-		Method: http.MethodDelete,
-		Query:  params,
+		Method:   http.MethodDelete,
+		Query:    params,
+		Stateful: true, // Lock handles are session-specific — must match the session that acquired the lock (issue #88)
 	})
 	if err != nil {
 		return fmt.Errorf("deleting object: %w", err)

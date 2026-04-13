@@ -52,14 +52,20 @@ type CodeLiteralCall struct {
 // keys, not runtime-computed ones. No regex: everything routes through
 // pkg/abaplint's tokeniser and statement parser.
 //
-// Constant and host-var resolution: an intra-file pre-pass collects every
-// `CONSTANTS name … VALUE 'LIT'` and `DATA name … VALUE 'LIT'` declaration
-// plus any plain `name = 'LIT'.` assignment, into a "last-seen literal"
-// map. When the SQL extractor sees `WHERE field = lv_var` (identifier
-// instead of string token) it consults the map and substitutes the
-// resolved literal. This is single-hop and file-scoped — no flow analysis
-// across method boundaries — but it covers the most common real-world
-// idiom where customising keys live in module-level CONSTANTS.
+// Constant and host-var resolution: the extractor walks statements in
+// source order. Before each CALL FUNCTION / SELECT is parsed, it has
+// access to a running "literals seen so far" map built from every
+// CONSTANTS / DATA / plain assignment that appeared above it in the
+// same source unit. Each recognised assignment updates the map AFTER
+// the current statement's extractor runs, so a variable never resolves
+// to a value it only takes on later in the file.
+//
+// The scope is still coarse — file-wide, no method-boundary awareness,
+// no branch awareness — so `lv_x = 'A'. IF cond. lv_x = 'B'. ENDIF.
+// SELECT … WHERE k = lv_x.` will observe 'B' as the last value seen.
+// Method-scoped resolution is a later refinement (v2a.2). What this
+// pass DOES fix is the order-violation case: a variable used before
+// it is assigned cannot be resolved to a future literal.
 //
 // The function is pure: it takes source plus the source object id, returns
 // findings, and never talks to SAP. That keeps it unit-testable with inline
@@ -70,7 +76,15 @@ func extractCodeLiterals(sourceObjectID, source string) []CodeLiteralCall {
 	}
 	file := abaplint.NewABAPFile(sourceObjectID, source)
 	stmts := file.GetStatements()
-	localLiterals := collectLocalLiterals(stmts)
+
+	// Statement-order resolution: localLiterals grows as we walk
+	// statements top-to-bottom. Each SELECT / CALL FUNCTION is parsed
+	// against the map as it looked *before* this statement, so a
+	// variable used before its defining assignment stays unresolved.
+	// CONSTANTS / DATA / plain assignment statements update the map
+	// AFTER they have been considered for extraction, so the update
+	// only reaches subsequent statements.
+	localLiterals := map[string]string{}
 
 	var out []CodeLiteralCall
 	for _, stmt := range stmts {
@@ -88,85 +102,82 @@ func extractCodeLiterals(sourceObjectID, source string) []CodeLiteralCall {
 				out = append(out, *c)
 			}
 		}
+		// Update the running literal map from this statement's own
+		// declarations/assignments. Extraction of this statement has
+		// already happened above, so the update only affects what
+		// comes AFTER this line — matching real ABAP semantics.
+		absorbLocalLiteral(stmt, localLiterals)
 	}
 	return out
 }
 
-// collectLocalLiterals walks every statement in a parsed ABAP file once
-// and builds a "name → literal" map for every CONSTANTS / DATA / direct
-// assignment that pins an identifier to a string literal value. The
-// resolution is intentionally coarse: file-scoped (no method boundaries)
-// and last-write-wins (no branch awareness). For v2a.1 this strikes a
-// good signal/noise balance — the typical pattern is module-level
-// CONSTANTS gc_object VALUE 'ZTEST' that never gets reassigned, and
-// that case is covered exactly.
+// absorbLocalLiteral inspects one statement and, if it pins an
+// identifier to a string literal value, updates the running
+// localLiterals map so subsequent statements can resolve that
+// identifier. Called AFTER the statement has been considered for
+// literal extraction, so a variable defined here does not retroactively
+// apply to earlier uses.
 //
 // Recognised shapes:
 //
 //	CONSTANTS gc_obj TYPE c LENGTH 10 VALUE 'ZTEST'.
-//	CONSTANTS: gc_a VALUE 'A', gc_b VALUE 'B'.    (chained — first member only for now)
+//	CONSTANTS: gc_a VALUE 'A', gc_b VALUE 'B'.     (chained — first member only for now)
 //	DATA      lv_obj TYPE string VALUE 'ZTEST'.
 //	lv_obj = 'ZTEST'.                              (plain assignment)
 //
 // Anything more complex — concatenation, conversion, function call on
-// the right side — is silently skipped. The caller substitutes only when
-// it sees an identifier on the right side of `=`; on a literal token it
-// uses the literal directly.
-func collectLocalLiterals(stmts []abaplint.Statement) map[string]string {
-	out := map[string]string{}
-	for _, stmt := range stmts {
-		if len(stmt.Tokens) < 3 {
-			continue
-		}
-		first := strings.ToUpper(stmt.Tokens[0].Str)
-		switch first {
-		case "CONSTANTS", "DATA":
-			// Variable name is always the token immediately after the
-			// CONSTANTS/DATA keyword (skipping a chain colon if present).
-			// For chained declarations `CONSTANTS: a VALUE 'x', b VALUE 'y'.`
-			// only the leading member gets captured for v2a.1; full chain
-			// support is a later refinement.
-			nameIdx := 1
-			if stmt.Tokens[1].Str == ":" {
-				nameIdx = 2
-			}
-			if nameIdx >= len(stmt.Tokens) {
-				continue
-			}
-			nameTok := stmt.Tokens[nameIdx]
-			if nameTok.Type != abaplint.TokenIdentifier {
-				continue
-			}
-			// Find the first VALUE 'lit' pair after the name.
-			for i := nameIdx + 1; i+1 < len(stmt.Tokens); i++ {
-				if !strings.EqualFold(stmt.Tokens[i].Str, "VALUE") {
-					continue
-				}
-				val := stmt.Tokens[i+1]
-				if val.Type != abaplint.TokenString {
-					break
-				}
-				out[strings.ToUpper(nameTok.Str)] = strings.ToUpper(unquoteLiteral(val.Str))
-				break
-			}
-		default:
-			// Plain assignment shape: `IDENT = 'LIT' .` (3-4 tokens).
-			// First token is an identifier, second is `=`, third is a
-			// string literal. Reject if the first token is a keyword.
-			if len(stmt.Tokens) < 3 || stmt.Tokens[1].Str != "=" {
-				continue
-			}
-			if stmt.Tokens[0].Type != abaplint.TokenIdentifier {
-				continue
-			}
-			if stmt.Tokens[2].Type != abaplint.TokenString {
-				continue
-			}
-			name := strings.ToUpper(stmt.Tokens[0].Str)
-			out[name] = strings.ToUpper(unquoteLiteral(stmt.Tokens[2].Str))
-		}
+// the right side — is silently skipped; the caller never resolves an
+// identifier it has not explicitly recorded.
+func absorbLocalLiteral(stmt abaplint.Statement, localLiterals map[string]string) {
+	if len(stmt.Tokens) < 3 {
+		return
 	}
-	return out
+	first := strings.ToUpper(stmt.Tokens[0].Str)
+	switch first {
+	case "CONSTANTS", "DATA":
+		// Variable name is always the token immediately after the
+		// CONSTANTS/DATA keyword (skipping a chain colon if present).
+		// For chained declarations `CONSTANTS: a VALUE 'x', b VALUE 'y'.`
+		// only the leading member gets captured for v2a.1; full chain
+		// support is a later refinement.
+		nameIdx := 1
+		if stmt.Tokens[1].Str == ":" {
+			nameIdx = 2
+		}
+		if nameIdx >= len(stmt.Tokens) {
+			return
+		}
+		nameTok := stmt.Tokens[nameIdx]
+		if nameTok.Type != abaplint.TokenIdentifier {
+			return
+		}
+		for i := nameIdx + 1; i+1 < len(stmt.Tokens); i++ {
+			if !strings.EqualFold(stmt.Tokens[i].Str, "VALUE") {
+				continue
+			}
+			val := stmt.Tokens[i+1]
+			if val.Type != abaplint.TokenString {
+				return
+			}
+			localLiterals[strings.ToUpper(nameTok.Str)] = strings.ToUpper(unquoteLiteral(val.Str))
+			return
+		}
+	default:
+		// Plain assignment shape: `IDENT = 'LIT' .` (3-4 tokens).
+		// First token is an identifier, second is `=`, third is a
+		// string literal. Reject if the first token is a keyword.
+		if len(stmt.Tokens) < 3 || stmt.Tokens[1].Str != "=" {
+			return
+		}
+		if stmt.Tokens[0].Type != abaplint.TokenIdentifier {
+			return
+		}
+		if stmt.Tokens[2].Type != abaplint.TokenString {
+			return
+		}
+		name := strings.ToUpper(stmt.Tokens[0].Str)
+		localLiterals[name] = strings.ToUpper(unquoteLiteral(stmt.Tokens[2].Str))
+	}
 }
 
 // resolveLiteral returns the literal value for a given token: either the

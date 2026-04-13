@@ -258,6 +258,89 @@ func TestCreateObject_PartialPersistenceLockFails(t *testing.T) {
 	}
 }
 
+// TestDeleteObject_UsesStatefulSession pins the reviewer-reported
+// regression: the reconcile path acquires a session-bound lock via
+// LockObject (which uses Stateful:true) and then calls DeleteObject,
+// so DeleteObject MUST also request a stateful session. Without it
+// SAP treats the DELETE as an unrelated request and rejects the
+// session-scoped lock handle as invalid.
+//
+// We cannot directly observe RequestOptions.Stateful in the caller
+// after the fact, so we assert it via the transport layer behaviour:
+// in stateful mode the ADT transport adds the X-sap-adt-sessiontype:
+// stateful header to the outbound request. The mock captures every
+// request's headers; a DELETE without that header is a regression.
+func TestDeleteObject_UsesStatefulSession(t *testing.T) {
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			// Search resolves object → package for DeleteObject's guard.
+			resp("", "informationsystem/search", 200, searchZTESTInTmpXML),
+			resp(http.MethodDelete, "/programs/programs/ZTEST", 200, ""),
+		},
+	}
+	client := newReconcileClient(t, mock)
+
+	// We still need to capture the DELETE request, so we use a
+	// tracking wrapper that reads each recorded call's headers.
+	tracker := &headerCaptureMock{inner: mock}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass",
+		WithAllowedPackages("$TMP"),
+	)
+	transport := NewTransportWithClient(cfg, tracker)
+	client = NewClientWithTransport(cfg, transport)
+
+	err := client.DeleteObject(
+		context.Background(),
+		"/sap/bc/adt/programs/programs/ZTEST",
+		"TESTHANDLE",
+		"",
+	)
+	if err != nil {
+		t.Fatalf("DeleteObject failed: %v", err)
+	}
+
+	// Find the DELETE request among captured calls and assert its
+	// stateful header is set.
+	var deleteReq *capturedReq
+	for i := range tracker.captured {
+		if tracker.captured[i].method == http.MethodDelete {
+			deleteReq = &tracker.captured[i]
+			break
+		}
+	}
+	if deleteReq == nil {
+		t.Fatal("no DELETE request was sent")
+	}
+	if got := deleteReq.sessionType; got != "stateful" {
+		t.Errorf("DELETE X-sap-adt-sessiontype = %q, want \"stateful\" — session-bound lock handles require stateful mode (issue #88)", got)
+	}
+}
+
+// headerCaptureMock wraps another transport-level mock and records
+// every outbound request's relevant headers. Used exclusively by the
+// stateful-session regression test — the main methodPathMock already
+// records method+path but throws headers away.
+type headerCaptureMock struct {
+	inner     *methodPathMock
+	captured  []capturedReq
+}
+
+type capturedReq struct {
+	method      string
+	path        string
+	sessionType string
+}
+
+func (h *headerCaptureMock) Do(req *http.Request) (*http.Response, error) {
+	h.captured = append(h.captured, capturedReq{
+		method:      req.Method,
+		path:        req.URL.Path,
+		sessionType: req.Header.Get("X-sap-adt-sessiontype"),
+	})
+	return h.inner.Do(req)
+}
+
 // TestPartialCreateError_UnwrapsToOriginal verifies that errors.Is
 // against the original wrapped error keeps working — important so
 // existing callers' error-classification logic does not break.

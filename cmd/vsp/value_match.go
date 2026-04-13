@@ -151,15 +151,22 @@ func matchValueLevelFindings(
 			continue
 		}
 
+		// Match against `expected`, not call.Fields: for direct_select
+		// calls we already filtered `expected` down to the table's key
+		// fields above, and the unpacked TABKEY row carries ONLY those
+		// key fields. Matching against the raw call.Fields (which may
+		// still contain STATUS='A' on top of a genuine OBJECT='Z' key
+		// predicate) would never find a hit and would silently flip a
+		// correctly-covered call into a MISSING false positive.
 		unpacked := unpackedByTable[call.Target]
 		matched := false
 		for _, row := range unpacked {
-			if subsetMatch(call.Fields, row) {
+			if subsetMatch(expected, row) {
 				matched = true
 				// Record the exact matched row for traceability in the
 				// report: a compact `field=value field=value` rendering
 				// of only the keys the call actually cared about.
-				finding.MatchedKeyDisplay = renderKeyMap(call.Fields, row)
+				finding.MatchedKeyDisplay = renderKeyMap(expected, row)
 				break
 			}
 		}
