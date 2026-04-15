@@ -457,3 +457,185 @@ func TestPartialCreateError_UnwrapsToOriginal(t *testing.T) {
 		t.Error("Unwrap returned wrong value")
 	}
 }
+
+// TestUpdateClassInclude_UsesStatefulSession pins the lock-handle
+// regression class reported in issues #88, #92, and #98: write
+// operations that consume a session-bound lock handle MUST request
+// a stateful HTTP session so the sap-contextid cookie travels with
+// the request. Without it SAP routes the PUT through a different
+// session and rejects the lock handle as InvalidLockHandle (HTTP
+// 423) several seconds after the lock was successfully acquired.
+//
+// Same observability technique as TestDeleteObject_UsesStatefulSession:
+// inspect the X-sap-adt-sessiontype header on the captured PUT.
+func TestUpdateClassInclude_UsesStatefulSession(t *testing.T) {
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodPut, "/oo/classes/ZTEST/includes/testclasses", 200, ""),
+		},
+	}
+	tracker := &headerCaptureMock{inner: mock}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
+	transport := NewTransportWithClient(cfg, tracker)
+	client := NewClientWithTransport(cfg, transport)
+
+	err := client.UpdateClassInclude(
+		context.Background(),
+		"ZTEST",
+		ClassIncludeTestClasses,
+		"REPORT ztest_test.",
+		"TESTHANDLE",
+		"",
+	)
+	if err != nil {
+		t.Fatalf("UpdateClassInclude failed: %v", err)
+	}
+
+	var putReq *capturedReq
+	for i := range tracker.captured {
+		if tracker.captured[i].method == http.MethodPut {
+			putReq = &tracker.captured[i]
+			break
+		}
+	}
+	if putReq == nil {
+		t.Fatal("no PUT request was sent")
+	}
+	if got := putReq.sessionType; got != "stateful" {
+		t.Errorf("PUT X-sap-adt-sessiontype = %q, want \"stateful\" — session-bound lock handles require stateful mode (issues #88/#92/#98)", got)
+	}
+}
+
+// TestCreateTestInclude_UsesStatefulSession is the sibling guard for
+// the create path: the editor flow first calls CreateTestInclude
+// (POST) under the parent class lock, then UpdateClassInclude (PUT)
+// under the same lock. Both must ride the same session.
+func TestCreateTestInclude_UsesStatefulSession(t *testing.T) {
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodPost, "/oo/classes/ZTEST/includes", 200, ""),
+		},
+	}
+	tracker := &headerCaptureMock{inner: mock}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
+	transport := NewTransportWithClient(cfg, tracker)
+	client := NewClientWithTransport(cfg, transport)
+
+	err := client.CreateTestInclude(
+		context.Background(),
+		"ZTEST",
+		"TESTHANDLE",
+		"",
+	)
+	if err != nil {
+		t.Fatalf("CreateTestInclude failed: %v", err)
+	}
+
+	var postReq *capturedReq
+	for i := range tracker.captured {
+		// The CSRF prefetch is also a non-GET (HEAD) — match POST only.
+		if tracker.captured[i].method == http.MethodPost &&
+			strings.Contains(tracker.captured[i].path, "/includes") {
+			postReq = &tracker.captured[i]
+			break
+		}
+	}
+	if postReq == nil {
+		t.Fatal("no POST /includes request was sent")
+	}
+	if got := postReq.sessionType; got != "stateful" {
+		t.Errorf("POST X-sap-adt-sessiontype = %q, want \"stateful\" — session-bound lock handles require stateful mode (issues #88/#92/#98)", got)
+	}
+}
+
+// TestLockObject_RejectsNoModification covers the BTP / ABAP Cloud
+// case from issue #91: a successful LOCK can return
+// MODIFICATION_SUPPORT=NoModification to signal that the object is
+// read-only via ADT for this user/system. Before the fix the caller
+// proceeded to PUT and got a confusing 423 InvalidLockHandle several
+// seconds later. The expected behaviour is to fail at the LOCK call
+// with a clear, actionable error message.
+func TestLockObject_RejectsNoModification(t *testing.T) {
+	const noModLockXML = `<?xml version="1.0" encoding="UTF-8"?>
+<asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+    <DATA>
+      <LOCK_HANDLE>HANDLE-X</LOCK_HANDLE>
+      <CORRNR></CORRNR>
+      <CORRUSER></CORRUSER>
+      <CORRTEXT></CORRTEXT>
+      <IS_LOCAL></IS_LOCAL>
+      <IS_LINK_UP></IS_LINK_UP>
+      <MODIFICATION_SUPPORT>NoModification</MODIFICATION_SUPPORT>
+    </DATA>
+  </asx:values>
+</asx:abap>`
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodPost, "/oo/classes/ZREADONLY", 200, noModLockXML),
+		},
+	}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
+	transport := NewTransportWithClient(cfg, mock)
+	client := NewClientWithTransport(cfg, transport)
+
+	_, err := client.LockObject(
+		context.Background(),
+		"/sap/bc/adt/oo/classes/ZREADONLY",
+		"MODIFY",
+	)
+	if err == nil {
+		t.Fatal("LockObject should have returned an error for NoModification, got nil")
+	}
+	if !strings.Contains(err.Error(), "not modifiable") {
+		t.Errorf("error = %q, want to contain \"not modifiable\"", err.Error())
+	}
+	if !strings.Contains(err.Error(), "NoModification") {
+		t.Errorf("error = %q, want to surface the raw modificationSupport value", err.Error())
+	}
+}
+
+// TestLockObject_AllowsNoModificationOnReadLock proves the guard is
+// scoped to MODIFY locks — read-only locks (accessMode != MODIFY)
+// must still succeed even if the system flags the object as not
+// modifiable, because there is no write to fail downstream.
+func TestLockObject_AllowsNoModificationOnReadLock(t *testing.T) {
+	const noModLockXML = `<?xml version="1.0" encoding="UTF-8"?>
+<asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+    <DATA>
+      <LOCK_HANDLE>HANDLE-X</LOCK_HANDLE>
+      <CORRNR></CORRNR>
+      <CORRUSER></CORRUSER>
+      <CORRTEXT></CORRTEXT>
+      <IS_LOCAL></IS_LOCAL>
+      <IS_LINK_UP></IS_LINK_UP>
+      <MODIFICATION_SUPPORT>NoModification</MODIFICATION_SUPPORT>
+    </DATA>
+  </asx:values>
+</asx:abap>`
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodPost, "/oo/classes/ZREADONLY", 200, noModLockXML),
+		},
+	}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
+	transport := NewTransportWithClient(cfg, mock)
+	client := NewClientWithTransport(cfg, transport)
+
+	result, err := client.LockObject(
+		context.Background(),
+		"/sap/bc/adt/oo/classes/ZREADONLY",
+		"READ",
+	)
+	if err != nil {
+		t.Fatalf("LockObject(READ) should succeed even on read-only objects: %v", err)
+	}
+	if result.LockHandle != "HANDLE-X" {
+		t.Errorf("LockHandle = %q, want HANDLE-X", result.LockHandle)
+	}
+}

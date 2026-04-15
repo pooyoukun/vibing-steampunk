@@ -52,7 +52,29 @@ func (c *Client) LockObject(ctx context.Context, objectURL string, accessMode st
 		return nil, fmt.Errorf("locking object: %w", err)
 	}
 
-	return parseLockResult(resp.Body)
+	result, err := parseLockResult(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// BTP / ABAP Cloud systems sometimes return a successful lock with
+	// MODIFICATION_SUPPORT="NoModification" — the lock acquired but the
+	// object is read-only via ADT (typical for SAP-delivered objects in
+	// hyperfocused mode, or systems where the user lacks the edit role).
+	// Without this guard the caller proceeds to PUT/POST and gets a
+	// confusing 423 InvalidLockHandle several seconds later. Surface it
+	// upfront so the user sees a clear, actionable error (issue #91).
+	if accessMode == "MODIFY" && strings.EqualFold(result.ModificationSupport, "NoModification") {
+		return nil, fmt.Errorf(
+			"object %s is not modifiable via ADT on this system "+
+				"(SAP returned modificationSupport=%q during LOCK). "+
+				"Common causes: read-only system class, missing developer/edit role, "+
+				"BTP ABAP Environment object outside the customer namespace, "+
+				"or hyperfocused mode locking the object as read-only",
+			objectURL, result.ModificationSupport)
+	}
+
+	return result, nil
 }
 
 func parseLockResult(data []byte) (*LockResult, error) {
@@ -977,6 +999,7 @@ func (c *Client) CreateTestInclude(ctx context.Context, className string, lockHa
 		Query:       params,
 		Body:        []byte(body),
 		ContentType: "application/*",
+		Stateful:    true, // Must match lock session — the lock was acquired statefully (issues #88/#92/#98)
 	})
 	if err != nil {
 		return fmt.Errorf("creating test include: %w", err)
@@ -1025,6 +1048,7 @@ func (c *Client) UpdateClassInclude(ctx context.Context, className string, inclu
 		Query:       params,
 		Body:        []byte(source),
 		ContentType: "text/plain; charset=utf-8",
+		Stateful:    true, // Must match lock session — the lock was acquired statefully (issues #88/#92/#98)
 	})
 	if err != nil {
 		return fmt.Errorf("updating class include: %w", err)
