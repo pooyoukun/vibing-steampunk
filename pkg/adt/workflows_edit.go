@@ -375,11 +375,16 @@ func (c *Client) EditSourceWithOptions(ctx context.Context, objectURL, oldString
 	}()
 
 	// 6. Update source
+	transport := opts.Transport
+	if transport == "" && lockResult.CorrNr != "" {
+		transport = lockResult.CorrNr
+	}
+
 	if isClassInclude && className != "" {
 		// Use UpdateClassInclude for class includes
-		err = c.UpdateClassInclude(ctx, className, includeType, newSource, lockResult.LockHandle, opts.Transport)
+		err = c.UpdateClassInclude(ctx, className, includeType, newSource, lockResult.LockHandle, transport)
 	} else {
-		err = c.UpdateSource(ctx, sourceURL, newSource, lockResult.LockHandle, opts.Transport)
+		err = c.UpdateSource(ctx, sourceURL, newSource, lockResult.LockHandle, transport)
 	}
 	if err != nil {
 		result.Message = fmt.Sprintf("Failed to update source: %v", err)

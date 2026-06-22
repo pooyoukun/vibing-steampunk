@@ -45,7 +45,7 @@ func (s *Server) routeSourceAction(ctx context.Context, action, objectType, obje
 	if action == "edit" {
 		// High-level WriteSource
 		switch objectType {
-		case "CLAS", "PROG", "INTF", "DDLS", "BDEF", "SRVD":
+		case "CLAS", "PROG", "INCL", "INTF", "DDLS", "BDEF", "SRVD":
 			if src := getStringParam(params, "source"); src != "" {
 				args := map[string]any{
 					"object_type": objectType,
@@ -118,10 +118,10 @@ func (s *Server) registerGetSource() {
 // registerWriteSource registers the unified WriteSource tool
 func (s *Server) registerWriteSource() {
 	s.mcpServer.AddTool(mcp.NewTool("WriteSource",
-		mcp.WithDescription("Unified tool for writing ABAP source code with automatic create/update detection. Supports PROG, CLAS, INTF, and RAP types (DDLS, BDEF, SRVD)."),
+		mcp.WithDescription("Unified tool for writing ABAP source code with automatic create/update detection. Supports PROG, INCL, CLAS, INTF, and RAP types (DDLS, BDEF, SRVD)."),
 		mcp.WithString("object_type",
 			mcp.Required(),
-			mcp.Description("Object type: PROG (program), CLAS (class), INTF (interface), DDLS (CDS view), BDEF (behavior definition), SRVD (service definition)"),
+			mcp.Description("Object type: PROG (program), INCL (include), CLAS (class), INTF (interface), DDLS (CDS view), BDEF (behavior definition), SRVD (service definition)"),
 		),
 		mcp.WithString("name",
 			mcp.Required(),
@@ -378,7 +378,9 @@ func (s *Server) handleGrepObjects(ctx context.Context, request mcp.CallToolRequ
 		return newToolResultError(fmt.Sprintf("GrepObjects failed: %v", err)), nil
 	}
 
-	output, _ := json.MarshalIndent(result, "", "  ")
+	output, _ := json.MarshalIndent(map[string]any{
+		"results": result,
+	}, "", "  ")
 	return mcp.NewToolResultText(string(output)), nil
 }
 

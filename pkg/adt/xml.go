@@ -53,12 +53,13 @@ type AtomFeed struct {
 
 // SearchResult represents a single search result.
 type SearchResult struct {
-	URI            string `xml:"uri,attr"`
-	Type           string `xml:"type,attr"`
-	Name           string `xml:"name,attr"`
-	PackageName    string `xml:"packageName,attr,omitempty"`
-	Description    string `xml:"description,attr,omitempty"`
-	ResponsiblePro string `xml:"responsiblePro,attr,omitempty"`
+	XMLName        xml.Name `xml:"objectReference"`
+	URI            string   `xml:"uri,attr"`
+	Type           string   `xml:"type,attr"`
+	Name           string   `xml:"name,attr"`
+	PackageName    string   `xml:"packageName,attr,omitempty"`
+	Description    string   `xml:"description,attr,omitempty"`
+	ResponsiblePro string   `xml:"responsiblePro,attr,omitempty"`
 }
 
 // SearchResults wraps search results from the ADT API.

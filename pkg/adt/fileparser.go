@@ -112,6 +112,8 @@ func ParseABAPFile(filePath string) (*ABAPFileInfo, error) {
 		info.ClassIncludeType = ClassIncludeMain
 	case strings.HasSuffix(baseName, ".prog.abap"):
 		info.ObjectType = ObjectTypeProgram
+	case strings.HasSuffix(baseName, ".incl.abap"):
+		info.ObjectType = ObjectTypeInclude
 	case strings.HasSuffix(baseName, ".intf.abap"):
 		info.ObjectType = ObjectTypeInterface
 	case strings.HasSuffix(baseName, ".fugr.abap"):
@@ -169,6 +171,13 @@ func ParseABAPFile(filePath string) (*ABAPFileInfo, error) {
 			}
 
 		case ObjectTypeProgram:
+			if name := parseProgramName(line); name != "" {
+				info.ObjectName = name
+			}
+
+		case ObjectTypeInclude:
+			// Includes can start with PROGRAM or nothing, but usually don't have a header statement.
+			// If it has a REPORT/PROGRAM statement, parse it.
 			if name := parseProgramName(line); name != "" {
 				info.ObjectName = name
 			}

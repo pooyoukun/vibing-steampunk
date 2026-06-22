@@ -74,6 +74,9 @@ func (c *Client) WriteProgram(ctx context.Context, programName string, source st
 	}()
 
 	// Step 3: Update source
+	if transport == "" && lock.CorrNr != "" {
+		transport = lock.CorrNr
+	}
 	err = c.UpdateSource(ctx, sourceURL, source, lock.LockHandle, transport)
 	if err != nil {
 		result.Message = fmt.Sprintf("Failed to update source: %v", err)
@@ -99,6 +102,102 @@ func (c *Client) WriteProgram(ctx context.Context, programName string, source st
 	if activation.Success {
 		result.Success = true
 		result.Message = "Program updated and activated successfully"
+	} else {
+		result.Message = "Activation failed - check activation messages"
+	}
+
+	return result, nil
+}
+
+// WriteIncludeResult represents the result of writing an include.
+type WriteIncludeResult struct {
+	Success      bool                       `json:"success"`
+	IncludeName  string                     `json:"includeName"`
+	ObjectURL    string                     `json:"objectUrl"`
+	SyntaxErrors []SyntaxCheckResult        `json:"syntaxErrors,omitempty"`
+	Activation   *ActivationResult          `json:"activation,omitempty"`
+	Message      string                     `json:"message,omitempty"`
+}
+
+// WriteInclude performs Lock -> SyntaxCheck -> UpdateSource -> Unlock -> Activate workflow for includes.
+func (c *Client) WriteInclude(ctx context.Context, includeName string, source string, transport string) (*WriteIncludeResult, error) {
+	includeName = strings.ToUpper(includeName)
+	objectURL := fmt.Sprintf("/sap/bc/adt/programs/includes/%s", url.PathEscape(includeName))
+	sourceURL := objectURL + "/source/main"
+
+	// Unified mutation policy gate (op type + package + transport)
+	if err := c.checkMutation(ctx, MutationContext{
+		Op:        OpWorkflow,
+		OpName:    "WriteInclude",
+		ObjectURL: objectURL,
+		Transport: transport,
+	}); err != nil {
+		return nil, err
+	}
+
+	result := &WriteIncludeResult{
+		IncludeName: includeName,
+		ObjectURL:   objectURL,
+	}
+
+	// Step 1: Syntax check
+	syntaxErrors, err := c.SyntaxCheck(ctx, objectURL, source)
+	if err != nil {
+		result.Message = fmt.Sprintf("Syntax check failed: %v", err)
+		return result, nil
+	}
+
+	for _, se := range syntaxErrors {
+		if se.Severity == "E" || se.Severity == "A" || se.Severity == "X" {
+			result.SyntaxErrors = syntaxErrors
+			result.Message = "Source has syntax errors - not saved"
+			return result, nil
+		}
+	}
+	result.SyntaxErrors = syntaxErrors
+
+	// Step 2: Lock
+	lock, err := c.LockObject(ctx, objectURL, "MODIFY")
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to lock object: %v", err)
+		return result, nil
+	}
+
+	defer func() {
+		if !result.Success {
+			c.UnlockObject(ctx, objectURL, lock.LockHandle)
+		}
+	}()
+
+	// Step 3: Update source
+	if transport == "" && lock.CorrNr != "" {
+		transport = lock.CorrNr
+	}
+	err = c.UpdateSource(ctx, sourceURL, source, lock.LockHandle, transport)
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to update source: %v", err)
+		return result, nil
+	}
+
+	// Step 4: Unlock
+	err = c.UnlockObject(ctx, objectURL, lock.LockHandle)
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to unlock object: %v", err)
+		return result, nil
+	}
+
+	// Step 5: Activate
+	activation, err := c.Activate(ctx, objectURL, includeName)
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to activate: %v", err)
+		result.Activation = activation
+		return result, nil
+	}
+
+	result.Activation = activation
+	if activation.Success {
+		result.Success = true
+		result.Message = "Include updated and activated successfully"
 	} else {
 		result.Message = "Activation failed - check activation messages"
 	}
@@ -168,6 +267,9 @@ func (c *Client) WriteClass(ctx context.Context, className string, source string
 	}()
 
 	// Step 3: Update source
+	if transport == "" && lock.CorrNr != "" {
+		transport = lock.CorrNr
+	}
 	err = c.UpdateSource(ctx, sourceURL, source, lock.LockHandle, transport)
 	if err != nil {
 		result.Message = fmt.Sprintf("Failed to update source: %v", err)
@@ -261,6 +363,9 @@ func (c *Client) CreateAndActivateProgram(ctx context.Context, programName strin
 	}()
 
 	// Step 3: Update source
+	if transport == "" && lock.CorrNr != "" {
+		transport = lock.CorrNr
+	}
 	err = c.UpdateSource(ctx, sourceURL, source, lock.LockHandle, transport)
 	if err != nil {
 		result.Message = fmt.Sprintf("Failed to update source: %v", err)
@@ -286,6 +391,102 @@ func (c *Client) CreateAndActivateProgram(ctx context.Context, programName strin
 	if activation.Success {
 		result.Success = true
 		result.Message = "Program created and activated successfully"
+	} else {
+		result.Message = "Activation failed - check activation messages"
+	}
+
+	return result, nil
+}
+
+// CreateIncludeResult represents the result of creating an include.
+type CreateIncludeResult struct {
+	Success      bool                `json:"success"`
+	IncludeName  string              `json:"includeName"`
+	ObjectURL    string              `json:"objectUrl"`
+	SyntaxErrors []SyntaxCheckResult `json:"syntaxErrors,omitempty"`
+	Activation   *ActivationResult   `json:"activation,omitempty"`
+	Message      string              `json:"message,omitempty"`
+}
+
+// CreateAndActivateInclude creates a new include with source code and activates it.
+// Workflow: CreateObject -> Lock -> UpdateSource -> Unlock -> Activate
+func (c *Client) CreateAndActivateInclude(ctx context.Context, includeName string, description string, packageName string, source string, transport string) (*CreateIncludeResult, error) {
+	includeName = strings.ToUpper(includeName)
+	packageName = strings.ToUpper(packageName)
+
+	// Unified mutation policy gate (op type + package + transport)
+	if err := c.checkMutation(ctx, MutationContext{
+		Op:        OpWorkflow,
+		OpName:    "CreateAndActivateInclude",
+		Package:   packageName,
+		Transport: transport,
+	}); err != nil {
+		return nil, err
+	}
+
+	objectURL := fmt.Sprintf("/sap/bc/adt/programs/includes/%s", url.PathEscape(includeName))
+	sourceURL := objectURL + "/source/main"
+
+	result := &CreateIncludeResult{
+		IncludeName: includeName,
+		ObjectURL:   objectURL,
+	}
+
+	// Step 1: Create the include
+	err := c.CreateObject(ctx, CreateObjectOptions{
+		ObjectType:  ObjectTypeInclude,
+		Name:        includeName,
+		Description: description,
+		PackageName: packageName,
+		Transport:   transport,
+	})
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to create include: %v", err)
+		return result, nil
+	}
+
+	// Step 2: Lock
+	lock, err := c.LockObject(ctx, objectURL, "MODIFY")
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to lock object: %v", err)
+		return result, nil
+	}
+
+	defer func() {
+		if !result.Success {
+			c.UnlockObject(ctx, objectURL, lock.LockHandle)
+		}
+	}()
+
+	// Step 3: Update source
+	if transport == "" && lock.CorrNr != "" {
+		transport = lock.CorrNr
+	}
+	err = c.UpdateSource(ctx, sourceURL, source, lock.LockHandle, transport)
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to update source: %v", err)
+		return result, nil
+	}
+
+	// Step 4: Unlock
+	err = c.UnlockObject(ctx, objectURL, lock.LockHandle)
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to unlock object: %v", err)
+		return result, nil
+	}
+
+	// Step 5: Activate
+	activation, err := c.Activate(ctx, objectURL, includeName)
+	if err != nil {
+		result.Message = fmt.Sprintf("Failed to activate: %v", err)
+		result.Activation = activation
+		return result, nil
+	}
+
+	result.Activation = activation
+	if activation.Success {
+		result.Success = true
+		result.Message = "Include created and activated successfully"
 	} else {
 		result.Message = "Activation failed - check activation messages"
 	}
@@ -354,6 +555,9 @@ func (c *Client) CreateClassWithTests(ctx context.Context, className string, des
 	}()
 
 	// Step 3: Update main source
+	if transport == "" && lock.CorrNr != "" {
+		transport = lock.CorrNr
+	}
 	err = c.UpdateSource(ctx, sourceURL, classSource, lock.LockHandle, transport)
 	if err != nil {
 		result.Message = fmt.Sprintf("Failed to update class source: %v", err)
