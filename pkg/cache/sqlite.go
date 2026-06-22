@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // SQLiteCache is a SQLite-backed implementation of Cache
@@ -22,7 +22,7 @@ func NewSQLiteCache(config Config) (*SQLiteCache, error) {
 		config.Path = ".cache/graph.db"
 	}
 
-	db, err := sql.Open("sqlite3", config.Path)
+	db, err := sql.Open("sqlite", config.Path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open sqlite: %w", err)
 	}

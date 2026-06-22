@@ -141,6 +141,16 @@ func (c *Client) checkTransportableEdit(transport, opName string) error {
 
 func (c *Client) getObjectPackage(ctx context.Context, objectURL string) (string, error) {
 	normalized := normalizeObjectURLForPackageCheck(objectURL)
+
+	// Strategy 1: Fetch object metadata directly from its ADT URL.
+	// This is the most reliable way to get the package for a known object URL.
+	pkg, err := c.getObjectPackageFromMetadata(ctx, normalized)
+	if err == nil && pkg != "" {
+		return pkg, nil
+	}
+
+	// Strategy 2: Fallback to SearchObject if direct metadata fetch failed.
+	// (SearchObject might be less reliable for includes or namespaced objects)
 	objectName, err := objectNameFromURL(normalized)
 	if err != nil {
 		return "", err
@@ -164,14 +174,60 @@ func (c *Client) getObjectPackage(ctx context.Context, objectURL string) (string
 	return "", fmt.Errorf("package metadata not found")
 }
 
+// getObjectPackageFromMetadata fetches the basic metadata of an ABAP object
+// from its ADT URL and extracts the package name from the adtcore:packageName attribute.
+func (c *Client) getObjectPackageFromMetadata(ctx context.Context, objectURL string) (string, error) {
+	// Ensure we use the base object URL, not the source URL
+	baseURL := normalizeObjectURLForPackageCheck(objectURL)
+
+	resp, err := c.transport.Request(ctx, baseURL, &RequestOptions{
+		Method: http.MethodGet,
+		Accept: "application/xml",
+	})
+	if err != nil {
+		return "", fmt.Errorf("fetching object metadata: %w", err)
+	}
+
+	// Generic struct to extract package name from any ADT object XML
+	var metadata struct {
+		XMLName     xml.Name
+		PackageName string `xml:"http://www.sap.com/adt/core packageName,attr"`
+	}
+
+	if err := xml.Unmarshal(resp.Body, &metadata); err != nil {
+		return "", fmt.Errorf("parsing object metadata XML: %w", err)
+	}
+
+	if metadata.PackageName == "" {
+		return "", fmt.Errorf("package attribute missing in metadata")
+	}
+
+	return metadata.PackageName, nil
+}
+
 func normalizeObjectURLForPackageCheck(objectURL string) string {
 	normalized := strings.TrimSuffix(objectURL, "/")
 
-	if idx := strings.Index(normalized, "/includes/"); idx >= 0 {
-		return normalized[:idx]
-	}
+	// Remove source markers
 	if strings.HasSuffix(normalized, "/source/main") {
-		return strings.TrimSuffix(normalized, "/source/main")
+		normalized = strings.TrimSuffix(normalized, "/source/main")
+	}
+	if strings.HasSuffix(normalized, "/source/testclasses") {
+		normalized = strings.TrimSuffix(normalized, "/source/testclasses")
+	}
+
+	// For classes/interfaces, we want the base object URI even if an include is provided
+	// BUT we must not truncate the name of a program include!
+	// Class URI pattern: /sap/bc/adt/oo/classes/NAME/includes/TYPE
+	if idx := strings.Index(normalized, "/oo/classes/"); idx >= 0 {
+		if incIdx := strings.Index(normalized, "/includes/"); incIdx > idx {
+			return normalized[:incIdx]
+		}
+	}
+	if idx := strings.Index(normalized, "/oo/interfaces/"); idx >= 0 {
+		if incIdx := strings.Index(normalized, "/includes/"); incIdx > idx {
+			return normalized[:incIdx]
+		}
 	}
 
 	return normalized
@@ -181,6 +237,10 @@ func canonicalizeObjectURL(objectURL string) string {
 	normalized := normalizeObjectURLForPackageCheck(objectURL)
 	if decoded, err := url.PathUnescape(normalized); err == nil {
 		normalized = decoded
+	}
+	// Normalize multiple slashes (common in namespaced paths after decoding)
+	for strings.Contains(normalized, "//") {
+		normalized = strings.ReplaceAll(normalized, "//", "/")
 	}
 	return strings.ToLower(strings.TrimSuffix(normalized, "/"))
 }

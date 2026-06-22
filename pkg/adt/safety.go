@@ -85,9 +85,11 @@ func DefaultSafetyConfig() SafetyConfig {
 // WARNING: Use with caution - allows all operations including destructive ones
 func UnrestrictedSafetyConfig() SafetyConfig {
 	return SafetyConfig{
-		ReadOnly:     false,
-		BlockFreeSQL: false,
-		AllowedOps:   "", // Empty = all allowed
+		ReadOnly:                false,
+		BlockFreeSQL:            false,
+		AllowedOps:              "", // Empty = all allowed
+		AllowTransportableEdits: true,
+		EnableTransports:        true,
 	}
 }
 

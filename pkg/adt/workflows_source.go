@@ -194,17 +194,35 @@ func (c *Client) WriteSource(ctx context.Context, objectType, name, source strin
 		opts.Mode = WriteModeUpsert
 	}
 
-	// Top-level mutation gate. The precise package check runs in the
-	// delegated create/update path (CreateAndActivate* / WriteProgram /
-	// WriteClass) because the target package is known there; here we
-	// enforce op-type and transportable-edit policy up front so the caller
-	// gets a clear early rejection.
-	if err := c.checkMutation(ctx, MutationContext{
+	// Top-level mutation gate.
+	mutationCtx := MutationContext{
 		Op:        OpWorkflow,
 		OpName:    "WriteSource",
-		Package:   opts.Package, // empty for update path, present for create
+		Package:   opts.Package,
 		Transport: opts.Transport,
-	}); err != nil {
+	}
+
+	// For update path (Package empty), construction a likely ObjectURL to enable package resolution
+	if mutationCtx.Package == "" {
+		switch strings.ToUpper(objectType) {
+		case "PROG":
+			mutationCtx.ObjectURL = fmt.Sprintf("/sap/bc/adt/programs/programs/%s", url.PathEscape(name))
+		case "INCL":
+			mutationCtx.ObjectURL = fmt.Sprintf("/sap/bc/adt/programs/includes/%s", url.PathEscape(name))
+		case "CLAS":
+			mutationCtx.ObjectURL = fmt.Sprintf("/sap/bc/adt/oo/classes/%s", url.PathEscape(name))
+		case "INTF":
+			mutationCtx.ObjectURL = fmt.Sprintf("/sap/bc/adt/oo/interfaces/%s", url.PathEscape(name))
+		case "DDLS":
+			mutationCtx.ObjectURL = fmt.Sprintf("/sap/bc/adt/ddic/ddl/sources/%s", url.PathEscape(name))
+		case "BDEF":
+			mutationCtx.ObjectURL = fmt.Sprintf("/sap/bc/adt/repository/nodestructure/content?parent_uri=/sap/bc/adt/repository/nodestructure/nodes/objects&name=%s&type=BDEF/B", url.QueryEscape(name))
+		case "SRVD":
+			mutationCtx.ObjectURL = fmt.Sprintf("/sap/bc/adt/businessservices/definitions/%s", url.PathEscape(strings.ToLower(name)))
+		}
+	}
+
+	if err := c.checkMutation(ctx, mutationCtx); err != nil {
 		return nil, err
 	}
 
@@ -218,10 +236,10 @@ func (c *Client) WriteSource(ctx context.Context, objectType, name, source strin
 
 	// Validate object type
 	switch objectType {
-	case "PROG", "CLAS", "INTF", "DDLS", "BDEF", "SRVD", "SRVB":
+	case "PROG", "INCL", "CLAS", "INTF", "DDLS", "BDEF", "SRVD", "SRVB":
 		// Supported types
 	default:
-		result.Message = fmt.Sprintf("Unsupported object type: %s (supported: PROG, CLAS, INTF, DDLS, BDEF, SRVD, SRVB)", objectType)
+		result.Message = fmt.Sprintf("Unsupported object type: %s (supported: PROG, INCL, CLAS, INTF, DDLS, BDEF, SRVD, SRVB)", objectType)
 		return result, nil
 	}
 
@@ -232,6 +250,9 @@ func (c *Client) WriteSource(ctx context.Context, objectType, name, source strin
 		switch objectType {
 		case "PROG":
 			_, err := c.GetProgram(ctx, name)
+			objectExists = (err == nil)
+		case "INCL":
+			_, err := c.GetInclude(ctx, name)
 			objectExists = (err == nil)
 		case "CLAS":
 			_, err := c.GetClass(ctx, name)
@@ -315,6 +336,19 @@ func (c *Client) writeSourceCreate(ctx context.Context, objectType, name, source
 		result.SyntaxErrors = progResult.SyntaxErrors
 		result.Activation = progResult.Activation
 		result.Message = progResult.Message
+		return result, nil
+
+	case "INCL":
+		inclResult, err := c.CreateAndActivateInclude(ctx, name, opts.Description, opts.Package, source, opts.Transport)
+		if err != nil {
+			result.Message = fmt.Sprintf("Failed to create include: %v", err)
+			return result, nil
+		}
+		result.Success = inclResult.Success
+		result.ObjectURL = inclResult.ObjectURL
+		result.SyntaxErrors = inclResult.SyntaxErrors
+		result.Activation = inclResult.Activation
+		result.Message = inclResult.Message
 		return result, nil
 
 	case "CLAS":
@@ -681,6 +715,19 @@ func (c *Client) writeSourceUpdate(ctx context.Context, objectType, name, source
 		result.SyntaxErrors = progResult.SyntaxErrors
 		result.Activation = progResult.Activation
 		result.Message = progResult.Message
+		return result, nil
+
+	case "INCL":
+		inclResult, err := c.WriteInclude(ctx, name, source, opts.Transport)
+		if err != nil {
+			result.Message = fmt.Sprintf("Failed to update include: %v", err)
+			return result, nil
+		}
+		result.Success = inclResult.Success
+		result.ObjectURL = inclResult.ObjectURL
+		result.SyntaxErrors = inclResult.SyntaxErrors
+		result.Activation = inclResult.Activation
+		result.Message = inclResult.Message
 		return result, nil
 
 	case "CLAS":
