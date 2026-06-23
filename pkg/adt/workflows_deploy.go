@@ -12,15 +12,16 @@ import (
 
 // DeployResult contains the result of a file deployment operation.
 type DeployResult struct {
-	ObjectURL     string   `json:"objectUrl"`
-	ObjectName    string   `json:"objectName"`
-	ObjectType    string   `json:"objectType"`
-	FilePath      string   `json:"filePath"`
-	Success       bool     `json:"success"`
-	Created       bool     `json:"created"` // true if created, false if updated
-	SyntaxErrors  []string `json:"syntaxErrors,omitempty"`
-	Errors        []string `json:"errors,omitempty"`
-	Message       string   `json:"message,omitempty"`
+	ObjectURL      string           `json:"objectUrl"`
+	ObjectName     string           `json:"objectName"`
+	ObjectType     string           `json:"objectType"`
+	FilePath       string           `json:"filePath"`
+	Success        bool             `json:"success"`
+	Created        bool             `json:"created"` // true if created, false if updated
+	SyntaxErrors   []string         `json:"syntaxErrors,omitempty"`
+	Errors         []string         `json:"errors,omitempty"`
+	UnitTestResult *UnitTestResult  `json:"unitTestResult,omitempty"`
+	Message        string           `json:"message,omitempty"`
 }
 
 // CreateFromFile creates a new ABAP object from a file and activates it.
@@ -341,7 +342,11 @@ func (c *Client) UpdateFromFile(ctx context.Context, filePath, transport string)
 	}
 
 	// 8. Activate
-	_, err = c.Activate(ctx, objectURL, info.ObjectName)
+	activationURL := objectURL
+	if isClassInclude {
+		activationURL = GetClassIncludeSourceURL(info.ObjectName, info.ClassIncludeType)
+	}
+	_, err = c.Activate(ctx, activationURL, info.ObjectName)
 	if err != nil {
 		return &DeployResult{
 			FilePath:   filePath,
@@ -354,20 +359,69 @@ func (c *Client) UpdateFromFile(ctx context.Context, filePath, transport string)
 		}, nil
 	}
 
-	// Build result message
+	// 8b. Verification: check if namespaced objects remain inactive (SAP on-premise instability check)
 	objTypeStr := string(info.ObjectType)
 	if isClassInclude {
 		objTypeStr = fmt.Sprintf("%s.%s", info.ObjectType, info.ClassIncludeType)
 	}
+	if strings.Contains(info.ObjectName, "/") {
+		inactiveList, errInactive := c.GetInactiveObjects(ctx)
+		if errInactive == nil {
+			stillInactive := false
+			for _, item := range inactiveList {
+				if item.Object != nil && (strings.EqualFold(item.Object.Name, info.ObjectName) || strings.Contains(strings.ToLower(item.Object.URI), strings.ToLower(info.ObjectName))) {
+					stillInactive = true
+					break
+				}
+			}
+			if stillInactive {
+				return &DeployResult{
+					FilePath:   filePath,
+					ObjectURL:  objectURL,
+					ObjectName: info.ObjectName,
+					ObjectType: objTypeStr,
+					Success:    false,
+					Errors:     []string{"activation completed but object remains inactive in SAP"},
+					Message:    fmt.Sprintf("Activation completed with success but object %s remains inactive in the system. Please activate manually in SAP GUI.", info.ObjectName),
+				}, nil
+			}
+		}
+	}
+
+	// 9. Run unit tests if it's a testclass include
+	var testResults *UnitTestResult
+	if isClassInclude && info.ClassIncludeType == ClassIncludeTestClasses {
+		runResults, testErr := c.RunUnitTests(ctx, objectURL, nil)
+		if testErr == nil {
+			testResults = runResults
+		}
+	}
+
+	// Build result message
+	objTypeStr = string(info.ObjectType)
+	if isClassInclude {
+		objTypeStr = fmt.Sprintf("%s.%s", info.ObjectType, info.ClassIncludeType)
+	}
+
+	msg := fmt.Sprintf("Successfully updated and activated %s %s from %s", objTypeStr, info.ObjectName, filePath)
+	if testResults != nil {
+		passed, failed := testResults.Counts()
+		if failed > 0 {
+			msg += fmt.Sprintf(" (Unit tests failed: %d failed, %d passed)", failed, passed)
+		} else {
+			msg += fmt.Sprintf(" (Unit tests passed: %d passed)", passed)
+		}
+	}
 
 	return &DeployResult{
-		FilePath:   filePath,
-		ObjectURL:  objectURL,
-		ObjectName: info.ObjectName,
-		ObjectType: objTypeStr,
-		Success:    true,
-		Created:    false,
-		Message:    fmt.Sprintf("Successfully updated and activated %s %s from %s", objTypeStr, info.ObjectName, filePath),
+		FilePath:       filePath,
+		ObjectURL:      objectURL,
+		ObjectName:     info.ObjectName,
+		ObjectType:     objTypeStr,
+		Success:        true,
+		Created:        false,
+		UnitTestResult: testResults,
+		Message:        msg,
 	}, nil
 }
 
@@ -448,7 +502,11 @@ func (c *Client) buildObjectURL(objType CreatableObjectType, name string) (strin
 
 // buildObjectURLWithParent constructs the ADT URL for an object type with optional parent
 func (c *Client) buildObjectURLWithParent(objType CreatableObjectType, name, parentName string) (string, error) {
-	name = strings.ToLower(name)
+	if strings.Contains(name, "/") {
+		name = strings.ToUpper(name)
+	} else {
+		name = strings.ToLower(name)
+	}
 	// URL encode to handle namespaced objects like /DMO/...
 	encodedName := url.PathEscape(name)
 	switch objType {
@@ -464,7 +522,11 @@ func (c *Client) buildObjectURLWithParent(objType CreatableObjectType, name, par
 		if parentName == "" {
 			return "", fmt.Errorf("function module requires parent function group name")
 		}
-		parentName = strings.ToLower(parentName)
+		if strings.Contains(parentName, "/") {
+			parentName = strings.ToUpper(parentName)
+		} else {
+			parentName = strings.ToLower(parentName)
+		}
 		encodedParent := url.PathEscape(parentName)
 		return fmt.Sprintf("/sap/bc/adt/functions/groups/%s/fmodules/%s", encodedParent, encodedName), nil
 	case ObjectTypeInclude:

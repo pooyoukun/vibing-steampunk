@@ -76,7 +76,7 @@ func parseSyntaxCheckResults(data []byte) ([]SyntaxCheckResult, error) {
 	type checkMessage struct {
 		URI       string `xml:"uri,attr"`
 		Type      string `xml:"type,attr"`
-		ShortText string `xml:"shortText,attr"`
+		ShortText string `xml:"shortText"`
 	}
 	type checkMessageList struct {
 		Messages []checkMessage `xml:"checkMessage"`
@@ -568,6 +568,30 @@ func DefaultUnitTestFlags() UnitTestRunFlags {
 // UnitTestResult represents the complete result of a unit test run.
 type UnitTestResult struct {
 	Classes []UnitTestClass `json:"classes"`
+}
+
+// Counts returns the number of passed and failed test methods in the result.
+func (r *UnitTestResult) Counts() (passed, failed int) {
+	if r == nil {
+		return 0, 0
+	}
+	for _, c := range r.Classes {
+		for _, m := range c.TestMethods {
+			hasFailure := false
+			for _, a := range m.Alerts {
+				if a.Kind == "failedAssertion" || a.Kind == "exception" {
+					hasFailure = true
+					break
+				}
+			}
+			if hasFailure {
+				failed++
+			} else {
+				passed++
+			}
+		}
+	}
+	return passed, failed
 }
 
 // UnitTestProgram groups test classes by their parent program/class.
