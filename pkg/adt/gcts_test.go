@@ -113,7 +113,8 @@ func TestGctsListRepositories_SafetyBlocked(t *testing.T) {
 	}
 
 	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
-	// EnableTransports is false by default
+	cfg.Safety.EnableTransports = false
+	cfg.Safety.AllowTransportableEdits = false
 	transport := NewTransportWithClient(cfg, mock)
 	client := NewClientWithTransport(cfg, transport)
 
@@ -134,7 +135,8 @@ func TestGctsCreateRepository_SafetyBlocked(t *testing.T) {
 	}
 
 	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
-	// EnableTransports is false by default - should block create
+	cfg.Safety.EnableTransports = false
+	cfg.Safety.AllowTransportableEdits = false
 	transport := NewTransportWithClient(cfg, mock)
 	client := NewClientWithTransport(cfg, transport)
 
@@ -154,7 +156,8 @@ func TestGctsDeleteRepository_SafetyBlocked(t *testing.T) {
 	}
 
 	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
-	// EnableTransports is false by default - should block delete
+	cfg.Safety.EnableTransports = false
+	cfg.Safety.AllowTransportableEdits = false
 	transport := NewTransportWithClient(cfg, mock)
 	client := NewClientWithTransport(cfg, transport)
 
