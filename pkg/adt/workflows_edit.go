@@ -190,8 +190,10 @@ func (c *Client) EditSourceWithOptions(ctx context.Context, objectURL, oldString
 		result.Method = opts.Method
 	}
 
-	// Detect if this is a class include (e.g., /sap/bc/adt/oo/classes/ZCL_FOO/includes/testclasses)
-	isClassInclude := strings.Contains(objectURL, "/includes/")
+	// Detect if this is a class include (e.g., /sap/bc/adt/oo/classes/ZCL_FOO/includes/testclasses).
+	// Must not be a bare strings.Contains(objectURL, "/includes/") — plain program
+	// includes (/sap/bc/adt/programs/includes/ZINCL) also contain that substring.
+	isClassInclude := isClassOrInterfaceInclude(objectURL)
 	var className string
 	var includeType ClassIncludeType
 	var parentClassURL string
@@ -330,9 +332,18 @@ func (c *Client) EditSourceWithOptions(ctx context.Context, objectURL, oldString
 			var errors, warnings []string
 			for _, e := range syntaxResults {
 				msg := fmt.Sprintf("Line %d: %s", e.Line, e.Text)
-				if e.Severity == "E" {
+				switch e.Severity {
+				case "E":
 					errors = append(errors, msg)
-				} else {
+				case SyntaxCheckNotProcessed:
+					// SAP could not semantically check this object in isolation
+					// (e.g. a plain INCLUDE with no locatable main program) and
+					// reported a status like "notProcessed" instead of real
+					// messages. This isn't a warning about the edit's content —
+					// it means no check ran at all — so it must not block the
+					// save the way a real warning would.
+					continue
+				default:
 					warnings = append(warnings, msg)
 				}
 			}
@@ -355,9 +366,11 @@ func (c *Client) EditSourceWithOptions(ctx context.Context, objectURL, oldString
 		}
 	}
 
-	// 5. Lock object (for class includes, lock the parent class)
+	// 5. Lock object (for class includes, lock the parent class, and for classes lock the main resource URL without /source/main)
 	lockURL := objectURL
-	if isClassInclude && parentClassURL != "" {
+	if isClass {
+		lockURL = strings.TrimSuffix(lockURL, "/source/main")
+	} else if isClassInclude && parentClassURL != "" {
 		lockURL = parentClassURL
 	}
 	lockResult, err := c.LockObject(ctx, lockURL, "MODIFY")

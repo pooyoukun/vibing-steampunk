@@ -11,6 +11,22 @@
 
 ![Vibing ABAP Developer](./media/vibing-steampunk.png)
 
+## Fork Notes
+
+This is a personal fork of [oisee/vibing-steampunk](https://github.com/oisee/vibing-steampunk), created to address three specific problems hit while using `vsp` for day-to-day ABAP development against real SAP systems:
+
+1. **Editing includes that live in a custom namespace** (objects named `/NAMESPACE/...`) was unreliable.
+2. **Syntax-check error messages** were sometimes unreadable or silently missing, even when a real compile error existed.
+3. **Object locking was flaky** under realistic, long-lived usage — intermittent lock errors that were hard to reproduce in isolated test runs.
+
+**Fixes shipped in this fork, mapped to the problems above:**
+
+- **Namespace include edits (#1)** — the include-editing code paths detected "class/interface include" objects with a plain substring match on `/includes/` in the object URL, which also matches ordinary *program* includes (`/sap/bc/adt/programs/includes/...`). This caused the `/source/main` suffix to be dropped for namespaced program includes, breaking the edit. Fixed with a properly scoped `isClassOrInterfaceInclude()` helper (`pkg/adt/client.go`) that only matches `/oo/classes/` and `/oo/interfaces/`.
+- **Readable syntax-check errors (#2)** — two separate bugs, both in `pkg/adt/devtools.go`: (a) the parser expected SAP's `shortText` as an XML child element, when SAP actually sends it as an XML *attribute* on `<checkMessage>`, so real error text was silently dropped; and (b) SAP's checkrun API cannot semantically check a bare `INCLUDE` without its main-program context and returns an empty result for that case — now surfaced explicitly as `severity: "notProcessed"` with SAP's real status text, so callers can tell "not checked" apart from "checked, no errors found."
+- **Lock reliability (#3)** — root cause: the standard Go `http.CookieJar` has no concept of ADT's stateful vs. stateless session semantics. Under long-lived, mixed-traffic MCP sessions, a stale `sap-contextid` / `SAP_SESSIONID` cookie could be attached to a stateful request (e.g. `Activate` following a `Lock`), routing it to a different SAP application server instance than the one holding the lock — causing intermittent `423 InvalidLockHandle` errors. Fixed with an explicit `sessionPinningRoundTripper` (`pkg/adt/http.go`) that pins the session cookie only to requests marked `X-sap-adt-sessiontype: stateful` (see issue #88), plus a follow-up fix ensuring `Activate` itself is marked stateful so it shares the same pinned session as the preceding lock/update.
+
+For anything not listed here, behavior matches upstream.
+
 ## Hot Right Now
 
 ### Package Analysis Suite

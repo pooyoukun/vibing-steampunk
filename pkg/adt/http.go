@@ -30,8 +30,9 @@ type Transport struct {
 	csrfMu    sync.RWMutex
 
 	// Session management
-	sessionID string
-	sessionMu sync.RWMutex
+	sessionID         string
+	sessionCookieName string
+	sessionMu         sync.RWMutex
 
 	// Cookie access protection: guards config.Cookies against concurrent
 	// read (Request/retryRequest) and write (callReauthFunc) access.
@@ -43,12 +44,64 @@ type Transport struct {
 	lastReauth time.Time
 }
 
+// sessionPinningRoundTripper pins the tracked ADT session cookie (sap-contextid
+// or SAP_SESSIONID) onto stateful requests and strips it from stateless ones.
+// The stdlib cookiejar has no notion of ADT's stateful/stateless distinction:
+// on a long-lived client mixing both request kinds, it can hand a stale or
+// wrong session cookie to a stateful Lock/Update request, which then lands on
+// a different SAP application server instance than the one holding the lock,
+// surfacing as 423 InvalidLockHandle (issue #88).
+type sessionPinningRoundTripper struct {
+	next      http.RoundTripper
+	transport *Transport
+}
+
+func (rt *sessionPinningRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if name, value := rt.transport.getSessionInfo(); name != "" {
+		isStateful := req.Header.Get("X-sap-adt-sessiontype") == "stateful"
+
+		// Rebuild the Cookie header without the jar's copy of the tracked
+		// session cookie, then re-add the pinned value only for stateful
+		// requests so stateless traffic can never see it.
+		cookies := req.Cookies()
+		req.Header.Del("Cookie")
+		for _, c := range cookies {
+			if c.Name == name {
+				continue
+			}
+			req.AddCookie(c)
+		}
+		if isStateful && value != "" {
+			req.AddCookie(&http.Cookie{Name: name, Value: value})
+		}
+	}
+
+	next := rt.next
+	if next == nil {
+		next = http.DefaultTransport
+	}
+	return next.RoundTrip(req)
+}
+
 // NewTransport creates a new Transport with the given configuration.
 func NewTransport(cfg *Config) *Transport {
-	return &Transport{
-		config:     cfg,
-		httpClient: cfg.NewHTTPClient(),
+	t := &Transport{config: cfg}
+
+	httpClient := cfg.NewHTTPClient()
+	// The stdlib http.Client's CookieJar tracks cookies purely by domain/path,
+	// with no notion of "stateful vs stateless" ADT session. Once a stateless
+	// request (e.g. GetSource) and a stateful one (Lock/Update) have both hit
+	// the jar, it can hand a stale/wrong sap-contextid to a stateful request,
+	// which lands on a different SAP application server instance than the one
+	// holding the lock — surfacing as 423 InvalidLockHandle (issue #88). Pin
+	// stateful requests to the one tracked session cookie, and keep it off
+	// stateless requests so it can't get clobbered by unrelated traffic.
+	httpClient.Transport = &sessionPinningRoundTripper{
+		next:      httpClient.Transport,
+		transport: t,
 	}
+	t.httpClient = httpClient
+	return t
 }
 
 // NewTransportWithClient creates a new Transport with a custom HTTP client.
@@ -169,8 +222,8 @@ func (t *Transport) Request(ctx context.Context, path string, opts *RequestOptio
 	}
 
 	// Store session ID
-	if sessionID := t.extractSessionID(resp); sessionID != "" {
-		t.setSessionID(sessionID)
+	if name, sessionID := t.extractSessionID(resp); sessionID != "" {
+		t.setSessionInfo(name, sessionID)
 	}
 
 	// Check for error status codes
@@ -185,7 +238,7 @@ func (t *Transport) Request(ctx context.Context, path string, opts *RequestOptio
 		if apiErr.IsSessionExpired() {
 			// Clear cached CSRF token and session ID
 			t.setCSRFToken("")
-			t.setSessionID("")
+			t.setSessionInfo("", "")
 			// Fetch new CSRF token (this establishes a new session)
 			if err := t.fetchCSRFToken(ctx); err != nil {
 				return nil, fmt.Errorf("refreshing session after timeout: %w", err)
@@ -199,7 +252,7 @@ func (t *Transport) Request(ctx context.Context, path string, opts *RequestOptio
 		// We preserve apiErr so the original path/body is not lost if re-auth itself fails.
 		if resp.StatusCode == http.StatusUnauthorized {
 			t.setCSRFToken("")
-			t.setSessionID("")
+			t.setSessionInfo("", "")
 
 			if !t.config.HasBasicAuth() && t.config.ReauthFunc != nil {
 				// Cookie/SAML auth: re-run full auth dance to get fresh cookies.
@@ -409,14 +462,15 @@ func (t *Transport) setDefaultHeaders(req *http.Request, opts *RequestOptions) {
 	}
 }
 
-// extractSessionID extracts the session ID from response cookies.
-func (t *Transport) extractSessionID(resp *http.Response) string {
+// extractSessionID extracts the session cookie name and value from response
+// cookies, if SAP set one (sap-contextid or SAP_SESSIONID).
+func (t *Transport) extractSessionID(resp *http.Response) (name string, value string) {
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "sap-contextid" || cookie.Name == "SAP_SESSIONID" {
-			return cookie.Value
+			return cookie.Name, cookie.Value
 		}
 	}
-	return ""
+	return "", ""
 }
 
 // CSRF token accessors with mutex protection
@@ -432,16 +486,20 @@ func (t *Transport) setCSRFToken(token string) {
 	t.csrfToken = token
 }
 
-// Session ID accessors with mutex protection
-func (t *Transport) getSessionID() string {
+// Session info accessors with mutex protection. name is the cookie name
+// SAP used to set the session ("sap-contextid" or "SAP_SESSIONID"); id is
+// its value. Both are needed by sessionPinningRoundTripper to re-attach the
+// correct cookie on stateful requests (issue #88).
+func (t *Transport) getSessionInfo() (name string, id string) {
 	t.sessionMu.RLock()
 	defer t.sessionMu.RUnlock()
-	return t.sessionID
+	return t.sessionCookieName, t.sessionID
 }
 
-func (t *Transport) setSessionID(id string) {
+func (t *Transport) setSessionInfo(name, id string) {
 	t.sessionMu.Lock()
 	defer t.sessionMu.Unlock()
+	t.sessionCookieName = name
 	t.sessionID = id
 }
 

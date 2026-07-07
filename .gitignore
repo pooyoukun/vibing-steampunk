@@ -87,6 +87,11 @@ dist/
 # with real identifiers. Anything that names a live system, user, transport,
 # or customer object goes here, NEVER in tracked docs.
 .local/
+
+# Bug-repro loop harness against real /ZDEMO/ objects and its logs — real
+# customer object names/identifiers, never tracked (see CLAUDE.md sanitize policy).
+pkg/adt/*.local_test.go
+tests/logs/
 .codex
 .codex/
 _bugs/

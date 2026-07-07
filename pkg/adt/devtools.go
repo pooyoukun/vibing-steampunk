@@ -15,12 +15,19 @@ import (
 
 // --- Syntax Check ---
 
+// SyntaxCheckNotProcessed is the Severity value used when SAP could not
+// semantically check the object in isolation (e.g. a plain INCLUDE with no
+// locatable main program) and returned a report status other than
+// "processed" instead of real check messages. Callers must not treat this
+// like a normal warning: it means no check ran at all.
+const SyntaxCheckNotProcessed = "notProcessed"
+
 // SyntaxCheckResult represents a single syntax check message.
 type SyntaxCheckResult struct {
 	URI      string `json:"uri"`
 	Line     int    `json:"line"`
 	Offset   int    `json:"offset"`
-	Severity string `json:"severity"` // E=Error, W=Warning, I=Info
+	Severity string `json:"severity"` // E=Error, W=Warning, I=Info, or SyntaxCheckNotProcessed
 	Text     string `json:"text"`
 }
 
@@ -39,7 +46,7 @@ func (c *Client) SyntaxCheck(ctx context.Context, objectURL string, content stri
 	// SAP's URI length limit for long namespaced classes.
 	checkObjectURI := objectURL
 	artifactURI := objectURL
-	if !strings.Contains(objectURL, "/includes/") {
+	if !isClassOrInterfaceInclude(objectURL) {
 		artifactURI = objectURL + "/source/main"
 	}
 	encodedContent := base64.StdEncoding.EncodeToString([]byte(content))
@@ -59,6 +66,7 @@ func (c *Client) SyntaxCheck(ctx context.Context, objectURL string, content stri
 		Method:      http.MethodPost,
 		Body:        []byte(body),
 		ContentType: "application/*",
+		Stateful:    true, // Must share session with subsequent LockObject/UpdateSource (issue #88)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("syntax check failed: %w", err)
@@ -76,12 +84,14 @@ func parseSyntaxCheckResults(data []byte) ([]SyntaxCheckResult, error) {
 	type checkMessage struct {
 		URI       string `xml:"uri,attr"`
 		Type      string `xml:"type,attr"`
-		ShortText string `xml:"shortText"`
+		ShortText string `xml:"shortText,attr"`
 	}
 	type checkMessageList struct {
 		Messages []checkMessage `xml:"checkMessage"`
 	}
 	type checkReport struct {
+		Status      string           `xml:"status,attr"`
+		StatusText  string           `xml:"statusText,attr"`
 		MessageList checkMessageList `xml:"checkMessageList"`
 	}
 	type checkRunReports struct {
@@ -97,6 +107,18 @@ func parseSyntaxCheckResults(data []byte) ([]SyntaxCheckResult, error) {
 	lineOffsetRegex := regexp.MustCompile(`([^#]+)#start=(\d+),(\d+)`)
 
 	for _, report := range resp.Reports {
+		// SAP cannot semantically check some objects in isolation (e.g. a plain
+		// INCLUDE with no known main program) and reports status="notProcessed"
+		// instead of a checkMessageList. Surface this explicitly — an empty
+		// results slice here would otherwise look identical to "checked, zero
+		// errors found", silently hiding that no check actually ran.
+		if report.Status != "" && !strings.EqualFold(report.Status, "processed") {
+			results = append(results, SyntaxCheckResult{
+				Severity: SyntaxCheckNotProcessed,
+				Text:     report.StatusText,
+			})
+			continue
+		}
 		for _, msg := range report.MessageList.Messages {
 			result := SyntaxCheckResult{
 				URI:      msg.URI,
@@ -171,6 +193,10 @@ func (c *Client) Activate(ctx context.Context, objectURL string, objectName stri
 		Method:      http.MethodPost,
 		Body:        []byte(body),
 		ContentType: "application/xml",
+		// Must share the session pinned by the preceding Lock/Update so the
+		// inactive version just written is visible to activate on the same
+		// app server instance (issue #88).
+		Stateful: true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("activation failed: %w", err)

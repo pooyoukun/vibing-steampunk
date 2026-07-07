@@ -205,6 +205,22 @@ func (c *Client) getObjectPackageFromMetadata(ctx context.Context, objectURL str
 	return metadata.PackageName, nil
 }
 
+// isClassOrInterfaceInclude reports whether objectURL points to a CLASS/INTERFACE
+// include (e.g. /sap/bc/adt/oo/classes/ZCL_FOO/includes/testclasses). A plain
+// program/report include (/sap/bc/adt/programs/includes/ZINCL) also contains the
+// substring "/includes/" in its base path, so callers must not use a bare
+// strings.Contains(objectURL, "/includes/") check to detect class includes.
+func isClassOrInterfaceInclude(objectURL string) bool {
+	for _, prefix := range []string{"/oo/classes/", "/oo/interfaces/"} {
+		if idx := strings.Index(objectURL, prefix); idx >= 0 {
+			if incIdx := strings.Index(objectURL, "/includes/"); incIdx > idx {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func normalizeObjectURLForPackageCheck(objectURL string) string {
 	normalized := strings.TrimSuffix(objectURL, "/")
 

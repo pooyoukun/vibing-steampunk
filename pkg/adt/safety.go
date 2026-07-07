@@ -347,6 +347,10 @@ func (s *SafetyConfig) isTransportInWhitelist(transport string) bool {
 func (s *SafetyConfig) String() string {
 	var parts []string
 
+	if !s.ReadOnly && !s.BlockFreeSQL && s.AllowedOps == "" && s.DisallowedOps == "" && len(s.AllowedPackages) == 0 {
+		parts = append(parts, "UNRESTRICTED")
+	}
+
 	if s.ReadOnly {
 		parts = append(parts, "READ-ONLY")
 	}

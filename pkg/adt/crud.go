@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -64,14 +65,21 @@ func (c *Client) LockObject(ctx context.Context, objectURL string, accessMode st
 	// Without this guard the caller proceeds to PUT/POST and gets a
 	// confusing 423 InvalidLockHandle several seconds later. Surface it
 	// upfront so the user sees a clear, actionable error (issue #91).
+	//
+	// Some on-premise systems return NoModification for custom namespace
+	// objects (/NAMESPACE/) even though edits are actually allowed.
+	// Set SAP_ALLOW_NO_MODIFICATION=true to bypass this guard on such systems.
 	if accessMode == "MODIFY" && strings.EqualFold(result.ModificationSupport, "NoModification") {
-		return nil, fmt.Errorf(
-			"object %s is not modifiable via ADT on this system "+
-				"(SAP returned modificationSupport=%q during LOCK). "+
-				"Common causes: read-only system class, missing developer/edit role, "+
-				"BTP ABAP Environment object outside the customer namespace, "+
-				"or hyperfocused mode locking the object as read-only",
-			objectURL, result.ModificationSupport)
+		if !strings.EqualFold(os.Getenv("SAP_ALLOW_NO_MODIFICATION"), "true") {
+			return nil, fmt.Errorf(
+				"object %s is not modifiable via ADT on this system "+
+					"(SAP returned modificationSupport=%q during LOCK). "+
+					"Common causes: read-only system class, missing developer/edit role, "+
+					"BTP ABAP Environment object outside the customer namespace, "+
+					"or hyperfocused mode locking the object as read-only. "+
+					"For on-premise systems where this is a false positive, set SAP_ALLOW_NO_MODIFICATION=true.",
+				objectURL, result.ModificationSupport)
+		}
 	}
 
 	return result, nil
