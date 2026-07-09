@@ -101,9 +101,16 @@ Never commit `.env`, `cookies.txt`, `.mcp.json`, or local agent/MCP config files
 ### Sanitize policy for tracked docs, tests, and examples
 
 The public repo must not contain concrete identifiers that tie code or
-docs to a live SAP system, a real user, or a customer's ABAP namespace.
-Anything that does belongs under `.local/` (gitignored) and never in
-`contexts/`, `reports/`, `docs/`, or any tracked test fixture.
+docs to a live SAP system, a real user, or a customer's ABAP namespace —
+**no exceptions for file type or location.** This applies to every
+tracked file without exception: `reports/`, `contexts/`, `docs/`, test
+fixtures, **`WORK_HISTORY.md`**, **any `.go` source comment or string
+literal**, commit messages, and README/CHANGELOG content. A leak has
+previously happened via `WORK_HISTORY.md` entries and a code comment in
+`pkg/adt/` — neither is a "docs-only" file, so don't assume source code
+comments are exempt. Anything that needs the real identifier belongs
+under `.local/` (gitignored) or a `*.local_test.go` file, never in a
+tracked file of any kind.
 
 **Never in tracked files:**
 - Real SAP usernames — use `TESTUSER`
@@ -126,12 +133,15 @@ dumps, bug repros with real identifiers, debugging transcripts. The
 `.local/` dir is gitignored. If you need to reference it from a
 tracked doc, redact first.
 
-**Before every commit that touches `reports/`, `contexts/`, `docs/`,
-or test fixtures:** scan the staged diff for the identifier families
-above. The detection signature (concrete literal list of past-leaked
-strings) lives at `.local/scripts/check-identifiers.sh` and is
-gitignored on purpose — the signature itself would otherwise be the
-leak it is trying to prevent. Structural patterns safe to commit:
+**Before every commit or push, regardless of which files changed:**
+scan the staged diff (and, before any `git push`, the full set of
+commits being pushed — not just the tip) for the identifier families
+above. This is not limited to docs/reports/fixtures: check code
+comments, WORK_HISTORY.md entries, and commit messages too. The
+detection signature (concrete literal list of past-leaked strings)
+lives at `.local/scripts/check-identifiers.sh` and is gitignored on
+purpose — the signature itself would otherwise be the leak it is
+trying to prevent. Structural patterns safe to commit:
 
 ```bash
 git diff --cached | grep -nE \

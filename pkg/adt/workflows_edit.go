@@ -3,6 +3,7 @@ package adt
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -181,10 +182,18 @@ func (c *Client) EditSourceWithOptions(ctx context.Context, objectURL, oldString
 		classesPrefix := "/sap/bc/adt/oo/classes/"
 		if idx := strings.Index(objectURL, classesPrefix); idx >= 0 {
 			rest := objectURL[idx+len(classesPrefix):]
+			rawClassName := rest
 			if slashIdx := strings.Index(rest, "/"); slashIdx > 0 {
-				classNameForMethod = rest[:slashIdx]
+				rawClassName = rest[:slashIdx]
+			}
+			// objectURL is already URL-encoded, so rawClassName still contains
+			// literal %2F for namespaced classes; GetClassMethods encodes its
+			// argument itself, so pass it the decoded name (see isClassInclude
+			// handling below for the same fix on the include path).
+			if decoded, err := url.PathUnescape(rawClassName); err == nil {
+				classNameForMethod = decoded
 			} else {
-				classNameForMethod = rest
+				classNameForMethod = rawClassName
 			}
 		}
 		result.Method = opts.Method
@@ -206,7 +215,17 @@ func (c *Client) EditSourceWithOptions(ctx context.Context, objectURL, oldString
 			classesPrefix := "/sap/bc/adt/oo/classes/"
 			if strings.Contains(objectURL, classesPrefix) {
 				classStart := strings.Index(objectURL, classesPrefix) + len(classesPrefix)
-				className = objectURL[classStart:includesIdx]
+				// objectURL is already URL-encoded (as real MCP callers supply it,
+				// e.g. .../classes/%2FNAMESPACE%2FCL_FOO/includes/...), so the
+				// substring extracted here still contains literal %2F sequences.
+				// UpdateClassInclude/Activate expect a decoded name and encode it
+				// themselves — passing the still-encoded form double-encodes
+				// namespaced class names (%2F -> %252F), breaking the request.
+				if decoded, err := url.PathUnescape(objectURL[classStart:includesIdx]); err == nil {
+					className = decoded
+				} else {
+					className = objectURL[classStart:includesIdx]
+				}
 				includeType = ClassIncludeType(objectURL[includesIdx+len("/includes/"):])
 				parentClassURL = objectURL[:includesIdx]
 			}

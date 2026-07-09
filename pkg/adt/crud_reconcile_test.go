@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -637,5 +638,54 @@ func TestLockObject_AllowsNoModificationOnReadLock(t *testing.T) {
 	}
 	if result.LockHandle != "HANDLE-X" {
 		t.Errorf("LockHandle = %q, want HANDLE-X", result.LockHandle)
+	}
+}
+
+// TestEditSourceWithOptions_NamespacedClassTestInclude_NoDoubleEncoding pins
+// the regression found while investigating namespaced test-class editing:
+// EditSourceWithOptions extracts the class name via substring directly from
+// the already-encoded objectURL (exactly as a real MCP caller supplies it,
+// e.g. .../classes/%2FZDEMO%2FCL_DEMO_CORE/includes/testclasses), then used
+// to pass that still-encoded name straight to UpdateClassInclude/Activate,
+// which encode it AGAIN — turning %2F into %252F and breaking every request
+// past the lock for namespaced classes. This test drives the full
+// EditSourceWithOptions flow for a namespaced class's testclasses include
+// and asserts the captured PUT/activation requests are NOT double-encoded.
+func TestEditSourceWithOptions_NamespacedClassTestInclude_NoDoubleEncoding(t *testing.T) {
+	className := "/ZDEMO/CL_DEMO_CORE"
+	encodedClassName := url.PathEscape(className) // %2FZDEMO%2FCL_DEMO_CORE
+	classURL := "/sap/bc/adt/oo/classes/" + encodedClassName
+	objectURL := classURL + "/includes/testclasses"
+	originalSource := "* anchor line for the test"
+
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodGet, "includes/testclasses", 200, originalSource),
+			resp(http.MethodPost, "/oo/classes/", 200, lockResponseXML), // LOCK and UNLOCK
+			resp(http.MethodPut, "includes/testclasses", 200, ""),
+			resp(http.MethodPost, "/activation", 200, ""),
+		},
+	}
+	tracker := &headerCaptureMock{inner: mock}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
+	transport := NewTransportWithClient(cfg, tracker)
+	client := NewClientWithTransport(cfg, transport)
+
+	result, err := client.EditSourceWithOptions(context.Background(), objectURL, originalSource, originalSource+"\n* marker", &EditSourceOptions{
+		SyntaxCheck: false,
+	})
+	if err != nil {
+		t.Fatalf("EditSourceWithOptions returned Go error: %v", err)
+	}
+	if !result.Success {
+		t.Fatalf("edit did not succeed: %s", result.Message)
+	}
+
+	for _, call := range tracker.captured {
+		if strings.Contains(call.path, "%2F") {
+			t.Errorf("double-encoding detected: %s %s still contains a literal %%2F "+
+				"(the namespace separator was encoded twice)", call.method, call.path)
+		}
 	}
 }
