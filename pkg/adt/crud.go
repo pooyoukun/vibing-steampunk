@@ -71,6 +71,17 @@ func (c *Client) LockObject(ctx context.Context, objectURL string, accessMode st
 	// Set SAP_ALLOW_NO_MODIFICATION=true to bypass this guard on such systems.
 	if accessMode == "MODIFY" && strings.EqualFold(result.ModificationSupport, "NoModification") {
 		if !strings.EqualFold(os.Getenv("SAP_ALLOW_NO_MODIFICATION"), "true") {
+			// The LOCK call above already succeeded server-side (SAP only reports
+			// MODIFICATION_SUPPORT after granting the ENQUEUE lock) — bailing out
+			// here without releasing it would leave the object locked for the rest
+			// of the user's session. Every subsequent LockObject attempt (including
+			// a legitimate retry with SAP_ALLOW_NO_MODIFICATION=true) then fails
+			// with a confusing self-conflict 403 "User X is currently editing",
+			// masking the real NoModification cause. Best-effort unlock before
+			// returning; the unlock outcome does not change the reported error.
+			if result.LockHandle != "" {
+				_ = c.UnlockObject(ctx, objectURL, result.LockHandle)
+			}
 			return nil, fmt.Errorf(
 				"object %s is not modifiable via ADT on this system "+
 					"(SAP returned modificationSupport=%q during LOCK). "+

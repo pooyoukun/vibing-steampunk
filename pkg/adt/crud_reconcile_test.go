@@ -34,10 +34,11 @@ type routedResponse struct {
 type recordedCall struct {
 	method string
 	path   string
+	query  string
 }
 
 func (m *methodPathMock) Do(req *http.Request) (*http.Response, error) {
-	m.calls = append(m.calls, recordedCall{method: req.Method, path: req.URL.Path})
+	m.calls = append(m.calls, recordedCall{method: req.Method, path: req.URL.Path, query: req.URL.RawQuery})
 	for _, r := range m.routes {
 		if r.method != "" && r.method != req.Method {
 			continue
@@ -596,6 +597,76 @@ func TestLockObject_RejectsNoModification(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "NoModification") {
 		t.Errorf("error = %q, want to surface the raw modificationSupport value", err.Error())
+	}
+}
+
+// TestLockObject_UnlocksOnNoModificationRejection pins the lock-leak
+// bug found while investigating why writing a test class in a non-Z
+// namespace (e.g. /NEOT/CL_ECOSYNERGY_CORE) became permanently
+// impossible after the first NoModification rejection: SAP grants the
+// ENQUEUE lock BEFORE reporting MODIFICATION_SUPPORT, so bailing out of
+// LockObject on NoModification without releasing that lock leaves the
+// object locked for the rest of the session. Every subsequent
+// LockObject call on the same object then fails with a self-conflict
+// 403 ("User X is currently editing"), masking the real cause and
+// making even a legitimate retry with SAP_ALLOW_NO_MODIFICATION=true
+// impossible without an external SM12 cleanup. LockObject must issue
+// an UNLOCK for the handle it just received before returning the
+// NoModification error.
+func TestLockObject_UnlocksOnNoModificationRejection(t *testing.T) {
+	const noModLockXML = `<?xml version="1.0" encoding="UTF-8"?>
+<asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+    <DATA>
+      <LOCK_HANDLE>HANDLE-X</LOCK_HANDLE>
+      <CORRNR></CORRNR>
+      <CORRUSER></CORRUSER>
+      <CORRTEXT></CORRTEXT>
+      <IS_LOCAL></IS_LOCAL>
+      <IS_LINK_UP></IS_LINK_UP>
+      <MODIFICATION_SUPPORT>NoModification</MODIFICATION_SUPPORT>
+    </DATA>
+  </asx:values>
+</asx:abap>`
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodPost, "/oo/classes/ZREADONLY", 200, noModLockXML),
+		},
+	}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
+	transport := NewTransportWithClient(cfg, mock)
+	client := NewClientWithTransport(cfg, transport)
+
+	_, err := client.LockObject(
+		context.Background(),
+		"/sap/bc/adt/oo/classes/ZREADONLY",
+		"MODIFY",
+	)
+	if err == nil {
+		t.Fatal("LockObject should have returned an error for NoModification, got nil")
+	}
+
+	var lockCalls, unlockCalls int
+	for _, c := range mock.calls {
+		if c.method != http.MethodPost || !strings.Contains(c.path, "/oo/classes/ZREADONLY") {
+			continue
+		}
+		switch {
+		case strings.Contains(c.query, "_action=LOCK"):
+			lockCalls++
+		case strings.Contains(c.query, "_action=UNLOCK"):
+			unlockCalls++
+			if !strings.Contains(c.query, "lockHandle=HANDLE-X") {
+				t.Errorf("UNLOCK call query = %q, want it to carry lockHandle=HANDLE-X", c.query)
+			}
+		}
+	}
+	if lockCalls != 1 {
+		t.Errorf("LOCK calls = %d, want exactly 1", lockCalls)
+	}
+	if unlockCalls != 1 {
+		t.Fatalf("UNLOCK calls = %d, want exactly 1 — LockObject must release the lock it just acquired before returning the NoModification error, otherwise every subsequent attempt on this object self-conflicts with \"User X is currently editing\"", unlockCalls)
 	}
 }
 
