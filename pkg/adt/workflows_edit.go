@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // --- Surgical Edit Tools ---
@@ -412,11 +413,31 @@ func (c *Client) EditSourceWithOptions(ctx context.Context, objectURL, oldString
 		transport = lockResult.CorrNr
 	}
 
-	if isClassInclude && className != "" {
-		// Use UpdateClassInclude for class includes
-		err = c.UpdateClassInclude(ctx, className, includeType, newSource, lockResult.LockHandle, transport)
-	} else {
-		err = c.UpdateSource(ctx, sourceURL, newSource, lockResult.LockHandle, transport)
+	updateSource := func(handle string) error {
+		if isClassInclude && className != "" {
+			return c.UpdateClassInclude(ctx, className, includeType, newSource, handle, transport)
+		}
+		return c.UpdateSource(ctx, sourceURL, newSource, handle, transport)
+	}
+
+	err = updateSource(lockResult.LockHandle)
+	if err != nil && IsInvalidLockHandleError(err) {
+		// SAP rejected the lock handle we just received (HTTP 423) — the
+		// LOCK and this write landed on different SAP application server
+		// instances (session-pinning miss under heavy mixed traffic).
+		// Retrying with the same handle would fail identically, so
+		// re-acquire a fresh lock (bounded so a wedged connection can't
+		// hang the edit indefinitely) and retry the write exactly once.
+		relockCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+		relockResult, relockErr := c.LockObject(relockCtx, lockURL, "MODIFY")
+		cancel()
+		if relockErr == nil {
+			lockResult = relockResult
+			if opts.Transport == "" && lockResult.CorrNr != "" {
+				transport = lockResult.CorrNr
+			}
+			err = updateSource(lockResult.LockHandle)
+		}
 	}
 	if err != nil {
 		result.Message = fmt.Sprintf("Failed to update source: %v", err)

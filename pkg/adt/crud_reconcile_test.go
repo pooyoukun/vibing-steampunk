@@ -760,3 +760,91 @@ func TestEditSourceWithOptions_NamespacedClassTestInclude_NoDoubleEncoding(t *te
 		}
 	}
 }
+
+// invalidLockHandleXML is the SAP ADT error body for a rejected lock
+// handle (HTTP 423) — typically a session-pinning miss between LOCK and
+// the write landing on different application server instances.
+const invalidLockHandleXML = `<?xml version="1.0" encoding="utf-8"?>
+<exc:exception xmlns:exc="http://www.sap.com/abapxml/types/communicationframework">
+  <type id="ExceptionResourceInvalidLockHandle"/>
+  <message lang="EN">Resource is not locked (invalid lock handle: STALE-HANDLE)</message>
+</exc:exception>`
+
+// flakyPutMock wraps methodPathMock and makes the FIRST PUT to a path
+// containing failPathSubstring fail with HTTP 423 (invalidLockHandleXML),
+// then falls through to normal routing for every subsequent request —
+// including the retried PUT. Used to simulate the LOCK/UPDATE_SOURCE
+// session-pinning miss without a real SAP system.
+type flakyPutMock struct {
+	inner             *methodPathMock
+	failPathSubstring string
+	putCalls          int
+}
+
+func (f *flakyPutMock) Do(req *http.Request) (*http.Response, error) {
+	if req.Method == http.MethodPut && strings.Contains(req.URL.Path, f.failPathSubstring) {
+		f.putCalls++
+		if f.putCalls == 1 {
+			return &http.Response{
+				StatusCode: http.StatusLocked,
+				Body:       io.NopCloser(strings.NewReader(invalidLockHandleXML)),
+				Header:     http.Header{},
+			}, nil
+		}
+	}
+	return f.inner.Do(req)
+}
+
+// TestEditSourceWithOptions_RetriesOnInvalidLockHandle pins the fix for
+// the 423 ExceptionResourceInvalidLockHandle bug that keeps resurfacing
+// on long-lived MCP sessions with heavy mixed stateless/stateful traffic
+// (issues #88/#91/#92/#98; see WORK_HISTORY.md 2026-07-07 and 2026-07-09).
+// The LOCK can succeed on one SAP application server instance while the
+// write lands on another that has never heard of that lock handle. The
+// old behaviour surfaced this as a hard failure ("Failed to update
+// source: ... 423 ..."), forcing the caller to retry the whole edit by
+// hand. EditSourceWithOptions must now retry automatically: on 423, drop
+// the rejected handle, acquire a fresh lock (bounded by a 15s timeout so
+// a wedged connection can't hang the edit forever), and retry the write
+// exactly once before giving up.
+func TestEditSourceWithOptions_RetriesOnInvalidLockHandle(t *testing.T) {
+	objectURL := "/sap/bc/adt/programs/programs/ZTEST"
+	originalSource := "* anchor line for the test"
+
+	mock := &methodPathMock{
+		routes: []routedResponse{
+			resp("", "discovery", 200, "ok"),
+			resp(http.MethodGet, "/programs/ZTEST", 200, originalSource),
+			resp(http.MethodPost, "/programs/ZTEST", 200, lockResponseXML), // LOCK and UNLOCK
+			resp(http.MethodPut, "/programs/ZTEST", 200, ""),               // succeeds once flakyPutMock stops intercepting
+			resp(http.MethodPost, "/activation", 200, ""),
+		},
+	}
+	flaky := &flakyPutMock{inner: mock, failPathSubstring: "/programs/ZTEST"}
+	cfg := NewConfig("https://sap.example.com:44300", "user", "pass")
+	transport := NewTransportWithClient(cfg, flaky)
+	client := NewClientWithTransport(cfg, transport)
+
+	result, err := client.EditSourceWithOptions(context.Background(), objectURL, originalSource, originalSource+"\n* marker", &EditSourceOptions{
+		SyntaxCheck: false,
+	})
+	if err != nil {
+		t.Fatalf("EditSourceWithOptions returned Go error: %v", err)
+	}
+	if !result.Success {
+		t.Fatalf("edit did not succeed despite the automatic retry: %s", result.Message)
+	}
+	if flaky.putCalls != 2 {
+		t.Errorf("PUT calls = %d, want exactly 2 (first rejected with 423, retry succeeds)", flaky.putCalls)
+	}
+
+	var lockCalls int
+	for _, c := range mock.calls {
+		if c.method == http.MethodPost && strings.Contains(c.query, "_action=LOCK") {
+			lockCalls++
+		}
+	}
+	if lockCalls != 2 {
+		t.Errorf("LOCK calls = %d, want exactly 2 (initial lock + re-lock after the 423)", lockCalls)
+	}
+}

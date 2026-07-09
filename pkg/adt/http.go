@@ -542,6 +542,34 @@ func (e *APIError) IsSessionExpired() bool {
 		strings.Contains(msg, "session not found")
 }
 
+// IsInvalidLockHandle returns true if the error indicates SAP rejected the
+// lock handle used for a write (HTTP 423 ExceptionResourceInvalidLockHandle).
+// This typically means the LOCK and the write landed on different SAP
+// application server instances (a session-pinning miss under heavy mixed
+// stateless/stateful traffic) — resending the same request with the same
+// handle fails identically; the caller must acquire a fresh lock and retry.
+func (e *APIError) IsInvalidLockHandle() bool {
+	if e.StatusCode != http.StatusLocked {
+		return false
+	}
+	msg := strings.ToLower(e.Message)
+	return strings.Contains(msg, "exceptionresourceinvalidlockhandle") ||
+		strings.Contains(msg, "invalid lock handle")
+}
+
+// IsInvalidLockHandleError checks if an error indicates SAP rejected a
+// (stale) lock handle (HTTP 423).
+func IsInvalidLockHandleError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.IsInvalidLockHandle()
+	}
+	return false
+}
+
 // IsNotFoundError checks if an error is an API 404 Not Found error.
 func IsNotFoundError(err error) bool {
 	if err == nil {
